@@ -1,0 +1,34 @@
+{
+  "name": "@yeuai/botscript",
+  "version": "1.0.0",
+  "description": "A text-based scripting language and bot engine for Conversational User Interfaces (CUI)",
+  "main": "dist/botscript",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeuai/botscript.git"
+  },
+  "keywords": [
+    "chatbot",
+    "dialog",
+    "engine"
+  ],
+  "author": "vunb",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yeuai/botscript/issues"
+  },
+  "homepage": "https://github.com/yeuai/botscript#readme",
+  "devDependencies": {
+    "@types/xregexp": "^3.0.30",
+    "ts-node-dev": "^1.0.0-pre.43",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.4"
+  },
+  "dependencies": {
+    "machina": "^4.0.2",
+    "xregexp": "^4.2.4"
+  }
+}
