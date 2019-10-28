@@ -2,9 +2,13 @@ import { Fsm } from 'machina';
 import XRegExp from 'xregexp';
 
 const TYPES = {
-  '+': 'trigger',
-  '-': 'reply',
-  '=': 'list',
+  '!': 'definition',
+  '+': 'dialogue',
+  '-': 'response',
+  '@': 'command',
+  '?': 'question',
+  '~': 'dialogflow',
+  '#': 'comment',
 };
 
 export {

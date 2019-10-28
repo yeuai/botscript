@@ -19,7 +19,7 @@ export class BotScript {
    * @param content
    */
   parse(content: string) {
-    let scripts = content
+    const scripts = content
       // convert CRLF into LF
       .replace(/\r\n/g, '\n')
       // remove comments
@@ -31,6 +31,6 @@ export class BotScript {
       // trim each of them
       .map(script => script.trim());
 
-
+    return this;
   }
 }
