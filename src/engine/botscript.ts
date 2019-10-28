@@ -58,36 +58,6 @@ export class BotScript {
 
     scripts.forEach(data => {
       const struct = Struct.parse(data);
-      if (!struct.name) {
-        const tokens = struct.content.match(/^\s*[<>=~\-@?`]\s*(.+)$/m);
-        if (tokens != null && tokens.length > 1) {
-          struct.name = tokens[1];
-        }
-      }
-      console.log('Parse type: ' + struct.type);
-      // valuable data struct
-      switch (struct.type) {
-        case TYPES['!']:
-          const tokens = struct.content
-            .replace(/^!.+$\n\s*-/m, '')
-            .split(/^\s*-\s*/m);
-          if (tokens.length > 1) {
-            struct.options = tokens.map(s => s.trim());
-            struct.value = struct.options;
-          } else {
-            struct.options = struct.content.replace(/^!+\s*/m, '').split(' ').splice(0, 1);
-            struct.value = struct.options.find(x => true);
-          }
-          break;
-        case TYPES['@']:  // command
-          struct.value = struct.name;
-          break;
-        case TYPES['?']:
-          struct.options = struct.content
-            .replace(/^\?.+$\n\s*-/m, '')
-            .split(/^\s*-\s*/m).map(s => s.trim());
-          break;
-      }
       // append bot data struct
       this.type(struct.type).set(struct.name, struct);
     });
