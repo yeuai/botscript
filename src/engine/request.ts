@@ -1,4 +1,7 @@
-export class MessageRequest {
+/**
+ * Dialogue request
+ */
+export class Request {
 
   public agentId: string;
   public sessionId: string;

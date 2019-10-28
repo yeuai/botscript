@@ -1,3 +1,6 @@
+/**
+ * Dialogue response
+ */
 export class MessageResponse {
 
   public currentNode: string;

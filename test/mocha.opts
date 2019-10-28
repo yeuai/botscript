@@ -1,0 +1,7 @@
+--require ts-node/register
+--reporter spec
+--delay true
+--retries 3
+--exit
+src/**/*.spec.ts
+test/**/*.spec.ts
