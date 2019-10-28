@@ -7,6 +7,7 @@ export class Request {
   public sessionId: string;
   public text: string;
   public contexts: string[];
+  public complete: boolean;
 
   constructor() {
     this.contexts = [];

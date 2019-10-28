@@ -1,4 +1,4 @@
-import { TYPES } from './machine';
+import { TYPES } from './struct';
 import { expect } from 'chai';
 
 describe('Dialogue Parser', () => {

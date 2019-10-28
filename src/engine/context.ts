@@ -3,19 +3,21 @@
  */
 export class Context {
 
-  dialogues: Map<any, any>;
-  definitions: Map<any, any>;
-  commands: Map<any, any>;
-  variables: Map<any, any>;
-  dialogflows: Map<any, any>;
-  patterns: Map<any, any>;
+  definitions: Map<string, any>;
+  dialogues: Map<string, any>;
+  dialogflows: Map<string, any>;
+  commands: Map<string, any>;
+  questions: Map<string, any>;
+  variables: Map<string, any>;
+  patterns: Map<string, any>;
 
   constructor() {
-    this.dialogues = new Map();
     this.definitions = new Map();
-    this.commands = new Map();
-    this.variables = new Map();
+    this.dialogues = new Map();
     this.dialogflows = new Map();
+    this.commands = new Map();
+    this.questions = new Map();
+    this.variables = new Map();
     this.patterns = new Map();
   }
 }

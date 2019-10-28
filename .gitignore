@@ -62,4 +62,5 @@ typings/
 
 # Output
 dist
+test*
 *.js
