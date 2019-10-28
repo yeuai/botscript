@@ -1,0 +1,28 @@
+## definition
+! version 1
+! name Rivebot
+
+! hello
+- hello
+- hi
+- hey
+- hola
+- howdy
+- hai
+- yo
+
+! yes
+- yes
+- yeah
+- yep
+- yup
+
+## dialogue
++ [hello]
+- What is your name?
+- Hi. Could you tell me your name?
+- [yes]. What's your name?
+
++ I'm *{name}
++ My name is *{name}
+- Nice to meet you $name!

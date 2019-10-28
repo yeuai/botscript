@@ -1,4 +1,4 @@
 export * from './request';
 export * from './response';
-export * from './parser';
+export * from './machine';
 export * from './botscript';

@@ -1,11 +1,7 @@
 import { expect } from 'chai';
-import { TYPES } from 'engine/parser';
 
-describe('Dialogue Parser', () => {
-
-  describe('Parser', () => {
-    it('Contains trigger', async () => {
-      expect(TYPES).contains('+');
-    });
+describe('TODO', () => {
+  it('calculates simple math', async () => {
+    expect(1 + 1).eq(2);
   });
 });

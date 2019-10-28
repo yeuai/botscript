@@ -32,7 +32,7 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "machina": "^4.0.2",
-    "xregexp": "^4.2.4"
+    "xregexp": "^4.2.4",
+    "xstate": "^4.6.7"
   }
 }
