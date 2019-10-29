@@ -27,7 +27,11 @@ const PATTERN_INTERPOLATIONS = [
 export function transform(pattern: string, definitions: Map<string, Struct>, notEqual: boolean) {
   PATTERN_INTERPOLATIONS.forEach(p => {
     const { search, replaceWith } = p;
-    if (typeof replaceWith === 'string') {
+    // is it already a string pattern?
+    if (/^\/.+\/$/m.test(pattern)) {
+      pattern = (pattern.match(/^\/(.+)\/$/m) as RegExpMatchArray)[1];
+      return XRegExp(pattern);
+    } else if (typeof replaceWith === 'string') {
       pattern = pattern.replace(search, replaceWith);
     } else {
       throw new Error('Not implement');

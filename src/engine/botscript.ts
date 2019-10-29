@@ -98,8 +98,8 @@ export class BotScript {
 
         const captures = execPattern(req.text, pattern);
         req.parameters.$ = captures.$1;
-        Object.keys(captures).forEach(varName => {
-          req.parameters[varName] = captures[varName];
+        Object.keys(captures).forEach(name => {
+          req.parameters[name] = captures[name];
         });
       });
 
