@@ -1,8 +1,9 @@
 import { Context } from './context';
 import { Request } from './request';
 import { Struct, TYPES } from './struct';
-import { Logger } from '../lib/logger';
 import { transform, execPattern } from './pattern';
+import { Logger } from '../lib/logger';
+import * as utils from '../lib/utils';
 
 /**
  * BotScript dialogue engine
@@ -82,6 +83,8 @@ export class BotScript {
       // process purpose bot
       this.data.dialogues.forEach((dialog: any, trigger: string) => this.buildResponse(dialog, trigger, req));
     }
+
+    return req;
   }
 
   /**
@@ -97,10 +100,11 @@ export class BotScript {
         this.logger.info('Found: ', dialog.name, pattern);
 
         const captures = execPattern(req.text, pattern);
-        req.parameters.$ = captures.$1;
         Object.keys(captures).forEach(name => {
           req.parameters[name] = captures[name];
         });
+        req.parameters.$ = captures.$1;
+        req.speechResponse = utils.random(dialog.options);
       });
 
     if (result) {

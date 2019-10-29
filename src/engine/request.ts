@@ -6,6 +6,7 @@ export class Request {
   public agentId: string;
   public sessionId: string;
   public text: string;
+  public speechResponse: string;
   public contexts: string[];
   public complete: boolean;
   public parameters: any;
