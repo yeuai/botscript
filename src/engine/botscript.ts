@@ -2,7 +2,7 @@ import { Context } from './context';
 import { Request } from './request';
 import { Struct, TYPES } from './struct';
 import { Logger } from '../lib/logger';
-import { transform } from './pattern';
+import { transform, execPattern } from './pattern';
 
 /**
  * BotScript dialogue engine
@@ -91,9 +91,17 @@ export class BotScript {
    * @param req
    */
   buildResponse(dialog: Struct, trigger: string, req: Request) {
-    const result = this.getActivators(dialog).filter(() => true).some(pattern => {
-      this.logger.info('Pattern: ', pattern);
-    });
+    const result = this.getActivators(dialog)
+      .filter((x) => RegExp(x.source, x.flags).test(req.text))
+      .some(pattern => {
+        this.logger.info('Found: ', dialog.name, pattern);
+
+        const captures = execPattern(req.text, pattern);
+        req.parameters.$ = captures.$1;
+        Object.keys(captures).forEach(varName => {
+          req.parameters[varName] = captures[varName];
+        });
+      });
 
     if (result) {
       this.logger.info('Handle request ok!', 123);

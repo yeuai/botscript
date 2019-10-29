@@ -38,3 +38,15 @@ export function transform(pattern: string, definitions: Map<string, Struct>, not
     ? XRegExp(`^((?!^${pattern}$).)+(?!\\w)`, 'ig')
     : XRegExp(`(?:^|[\\s,;—])${pattern}(?!\\w)`, 'ig');
 }
+
+/**
+ * Extract and captures named variables
+ * @param input
+ * @param pattern
+ */
+export function execPattern(input: string, pattern: RegExp | any) {
+  let captures = !pattern.label ? XRegExp.exec(input, pattern) : pattern.exec(input);
+  const keys = Object.keys(captures).filter(key => !['index', 'input', 'groups'].includes(key));
+  captures = keys.map(key => ({ [key.match(/^\d+$/) ? `$${parseInt(key)}` : key]: captures[key] })).splice(1);
+  return captures.length > 0 ? captures.reduce((a: any, b: any) => Object.assign(a, b)) : [];
+}

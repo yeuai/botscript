@@ -33,7 +33,8 @@
     "object-literal-sort-keys": false,
     "one-variable-per-declaration": false,
     "variable-name": false,
-    "max-classes-per-file": false
+    "max-classes-per-file": false,
+    "radix": false
   },
   "rulesDirectory": []
 }
