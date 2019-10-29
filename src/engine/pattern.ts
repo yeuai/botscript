@@ -2,20 +2,46 @@ import XRegExp from 'xregexp';
 import { Struct } from './struct';
 
 const PATTERN_INTERPOLATIONS = [
-  // escape characters '.' and '?'
-  { search: /[.?]/g, replaceWith: '\\$&' },
-  // '#{varName}' => '(?<varName> \d[\d\,\.\s]* )'
-  { search: /#\{([a-z][\w_]*)\}/g, replaceWith: '(?<$1>\\d[\\d\\,\\.\\s]*)' },
-  // '${varName}' => '(?<varName> [a-z]+ )'
-  { search: /\$\{([a-z][\w_]*)\}/g, replaceWith: '(?<$1>[a-z]+)' },
-  // '*{varName}' => '(?<varName> .* )'
-  { search: /\*\{([a-z][\w_]*)\}/g, replaceWith: '(?<$1>.*)' },
-  // '$varName' => '(?<varName> [a-z]+ )'
-  { search: /\$([a-z][\w_]*)/g, replaceWith: '(?<$1>[a-z]+)' },
-  // '#' => '(\d+)'
-  { search: /(^|[\s,;—])#(?!\w)/g, replaceWith: '$1(\\d+)' },
-  // '*' => '(.*)'
-  { search: /(^|[\s,;—])\*(?!\w)/g, replaceWith: '$1(.*)' },
+  {
+    // escape characters '.' and '?'
+    search: /[.?]/g,
+    replaceWith: '\\$&',
+  },
+  {
+    // '#{varName}' => '(?<varName> \d[\d\,\.\s]* )'
+    search: /#\{([a-z][\w_]*)\}/g,
+    replaceWith: '(?<$1>\\d[\\d\\,\\.\\s]*)',
+  },
+  {
+    // '${varName}' => '(?<varName> [a-z]+ )'
+    search: /\$\{([a-z][\w_]*)\}/g,
+    replaceWith: '(?<$1>[a-z]+)',
+  },
+  {
+    // '*{varName}' => '(?<varName> .* )'
+    search: /\*\{([a-z][\w_]*)\}/g,
+    replaceWith: '(?<$1>.*)',
+  },
+  {
+    // '$varName' => '(?<varName> [a-z]+ )'
+    search: /\$([a-z][\w_]*)/g,
+    replaceWith: '(?<$1>[a-z]+)',
+  },
+  {
+    // '#' => '(\d+)'
+    search: /(^|[\s,;—])#(?!\w)/g,
+    replaceWith: '$1(\\d+)',
+  },
+  {
+    // '*' => '(.*)'
+    search: /(^|[\s,;—])\*(?!\w)/g,
+    replaceWith: '$1(.*)',
+  },
+  {
+    // '[definition_name]' => '(?:item_1|item_2)'
+    search: /!*\[(\w+)\]/g,
+    replaceWith: (sub: string, name: string, def: Map<string, Struct>) => `(${(def.get(name.toLowerCase()) as Struct).options.join('|')})`,
+  },
 ];
 
 /**
@@ -34,7 +60,21 @@ export function transform(pattern: string, definitions: Map<string, Struct>, not
     } else if (typeof replaceWith === 'string') {
       pattern = pattern.replace(search, replaceWith);
     } else {
-      throw new Error('Not implement');
+      pattern = pattern.replace(search,
+        (substr, name) => ((replacement): string => {
+          // Check if the list contains reference to another list
+          while (replacement.match(search) !== null) {
+            (replacement.match(search) as RegExpMatchArray ).map(rl => {
+              const referencingListName = rl.slice(1, rl.length - 1);
+              const referencingListPattern = replaceWith(rl, referencingListName, definitions);
+              const referencingListReg = new RegExp(`\\[${referencingListName}\\]`, 'g');
+              replacement = replacement.replace(referencingListReg, referencingListPattern.slice(1, referencingListPattern.length - 1));
+            });
+          }
+
+          return replacement;
+        })(replaceWith(substr, name, definitions)),
+      );
     }
   });
 
