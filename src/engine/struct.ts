@@ -76,7 +76,6 @@ export class Struct {
     // valuable data struct
     switch (struct.type) {
       case TYPES['!']:  // definition
-        // console.log('Test body: ', struct.body);
         if (struct.body.length === 0) {
           const tokens = struct.head[0].split(' ');
           struct.value = tokens.pop() || '';

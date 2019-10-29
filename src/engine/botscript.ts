@@ -1,6 +1,7 @@
 import { Context } from './context';
 import { Request } from './request';
 import { Struct, TYPES } from './struct';
+import { Logger } from '../lib/logger';
 
 /**
  * BotScript dialogue engine
@@ -8,9 +9,11 @@ import { Struct, TYPES } from './struct';
 export class BotScript {
 
   data: Context;
+  logger: Logger;
 
   constructor() {
     this.data = new Context();
+    this.logger = new Logger();
   }
 
   /**
@@ -88,13 +91,13 @@ export class BotScript {
    */
   buildResponse(dialog: Struct, trigger: string, req: Request) {
     const result = dialog.activators().filter(() => true).some(pattern => {
-      console.log('Pattern: ', pattern);
+      this.logger.info('Pattern: ', pattern);
     });
 
     if (result) {
-      console.log('Handle request ok!');
+      this.logger.info('Handle request ok!', 123);
     } else {
-      console.log('Handle request nok!');
+      this.logger.info('Handle request nok!', 123);
     }
 
     return result;

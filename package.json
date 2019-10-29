@@ -23,6 +23,7 @@
   "homepage": "https://github.com/yeuai/botscript#readme",
   "devDependencies": {
     "@types/chai": "^4.2.4",
+    "@types/debug": "^4.1.5",
     "@types/mocha": "^5.2.7",
     "@types/xregexp": "^3.0.30",
     "chai": "^4.2.0",
@@ -32,6 +33,7 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
+    "debug": "^4.1.1",
     "xregexp": "^4.2.4",
     "xstate": "^4.6.7"
   }
