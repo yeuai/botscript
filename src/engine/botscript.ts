@@ -20,11 +20,16 @@ export class BotScript {
 
   /**
    * Return ready bot engine
+   * TODO: Remove
    */
   then(/** */) {
     return this;
   }
 
+  /**
+   * Get struct type
+   * @param t type
+   */
   private type(t: string): Map<string, any> {
     switch (t) {
       case 'variable':
