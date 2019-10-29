@@ -79,7 +79,7 @@ export class Struct {
           struct.options = [struct.value];
           console.log('Test body: ' + struct.body);
         } else {
-          const tokens = struct.body.split(/^\s*-\s*/m);
+          const tokens = struct.body.replace(/^-/, '').split(/^\s*-\s*/m);
           if (tokens.length > 1) {
             struct.options = tokens.map(s => s.trim());
             struct.value = struct.options;
