@@ -1,5 +1,4 @@
 import { Machine } from 'xstate';
-import XRegExp from 'xregexp';
 
 export const TYPES: any = ({
   '!': 'definition',
@@ -55,6 +54,10 @@ export class Struct {
   value?: any;
   options: string[];
 
+  /**
+   * Init script struct and parse components
+   * @param content
+   */
   constructor(content: string) {
     this.type = getScriptType(content);
     this.head = getScriptHead(content);
@@ -108,7 +111,4 @@ export class Struct {
     return `${this.type}: ${this.options.join(',')}`;
   }
 
-  activators() {
-    return [];
-  }
 }

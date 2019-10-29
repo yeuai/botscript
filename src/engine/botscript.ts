@@ -2,6 +2,7 @@ import { Context } from './context';
 import { Request } from './request';
 import { Struct, TYPES } from './struct';
 import { Logger } from '../lib/logger';
+import { transform } from './pattern';
 
 /**
  * BotScript dialogue engine
@@ -90,7 +91,7 @@ export class BotScript {
    * @param req
    */
   buildResponse(dialog: Struct, trigger: string, req: Request) {
-    const result = dialog.activators().filter(() => true).some(pattern => {
+    const result = this.getActivators(dialog).filter(() => true).some(pattern => {
       this.logger.info('Pattern: ', pattern);
     });
 
@@ -101,5 +102,19 @@ export class BotScript {
     }
 
     return result;
+  }
+
+  /**
+   * Get trigger activators
+   * @param dialog
+   * @param notEqual
+   */
+  getActivators(dialog: Struct, notEqual = false) {
+    if (dialog.type === 'dialogue') {
+      return dialog.head.map(x => transform(x, this.data.definitions, notEqual));
+    } else {
+      // no activator
+      return [];
+    }
   }
 }
