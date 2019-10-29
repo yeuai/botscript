@@ -9,7 +9,11 @@ export class Request {
   public contexts: string[];
   public complete: boolean;
 
-  constructor() {
+  constructor(text?: string) {
     this.contexts = [];
+
+    if (text) {
+      this.text = text.toLowerCase();
+    }
   }
 }

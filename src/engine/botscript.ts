@@ -50,8 +50,10 @@ export class BotScript {
       // remove comments
       .replace(/^#.*$\n/igm, '')
       // separate definition struct (normalize)
-      .replace(/^!/igm, '\n!')
-      // split script structure by linebreaks
+      .replace(/^!/gm, '\n!')
+      // concat multiple lines (normalize)
+      .replace(/\n\^/gm, ' ')
+      // split structure by linebreaks
       .split(/\n{2,}/)
       // remove empty lines
       .filter(script => script)
@@ -74,8 +76,27 @@ export class BotScript {
   handle(req: Request) {
     if (!req.complete) {
       // process purpose bot
-    } else {
-
+      this.data.dialogues.forEach((dialog: any, trigger: string) => this.buildResponse(dialog, trigger, req));
     }
+  }
+
+  /**
+   * Build current context response
+   * @param dialog
+   * @param trigger
+   * @param req
+   */
+  buildResponse(dialog: Struct, trigger: string, req: Request) {
+    const result = dialog.activators().filter(() => true).some(pattern => {
+      console.log('Pattern: ', pattern);
+    });
+
+    if (result) {
+      console.log('Handle request ok!');
+    } else {
+      console.log('Handle request nok!');
+    }
+
+    return result;
   }
 }

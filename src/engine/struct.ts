@@ -20,7 +20,7 @@ function getScriptType(script: string) {
 }
 
 /**
- * Get body declartion
+ * Get body declartion without remove tokens
  * @param script
  */
 function getScriptBody(script: string): string[] {
@@ -34,7 +34,7 @@ function getScriptBody(script: string): string[] {
  */
 function getScriptHead(script: string): string[] {
   const type = script.charAt(0);
-  return script.trim().split('\n').filter(x => x.startsWith(type));
+  return script.trim().split('\n').filter(x => x.startsWith(type)).map(x => x.substring(1).trim());
 }
 
 // export function createStateMachine() {
@@ -63,7 +63,7 @@ export class Struct {
     // extract default name
     this.content = content;
     this.options = [];
-    this.name = (this.head.find(() => true) || '').substring(1).trim();
+    this.name = this.head.find(() => true) || '';
   }
 
   /**
@@ -75,7 +75,7 @@ export class Struct {
 
     // valuable data struct
     switch (struct.type) {
-      case TYPES['!']:
+      case TYPES['!']:  // definition
         // console.log('Test body: ', struct.body);
         if (struct.body.length === 0) {
           const tokens = struct.head[0].split(' ');
@@ -91,13 +91,14 @@ export class Struct {
           }
         }
         break;
+      case TYPES['+']: // dialogue
+        struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
+        break;
       case TYPES['@']:  // command
         struct.value = struct.name;
         break;
       case TYPES['?']:
-        struct.options = struct.content
-          .replace(/^\?.+$\n\s*-/m, '')
-          .split(/^\s*-\s*/m).map(s => s.trim());
+        struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
         break;
 
     }
@@ -106,5 +107,9 @@ export class Struct {
 
   toString() {
     return `${this.type}: ${this.options.join(',')}`;
+  }
+
+  activators() {
+    return [];
   }
 }

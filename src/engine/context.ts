@@ -8,6 +8,7 @@ export class Context {
   dialogflows: Map<string, any>;
   commands: Map<string, any>;
   questions: Map<string, any>;
+   // TODO: remove `variables`, it should attach within msg request
   variables: Map<string, any>;
   patterns: Map<string, any>;
 
