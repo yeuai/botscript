@@ -23,16 +23,18 @@ function getScriptType(script: string) {
  * Get body declartion
  * @param script
  */
-function getScriptBody(script: string) {
-  return script.replace(/^\s*[+~\-@?!`].*\n+/, '');
+function getScriptBody(script: string): string[] {
+  const type = script.charAt(0);
+  return script.trim().split('\n').filter(x => !x.startsWith(type));
 }
 
 /**
  * Get head declartion
  * @param script
  */
-function getScriptHead(script: string): string {
-  return script.trim().split('\n').find(() => true) || '';
+function getScriptHead(script: string): string[] {
+  const type = script.charAt(0);
+  return script.trim().split('\n').filter(x => x.startsWith(type));
 }
 
 // export function createStateMachine() {
@@ -48,18 +50,20 @@ export class Struct {
   type: string;
   content: string;
   name: string;
-  head: string;
-  body: string;
+  head: string[];
+  body: string[];
   value?: any;
   options: string[];
 
   constructor(content: string) {
-    this.content = content;
     this.type = getScriptType(content);
     this.head = getScriptHead(content);
     this.body = getScriptBody(content);
-    this.name = this.head.substring(1).trim();
+
+    // extract default name
+    this.content = content;
     this.options = [];
+    this.name = (this.head.find(() => true) || '').substring(1).trim();
   }
 
   /**
@@ -72,19 +76,17 @@ export class Struct {
     // valuable data struct
     switch (struct.type) {
       case TYPES['!']:
-        if (struct.body.startsWith('!')) {
-          const tokens = struct.body.split(' ');
+        // console.log('Test body: ', struct.body);
+        if (struct.body.length === 0) {
+          const tokens = struct.head[0].split(' ');
           struct.value = tokens.pop() || '';
           struct.name = tokens.pop() || '';
           struct.options = [struct.value];
-          console.log('Test body: ' + struct.body);
         } else {
-          const tokens = struct.body.replace(/^-/, '').split(/^\s*-\s*/m);
-          if (tokens.length > 1) {
-            struct.options = tokens.map(s => s.trim());
+          struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
+          if (struct.options.length > 1) {
             struct.value = struct.options;
           } else {
-            struct.options = struct.content.replace(/^!+\s*/m, '').split(' ').splice(0, 1);
             struct.value = struct.options.find(x => true);
           }
         }

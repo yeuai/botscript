@@ -49,7 +49,7 @@ export class BotScript {
       .replace(/\r\n/g, '\n')
       // remove comments
       .replace(/^#.*$\n/igm, '')
-      // separate definition struct
+      // separate definition struct (normalize)
       .replace(/^!/igm, '\n!')
       // split script structure by linebreaks
       .split(/\n{2,}/)
