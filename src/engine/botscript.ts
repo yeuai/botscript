@@ -28,10 +28,10 @@ export class BotScript {
 
   /**
    * Get struct type
-   * @param t type
+   * @param type type
    */
-  private type(t: string): Map<string, any> {
-    switch (t) {
+  private type(type: string): Map<string, any> {
+    switch (type) {
       case 'variable':
         return this.data.variables;
       case 'dialogue':
@@ -45,7 +45,7 @@ export class BotScript {
       case 'command':
         return this.data.commands;
       default:
-        throw new Error('Not found type: ' + t);
+        throw new Error('Not found type: ' + type);
     }
   }
 
@@ -86,7 +86,10 @@ export class BotScript {
   handle(req: Request) {
     if (!req.complete) {
       // process purpose bot
-      this.data.dialogues.forEach((dialog: any, trigger: string) => this.buildResponse(dialog, trigger, req));
+      this.data.dialogues.forEach((dialog: any, name: string) => {
+        const isMatch = this.buildResponse(req, dialog);
+        this.logger.debug('Test matching: ', name, isMatch);
+      });
     }
 
     return req;
@@ -98,25 +101,19 @@ export class BotScript {
    * @param trigger
    * @param req
    */
-  buildResponse(dialog: Struct, trigger: string, req: Request) {
+  private buildResponse(req: Request, dialog: Struct) {
     const result = this.getActivators(dialog)
-      .filter((x) => RegExp(x.source, x.flags).test(req.text))
+      .filter((x) => RegExp(x.source, x.flags).test(req.input))
       .some(pattern => {
-        this.logger.info('Found: ', dialog.name, pattern);
+        this.logger.info('Found: ', dialog.name, pattern.source);
 
-        const captures = execPattern(req.text, pattern);
+        const captures = execPattern(req.input, pattern);
         Object.keys(captures).forEach(name => {
           req.parameters[name] = captures[name];
         });
         req.parameters.$ = captures.$1;
         req.speechResponse = utils.random(dialog.options);
       });
-
-    if (result) {
-      this.logger.info('Handle request ok!', 123);
-    } else {
-      this.logger.info('Handle request nok!', 123);
-    }
 
     return result;
   }
@@ -126,7 +123,7 @@ export class BotScript {
    * @param dialog
    * @param notEqual
    */
-  getActivators(dialog: Struct, notEqual = false) {
+  private getActivators(dialog: Struct, notEqual = false) {
     if (dialog.type === 'dialogue') {
       return dialog.head.map(x => transform(x, this.data.definitions, notEqual));
     } else {

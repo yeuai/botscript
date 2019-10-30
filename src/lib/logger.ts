@@ -14,7 +14,7 @@ export class Logger {
 
   constructor(prefix?: string) {
     prefix = prefix ? ':' + prefix : '';
-    this._debug = debug(`${APP_NAME}${prefix }`);
+    this._debug = debug(`${APP_NAME}:DEBUG${prefix }`);
     this._info = debug(`${APP_NAME}:INFO${prefix}`);
     this._warn = debug(`${APP_NAME}:WARN${prefix}`);
     this._error = debug(`${APP_NAME}:ERROR${prefix}`);

@@ -5,18 +5,22 @@ export class Request {
 
   public agentId: string;
   public sessionId: string;
-  public text: string;
+  public input: string;
   public speechResponse: string;
   public contexts: string[];
   public complete: boolean;
   public parameters: any;
 
-  constructor(text?: string) {
+  /**
+   * Initialize a new message request
+   * @param input message text input
+   */
+  constructor(input?: string) {
     this.contexts = [];
     this.parameters = {};
 
-    if (text) {
-      this.text = text.toLowerCase();
+    if (input) {
+      this.input = input.toLowerCase();
     }
   }
 }

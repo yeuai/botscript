@@ -1,7 +1,7 @@
 /**
  * Dialogue response
  */
-export class MessageResponse {
+export class Response {
 
   public currentNode: string;
   public complete: boolean;
