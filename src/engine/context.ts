@@ -8,7 +8,7 @@ export class Context {
 
   definitions: Map<string, any>;
   dialogues: Map<string, any>;
-  dialogflows: Map<string, any>;
+  flows: Map<string, any>;
   commands: Map<string, any>;
   questions: Map<string, any>;
    // TODO: remove `variables`, it should attach within msg request
@@ -18,7 +18,7 @@ export class Context {
   constructor() {
     this.definitions = new Map();
     this.dialogues = new Map();
-    this.dialogflows = new Map();
+    this.flows = new Map();
     this.commands = new Map();
     this.questions = new Map();
     this.variables = new Map();

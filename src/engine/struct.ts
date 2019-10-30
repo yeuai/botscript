@@ -6,7 +6,7 @@ export const TYPES: any = ({
   '-': 'response',
   '@': 'command',
   '?': 'question',
-  '~': 'dialogflow',
+  '~': 'flows',
   '#': 'comment',
 });
 

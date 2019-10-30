@@ -10,6 +10,8 @@ export class Request {
   public contexts: string[];
   public complete: boolean;
   public parameters: any;
+  public extractedParameters: any;
+  public missingParameters: [];
 
   /**
    * Initialize a new message request

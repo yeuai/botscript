@@ -40,8 +40,8 @@ export class BotScript {
         return this.data.definitions;
       case 'question':
         return this.data.questions;
-      case 'dialogflows':
-        return this.data.dialogflows;
+      case 'flows':
+        return this.data.flows;
       case 'command':
         return this.data.commands;
       default:
