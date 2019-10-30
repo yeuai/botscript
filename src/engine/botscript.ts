@@ -111,8 +111,9 @@ export class BotScript {
         Object.keys(captures).forEach(name => {
           req.parameters[name] = captures[name];
         });
+        const replyCandidate = utils.random(dialog.options);
         req.parameters.$ = captures.$1;
-        req.speechResponse = utils.random(dialog.options);
+        req.speechResponse = this.data.interpolateDefinition(replyCandidate);
       });
 
     return result;
