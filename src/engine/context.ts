@@ -65,6 +65,8 @@ export class Context {
    * @param req
    */
   interpolate(text: string, req: Request) {
-    throw new Error('Not implement');
+    let output = this.interpolateDefinition(text);
+    output = this.interpolateVariables(output, req);
+    return output;
   }
 }

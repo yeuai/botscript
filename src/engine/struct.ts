@@ -96,8 +96,8 @@ export class Struct {
         }
         break;
       case TYPES['+']: // dialogue
-        struct.flows = struct.body.map(x => x.replace(/^\s*~\s*/, ''));
-        struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
+        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
+        struct.options = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
         break;
       case TYPES['@']:  // command
         struct.value = struct.name;

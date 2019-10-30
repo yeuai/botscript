@@ -12,6 +12,7 @@ export class Request {
   public parameters: any;
   public extractedParameters: any;
   public missingParameters: [];
+  public currentNode: string;
 
   /**
    * Initialize a new message request

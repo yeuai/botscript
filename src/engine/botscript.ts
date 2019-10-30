@@ -107,13 +107,22 @@ export class BotScript {
       .some(pattern => {
         this.logger.info('Found: ', dialog.name, pattern.source);
 
+        if (dialog.flows.length > 0) {
+          // get the first word as contexts
+          req.contexts = dialog.flows.map(x => x.replace(/ .*/, ''));
+          // mark dialogue name as the current node
+          req.currentNode = dialog.name;
+        }
+
         const captures = execPattern(req.input, pattern);
         Object.keys(captures).forEach(name => {
           req.parameters[name] = captures[name];
         });
-        const replyCandidate = utils.random(dialog.options);
+        // add $ as the first matched variable
         req.parameters.$ = captures.$1;
-        req.speechResponse = this.data.interpolateDefinition(replyCandidate);
+
+        const replyCandidate = utils.random(dialog.options);
+        req.speechResponse = this.data.interpolate(replyCandidate, req);
       });
 
     return result;
