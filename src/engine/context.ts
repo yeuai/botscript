@@ -1,19 +1,23 @@
 import { random } from '../lib/utils';
 import { Request } from './request';
+import { Struct } from './struct';
 
 /**
  * Bot context
  */
 export class Context {
 
-  definitions: Map<string, any>;
-  dialogues: Map<string, any>;
-  flows: Map<string, any>;
-  commands: Map<string, any>;
-  questions: Map<string, any>;
-   // TODO: remove `variables`, it should attach within msg request
-  variables: Map<string, any>;
-  patterns: Map<string, any>;
+  definitions: Map<string, Struct>;
+  dialogues: Map<string, Struct>;
+  commands: Map<string, Struct>;
+  // TODO: remove `questions`, it should be a definition form
+  questions: Map<string, Struct>;
+  // TODO: remove `flows`, it should be directives within dialogue
+  flows: Map<string, Struct>;
+  // TODO: remove `variables`, it should attach within msg request
+  variables: Map<string, Struct>;
+  // TODO: remove `patterns`, it should be resolved automatically in dialogue trigger
+  patterns: Map<string, Struct>;
 
   constructor() {
     this.definitions = new Map();
@@ -43,9 +47,9 @@ export class Context {
    */
   interpolateVariables(text: string, req: Request) {
     return text.replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, output) => {
-        const result = req.parameters[variable];
-        const value = result && result[output];
-        return value || '';
+      const result = req.parameters[variable];
+      const value = result && result[output];
+      return value || '';
     }).replace(/[#$]\{?([a-z][\w_-]*)\}?/g, (match, variable) => {
       const value = req.parameters[variable];
       return value || '';

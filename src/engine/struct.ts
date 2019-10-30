@@ -51,8 +51,9 @@ export class Struct {
   name: string;
   head: string[];
   body: string[];
-  value?: any;
+  flows: string[];
   options: string[];
+  value?: any;
 
   /**
    * Init script struct and parse components
@@ -65,8 +66,9 @@ export class Struct {
 
     // extract default name
     this.content = content;
-    this.options = [];
     this.name = this.head.find(() => true) || '';
+    this.flows = [];
+    this.options = [];
   }
 
   /**
@@ -94,12 +96,13 @@ export class Struct {
         }
         break;
       case TYPES['+']: // dialogue
+        struct.flows = struct.body.map(x => x.replace(/^\s*~\s*/, ''));
         struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
         break;
       case TYPES['@']:  // command
         struct.value = struct.name;
         break;
-      case TYPES['?']:
+      case TYPES['?']:  // question
         struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
         break;
 

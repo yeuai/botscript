@@ -5,11 +5,17 @@ import { Struct } from '../struct';
  */
 export class Flows extends Struct {
 
-  constructor(content: string) {
-    super(content);
+  flows: string[];
+
+  constructor(content: string | Struct) {
+    if (typeof content === 'string') {
+      super(content);
+    } else {
+      super(content.content);
+    }
 
     // Get flows options
-    this.options = this.body.filter(x => /^~/.test(x)).map(x => x.replace(/^\s*~\s*/, ''));
+    this.flows = this.body.filter(x => /^~/.test(x)).map(x => x.replace(/^\s*~\s*/, ''));
   }
 
 }
