@@ -5,25 +5,56 @@ export class Request {
 
   public agentId: string;
   public sessionId: string;
-  public input: string;
+  public message: string;
   public speechResponse: string;
-  public flows: string[];
   public complete: boolean;
-  public variables: any;
   public extractedParameters: any;
-  public missingParameters: [];
+
+  /**
+   *
+   */
+  public resolvedFlows: [];
+
+  /**
+   * Human variables extracted in the conversation
+   */
+  public variables: any;
+
+  /**
+   * Dialogue flows in queue
+   */
+  public flows: string[];
+
+  /**
+   * Current flow to be resolved
+   */
   public currentNode: string;
 
   /**
-   * Initialize a new message request
-   * @param input message text input
+   * Prompt human how to answer
    */
-  constructor(input?: string) {
+  public prompt: string[];
+
+  /**
+   * Initialize a new message request
+   * @param message text input
+   */
+  constructor(message?: string) {
     this.flows = [];
     this.variables = {};
 
-    if (input) {
-      this.input = input.toLowerCase();
+    if (message) {
+      this.message = message.toLowerCase();
     }
+  }
+
+  /**
+   * Update new message text
+   * FOR: Testing
+   * @param text
+   */
+  enter(text: string) {
+    this.message = text;
+    return this;
   }
 }

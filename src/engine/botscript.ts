@@ -18,7 +18,7 @@ export class BotScript {
   constructor() {
     this.data = new Context();
     this.logger = new Logger();
-    this.machine = new BotMachine(this.data);
+    this.machine = new BotMachine();
   }
 
   /**
@@ -87,13 +87,16 @@ export class BotScript {
    * @param req
    */
   handle(req: Request) {
+    this.logger.debug('New request: ', req.message);
     if (!req.complete) {
       // process purpose bot
-      this.data.dialogues.forEach((dialog: any, name: string) => {
+      for (const [name, dialog] of this.data.dialogues) {
         const isMatch = this.buildResponse(req, dialog);
         this.logger.debug('Test matching: ', name, isMatch);
-      });
+      }
     }
+
+    this.logger.debug('Reply: ', req.speechResponse, req);
 
     return req;
   }
@@ -106,7 +109,7 @@ export class BotScript {
    */
   private buildResponse(req: Request, dialog: Struct) {
     const result = this.getActivators(dialog)
-      .filter((x) => RegExp(x.source, x.flags).test(req.input))
+      .filter((x) => RegExp(x.source, x.flags).test(req.message))
       .some(pattern => {
         this.logger.info('Found: ', dialog.name, pattern.source);
 
@@ -119,7 +122,7 @@ export class BotScript {
           // TODO: fires machine (FSM) start
         }
 
-        const captures = execPattern(req.input, pattern);
+        const captures = execPattern(req.message, pattern);
         Object.keys(captures).forEach(name => {
           req.variables[name] = captures[name];
         });
@@ -128,6 +131,7 @@ export class BotScript {
 
         const replyCandidate = utils.random(dialog.options);
         req.speechResponse = this.data.interpolate(replyCandidate, req);
+        return true;
       });
 
     return result;
