@@ -76,9 +76,9 @@ A dialogue may contains:
 
 Flows are tasks which need to be resolved. A flow can used to determine a precise flow of conversation 
 
-A flow must start with a `~` line, that defines the the task name, the first word used to determine an entity which found when human answer the question list.
+A flow must start with a `~` line, that defines the the task name.
 
-A flow contains lines started with symbol `-` to guide human answers the quiz and may contains lines `+` help the bot captures the information. If flow does not contains `+`, after responded the flow ends.
+A flow contains lines started with symbol `-` to guide human answers the quiz and may contains lines `+` help the bot captures the information. If the flow does not contains `+`, after responded the flow will ends.
 
 A flow can referenced by an other.
 
@@ -104,7 +104,14 @@ The dialogue jumps to the splash flow then back to continue.
 - Great!
 ```
 
+A flow may contains:
+
+* flows
+* prompt
+
 ## replies
+
+## prompt
 
 ## conditions
 
