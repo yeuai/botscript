@@ -51,20 +51,24 @@ const PATTERN_INTERPOLATIONS = [
  * @param notEqual
  */
 export function transform(pattern: string, definitions: Map<string, Struct>, notEqual: boolean) {
+
+  // is it already a string pattern?
+  if (/^\/.+\/$/m.test(pattern)) {
+    pattern = (pattern.match(/^\/(.+)\/$/m) as RegExpMatchArray)[1];
+    return XRegExp(pattern);
+  }
+
+  // basic pattern
   PATTERN_INTERPOLATIONS.forEach(p => {
     const { search, replaceWith } = p;
-    // is it already a string pattern?
-    if (/^\/.+\/$/m.test(pattern)) {
-      pattern = (pattern.match(/^\/(.+)\/$/m) as RegExpMatchArray)[1];
-      return XRegExp(pattern);
-    } else if (typeof replaceWith === 'string') {
+    if (typeof replaceWith === 'string') {
       pattern = pattern.replace(search, replaceWith);
     } else {
       pattern = pattern.replace(search,
         (substr, name) => ((replacement): string => {
           // Check if the list contains reference to another list
           while (replacement.match(search) !== null) {
-            (replacement.match(search) as RegExpMatchArray ).map(rl => {
+            (replacement.match(search) as RegExpMatchArray).map(rl => {
               const referencingListName = rl.slice(1, rl.length - 1);
               const referencingListPattern = replaceWith(rl, referencingListName, definitions);
               const referencingListReg = new RegExp(`\\[${referencingListName}\\]`, 'g');

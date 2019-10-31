@@ -16,8 +16,8 @@ export class Context {
   flows: Map<string, Struct>;
   // TODO: remove `variables`, it should attach within msg request
   variables: Map<string, Struct>;
-  // TODO: remove `patterns`, it should be resolved automatically in dialogue trigger
-  patterns: Map<string, Struct>;
+  // support custom patterns
+  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => void }>;
 
   constructor() {
     this.definitions = new Map();

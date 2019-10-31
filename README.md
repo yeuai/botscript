@@ -46,7 +46,9 @@ Comments make your code or your script clearer, you can add a comment in BotScri
 
 A dialogue is a piece of conversation that human and bot interact with each other. 
 
-A dialogue must start with a `+` line, that defines a pattern can activate the bot to respond. This line also called with other name **trigger**.
+A dialogue must contains a `+` line, that defines a pattern can activate the bot to respond. This line also called with other name **trigger**.
+
+A dialogue also must contains a `-` line, that defines a pattern response which is output to reply to human.
 
 A dialogue must have at least one reply and one trigger.
 
@@ -62,18 +64,32 @@ Example:
 - Hello, human!
 ```
 
+A dialogue may contains:
+
+* flows
+* conditions
+* variables
+* commands
+* patterns
+
 ## flows
 
 Flows are tasks which need to be resolved. A flow can used to determine a precise flow of conversation 
 
-A flow must start with a `~` line, that defines the the task name, the first word used to determine an entity which found when human answer the question list. A flow can referenced by an other.
+A flow must start with a `~` line, that defines the the task name, the first word used to determine an entity which found when human answer the question list.
 
-Flows are activated within a dialogue.
+A flow contains lines started with symbol `-` to guide human answers the quiz and contains lines `+` help the bot captures the information.
+
+A flow can referenced by an other.
+
+Flows are activated within a dialogue. The bot will respond if all tasks are resolved!
 
 ```bash
 ~ maker
-- Which phone?
+- What cell phone vendor?
 - Which brand of smartphone do you want to buy?
++ I want to buy *{maker}
++ *{maker}
 ```
 
 ## replies
