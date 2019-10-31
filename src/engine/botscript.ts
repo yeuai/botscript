@@ -114,9 +114,8 @@ export class BotScript {
         this.logger.info('Found: ', dialog.name, pattern.source);
 
         if (dialog.flows.length > 0) {
-          // get the first word as contexts
           // TODO: resolves deepest flow (node leaf)
-          req.flows = dialog.flows.map(x => x.replace(/ .*/, ''));
+          req.flows = dialog.flows; // .map(x => x.replace(/ .*/, ''));
           // mark dialogue name as the current node
           req.currentNode = dialog.name;
           // TODO: fires machine (FSM) start
@@ -129,7 +128,7 @@ export class BotScript {
         // add $ as the first matched variable
         req.variables.$ = captures.$1;
 
-        const replyCandidate = utils.random(dialog.options);
+        const replyCandidate = utils.random(dialog.replies);
         req.speechResponse = this.data.interpolate(replyCandidate, req);
         return true;
       });

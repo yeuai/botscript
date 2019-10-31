@@ -11,7 +11,7 @@ export class Request {
   public extractedParameters: any;
 
   /**
-   *
+   * Flows queue are resolved
    */
   public resolvedFlows: [];
 

@@ -62,16 +62,16 @@ export class BotMachine {
         },
       },
     },
-      {
-        actions: {
-          dialogue: (context, event) => {
-            this.logger.info('Enter dialogue state', context, event.type);
-          },
-          flows: (context, event) => {
-            this.logger.info('Enter flows state', context, event.type);
-          },
+    {
+      actions: {
+        dialogue: (context, event) => {
+          this.logger.info('Enter dialogue state', context, event.type);
         },
-      });
+        flows: (context, event) => {
+          this.logger.info('Enter flows state', context, event.type);
+        },
+      },
+    });
   }
 
   /**

@@ -52,6 +52,7 @@ export class Struct {
   head: string[];
   body: string[];
   flows: string[];
+  replies: string[];
   options: string[];
   value?: any;
 
@@ -97,7 +98,11 @@ export class Struct {
         break;
       case TYPES['+']: // dialogue
         struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
-        struct.options = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
+        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
+        break;
+      case TYPES['~']: // flows
+        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
+        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
         break;
       case TYPES['@']:  // command
         struct.value = struct.name;
