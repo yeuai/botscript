@@ -4,6 +4,7 @@ import { Struct, TYPES } from './struct';
 import { transform, execPattern } from './pattern';
 import { Logger } from '../lib/logger';
 import * as utils from '../lib/utils';
+import { BotMachine } from './machine';
 
 /**
  * BotScript dialogue engine
@@ -11,13 +12,13 @@ import * as utils from '../lib/utils';
 export class BotScript {
 
   data: Context;
-  // machine: Machine;
+  machine: BotMachine;
   logger: Logger;
 
   constructor() {
     this.data = new Context();
     this.logger = new Logger();
-    // this.machine = new Machine();
+    this.machine = new BotMachine(this.data);
   }
 
   /**
