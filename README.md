@@ -78,7 +78,7 @@ Flows are tasks which need to be resolved. A flow can used to determine a precis
 
 A flow must start with a `~` line, that defines the the task name, the first word used to determine an entity which found when human answer the question list.
 
-A flow contains lines started with symbol `-` to guide human answers the quiz and contains lines `+` help the bot captures the information.
+A flow contains lines started with symbol `-` to guide human answers the quiz and may contains lines `+` help the bot captures the information. If flow does not contains `+`, after responded the flow ends.
 
 A flow can referenced by an other.
 
@@ -90,6 +90,18 @@ Flows are activated within a dialogue. The bot will respond if all tasks are res
 - Which brand of smartphone do you want to buy?
 + I want to buy *{maker}
 + *{maker}
+```
+
+The dialogue jumps to the splash flow then back to continue.
+
+```bash
+~ random
+- I am happy to hear you!
+- It's fine today.
+
++ hello *
+~ random
+- Great!
 ```
 
 ## replies

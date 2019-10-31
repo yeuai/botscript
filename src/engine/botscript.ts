@@ -11,11 +11,13 @@ import * as utils from '../lib/utils';
 export class BotScript {
 
   data: Context;
+  // machine: Machine;
   logger: Logger;
 
   constructor() {
     this.data = new Context();
     this.logger = new Logger();
+    // this.machine = new Machine();
   }
 
   /**
@@ -109,17 +111,19 @@ export class BotScript {
 
         if (dialog.flows.length > 0) {
           // get the first word as contexts
-          req.contexts = dialog.flows.map(x => x.replace(/ .*/, ''));
+          // TODO: resolves deepest flow (node leaf)
+          req.flows = dialog.flows.map(x => x.replace(/ .*/, ''));
           // mark dialogue name as the current node
           req.currentNode = dialog.name;
+          // TODO: fires machine (FSM) start
         }
 
         const captures = execPattern(req.input, pattern);
         Object.keys(captures).forEach(name => {
-          req.parameters[name] = captures[name];
+          req.variables[name] = captures[name];
         });
         // add $ as the first matched variable
-        req.parameters.$ = captures.$1;
+        req.variables.$ = captures.$1;
 
         const replyCandidate = utils.random(dialog.options);
         req.speechResponse = this.data.interpolate(replyCandidate, req);

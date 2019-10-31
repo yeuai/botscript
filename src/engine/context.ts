@@ -47,14 +47,14 @@ export class Context {
    */
   interpolateVariables(text: string, req: Request) {
     return text.replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, output) => {
-      const result = req.parameters[variable];
+      const result = req.variables[variable];
       const value = result && result[output];
       return value || '';
     }).replace(/[#$]\{?([a-z][\w_-]*)\}?/g, (match, variable) => {
-      const value = req.parameters[variable];
+      const value = req.variables[variable];
       return value || '';
     }).replace(/(\$\d*(?![\w\d]))/g, (match, variable) => {
-      const value = req.parameters[variable];
+      const value = req.variables[variable];
       return value || '';
     });
   }

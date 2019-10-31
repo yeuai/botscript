@@ -7,9 +7,9 @@ export class Request {
   public sessionId: string;
   public input: string;
   public speechResponse: string;
-  public contexts: string[];
+  public flows: string[];
   public complete: boolean;
-  public parameters: any;
+  public variables: any;
   public extractedParameters: any;
   public missingParameters: [];
   public currentNode: string;
@@ -19,8 +19,8 @@ export class Request {
    * @param input message text input
    */
   constructor(input?: string) {
-    this.contexts = [];
-    this.parameters = {};
+    this.flows = [];
+    this.variables = {};
 
     if (input) {
       this.input = input.toLowerCase();
