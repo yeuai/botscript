@@ -11,12 +11,19 @@ import { BotMachine } from './machine';
  */
 export class BotScript {
 
-  data: Context;
+  /**
+   * Bot data context
+   */
+  context: Context;
+
+  /**
+   * Bot state machine
+   */
   machine: BotMachine;
   logger: Logger;
 
   constructor() {
-    this.data = new Context();
+    this.context = new Context();
     this.logger = new Logger();
     this.machine = new BotMachine();
   }
@@ -36,17 +43,17 @@ export class BotScript {
   private type(type: string): Map<string, any> {
     switch (type) {
       case 'variable':
-        return this.data.variables;
+        return this.context.variables;
       case 'dialogue':
-        return this.data.dialogues;
+        return this.context.dialogues;
       case 'definition':
-        return this.data.definitions;
+        return this.context.definitions;
       case 'question':
-        return this.data.questions;
+        return this.context.questions;
       case 'flows':
-        return this.data.flows;
+        return this.context.flows;
       case 'command':
-        return this.data.commands;
+        return this.context.commands;
       default:
         throw new Error('Not found type: ' + type);
     }
@@ -88,14 +95,21 @@ export class BotScript {
    */
   handle(req: Request) {
     this.logger.debug('New request: ', req.message);
-    if (!req.complete) {
+    if (!req.isFlowing) {
       // process purpose bot
-      for (const [name, dialog] of this.data.dialogues) {
+      for (const [name, dialog] of this.context.dialogues) {
         const isMatch = this.buildResponse(req, dialog);
         this.logger.debug('Test matching: ', name, isMatch);
+        if (isMatch) {
+          break;
+        }
       }
+    } else {
+      // TODO: find one candidate in dialogue flows
     }
 
+    // fires state machine to resolve request
+    this.machine.resolve(req, this.context);
     this.logger.debug('Reply: ', req.speechResponse, req);
 
     return req;
@@ -129,7 +143,7 @@ export class BotScript {
         req.variables.$ = captures.$1;
 
         const replyCandidate = utils.random(dialog.replies);
-        req.speechResponse = this.data.interpolate(replyCandidate, req);
+        req.speechResponse = this.context.interpolate(replyCandidate, req);
         return true;
       });
 
@@ -143,7 +157,7 @@ export class BotScript {
    */
   private getActivators(dialog: Struct, notEqual = false) {
     if (dialog.type === 'dialogue') {
-      return dialog.head.map(x => transform(x, this.data.definitions, notEqual));
+      return dialog.head.map(x => transform(x, this.context.definitions, notEqual));
     } else {
       // no activator
       return [];

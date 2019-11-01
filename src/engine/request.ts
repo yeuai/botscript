@@ -1,5 +1,5 @@
 /**
- * Dialogue request
+ * Dialogue request context
  */
 export class Request {
 
@@ -7,8 +7,13 @@ export class Request {
   public sessionId: string;
   public message: string;
   public speechResponse: string;
-  public complete: boolean;
   public extractedParameters: any;
+
+  /**
+   * This flag indicates the dialogue is flowing
+   * Bot must enter the flow and resolve it
+   */
+  public isFlowing: boolean;
 
   /**
    * Flows queue are resolved
@@ -42,6 +47,7 @@ export class Request {
   constructor(message?: string) {
     this.flows = [];
     this.variables = {};
+    this.isFlowing = true;
 
     if (message) {
       this.message = message.toLowerCase();
