@@ -94,8 +94,8 @@ A dialogue may contains more than one trigger. Which helps bot to detect exactly
 A trigger may contains:
 
 * definition optionals
+* command evaluation
 * patterns
-* commands
 * variable
 
 ## replies
