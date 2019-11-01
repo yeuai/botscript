@@ -119,6 +119,24 @@ A flow may contains:
 
 ## variables
 
+What good is a chatbot if it can't even remember your name? BotScript has the capability to captures the information given by human and automatically store its into the request context.
+
+A variable appears in a dialogue in both triggers and replies.
+
+A variable is declared within parentheses: `*{var1}` to capture a string and `#{var2}` to captures a number.
+
+A variable is populated in replies by defining after `$var1` sign or within form `${var2}`. 
+
+Example:
+
+```bash
++ My name is *{name}
+- Nice to meet you $name!
+
++ I am #{age} years old
+- You are $age
+```
+
 ## patterns
 
 # Examples
