@@ -72,6 +72,34 @@ A dialogue may contains:
 * commands
 * patterns
 
+## triggers
+
+A trigger is a pattern help bot knows what human is saying.
+
+A trigger may contains **wildcards**. With wildcards, you can set a placeholder within trigger that the bot can capture.
+
+```bash
++ My name is *{name}
+- Nice to meet you $name!
+```
+
+A dialogue may contains more than one trigger. Which helps bot to detect exactly in more case.
+
+```bash
++ My name is *{name}
++ *{name} is my name
+- Nice to meet you $name!
+```
+
+A trigger may contains:
+
+* definition optionals
+* patterns
+* commands
+* variable
+
+## replies
+
 ## flows
 
 Flows are tasks which need to be resolved. A flow can used to determine a precise flow of conversation 
@@ -108,8 +136,7 @@ A flow may contains:
 
 * flows
 * prompt
-
-## replies
+* replies
 
 ## prompt
 
