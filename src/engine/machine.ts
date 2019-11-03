@@ -10,68 +10,70 @@ export class BotMachine {
 
   constructor() {
     this.logger = new Logger('Machine');
-    this.machine = Machine({
-      id: 'botscript',
-      initial: 'digest',
-      states: {
-        digest: {
-          on: {
-            DIALOG: 'dialogue',
-            FLOW: 'flow',
-            DEFECT: 'nomatch',
+    this.machine = Machine(
+      {
+        id: 'botscript',
+        initial: 'digest',
+        states: {
+          digest: {
+            on: {
+              DIALOG: 'dialogue',
+              FLOW: 'flow',
+              DEFECT: 'nomatch',
+            },
           },
-        },
-        dialogue: {
-          on: {
-            FLOW: 'flow',
-            RESOLVE: 'output',
+          dialogue: {
+            on: {
+              FLOW: 'flow',
+              RESOLVE: 'output',
+            },
           },
-        },
-        flow: {
-          on: {
-            NEXT: 'flow',
-            RESOLVE: 'dialogue',
-            // REPLY: 'output' (cannot go straight to output, must resolve and back to the dialogue)
+          flow: {
+            on: {
+              NEXT: 'flow',
+              RESOLVE: 'dialogue',
+              // REPLY: 'output' (cannot go straight to output, must resolve and back to the dialogue)
+            },
           },
-        },
-        nomatch: {
-          on: {
-            RETRY: 'digest',
-            RESOLVE: 'output',
+          nomatch: {
+            on: {
+              RETRY: 'digest',
+              RESOLVE: 'output',
+            },
           },
-        },
-        output: {
-          on: {
-            POPULATE: 'populate',
-            COMMAND: 'command',
-            REPLY: 'response',
+          output: {
+            on: {
+              POPULATE: 'populate',
+              COMMAND: 'command',
+              REPLY: 'response',
+            },
           },
-        },
-        command: {
-          on: {
-            RESOLVE: 'output',
+          command: {
+            on: {
+              RESOLVE: 'output',
+            },
           },
-        },
-        populate: {
-          on: {
-            RESOLVE: 'output',
+          populate: {
+            on: {
+              RESOLVE: 'output',
+            },
           },
-        },
-        response: {
-          type: 'final',
+          response: {
+            type: 'final',
+          },
         },
       },
-    },
-    {
-      actions: {
-        dialogue: (context, event) => {
-          this.logger.info('Enter dialogue state', context, event.type);
-        },
-        flows: (context, event) => {
-          this.logger.info('Enter flows state', context, event.type);
+      {
+        actions: {
+          dialogue: (context, event) => {
+            this.logger.info('Enter dialogue state', context, event.type);
+          },
+          flows: (context, event) => {
+            this.logger.info('Enter flows state', context, event.type);
+          },
         },
       },
-    });
+    );
   }
 
   /**
@@ -81,7 +83,7 @@ export class BotMachine {
    */
   resolve(req: Request, ctx: Context) {
     const ctxMachine = this.machine.withContext(ctx);
-    ctxMachine.transition(req.currentNode, '');
-    send(req.currentNode);
+    ctxMachine.transition(req.currentFlow, '');
+    send(req.currentFlow);
   }
 }

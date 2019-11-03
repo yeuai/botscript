@@ -33,7 +33,12 @@ export class Request {
   /**
    * Current flow to be resolved
    */
-  public currentNode: string;
+  public currentFlow: string;
+
+  /**
+   * Current talking dialogue
+   */
+  public currentDialogue: string;
 
   /**
    * Prompt human how to answer

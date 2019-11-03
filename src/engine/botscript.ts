@@ -101,11 +101,15 @@ export class BotScript {
         const isMatch = this.buildResponse(req, dialog);
         this.logger.debug('Test matching: ', name, isMatch);
         if (isMatch) {
+          req.currentDialogue = dialog.name;
           break;
         }
       }
     } else {
       // TODO: find one candidate in dialogue flows
+      const dialog = this.context.dialogues.get(req.currentDialogue);
+      // Get next flows
+
     }
 
     // fires state machine to resolve request
@@ -131,7 +135,7 @@ export class BotScript {
           // TODO: resolves deepest flow (node leaf)
           req.flows = dialog.flows; // .map(x => x.replace(/ .*/, ''));
           // mark dialogue name as the current node
-          req.currentNode = dialog.name;
+          req.currentDialogue = dialog.name;
           // TODO: fires machine (FSM) start
         }
 
