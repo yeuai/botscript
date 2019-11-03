@@ -142,6 +142,44 @@ A flow may contains:
 
 ## conditions
 
+A condition begin with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+
+There are three types of condition in botscript dialogues:
+
+* Conditional reply
+* Conditional flow
+* Conditional redirect
+
+A conditional reply let bot replies smarter base on the condition or pick random replies from a list definition. That means before reply bot will check its memory and create reponse if the bot knows.
+
+A conditional flow let bot resolves an additional task if the condition is match.
+
+A conditional redirect let bot breaks current dialogue and flows to turn to other dialogue. This helps bot cancel current task and do a new one if the condition is met.
+
+Example:
+
+```bash
+
+# conditional reply
++ what is my name
+* $name == undefined -> You never told me your name.
+- Your name is $name!
+- Aren\'t you $name?
+
+# conditional flow
++ *advise me
+* $topic == buy phone ~> ask phone
+* $topic == ask warranty ~> warranty guide
+~ ask something
+- You are done! Do you want ask more?
+
+# conditional redirect
++ i want to say *{action}
+* $action == cancel >> task cancel
+* $action == something -> [bot say something]
+- You said $action
+```
+
 ## commands
 
 ## variables
