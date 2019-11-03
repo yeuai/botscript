@@ -141,6 +141,8 @@ export class BotScript {
         });
         // add $ as the first matched variable
         req.variables.$ = captures.$1;
+        // reference to the last input
+        req.variables.$input = req.message;
 
         const replyCandidate = utils.random(dialog.replies);
         req.speechResponse = this.context.interpolate(replyCandidate, req);
