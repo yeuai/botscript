@@ -78,12 +78,12 @@ export class BotMachine {
 
   /**
    * Resolve dialogue flows with current context
-   * @param req
-   * @param ctx
+   * @param req - human context
+   * @param ctx - bot context
    */
   resolve(req: Request, ctx: Context) {
     const ctxMachine = this.machine.withContext(ctx);
     ctxMachine.transition(req.currentFlow, '');
-    send(req.currentFlow);
+    // send(req.currentFlow);
   }
 }
