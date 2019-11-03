@@ -3,5 +3,4 @@
 --delay true
 --retries 1
 --exit
-src/**/*.spec.ts
 test/**/*.spec.ts

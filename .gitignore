@@ -62,5 +62,5 @@ typings/
 
 # Output
 dist
-test*
+test.ts
 *.js
