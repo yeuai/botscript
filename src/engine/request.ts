@@ -1,5 +1,5 @@
 /**
- * Dialogue request context
+ * Dialogue request (human context)
  */
 export class Request {
 

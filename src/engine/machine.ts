@@ -5,8 +5,8 @@ import { Request } from './request';
 
 export class BotMachine {
 
-  machine: StateMachine<Context, any, EventObject>;
-  logger: Logger;
+  private machine: StateMachine<Context, any, EventObject>;
+  private logger: Logger;
 
   constructor() {
     this.logger = new Logger('Machine');
