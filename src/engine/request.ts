@@ -52,7 +52,7 @@ export class Request {
   constructor(message?: string) {
     this.flows = [];
     this.variables = {};
-    this.isFlowing = true;
+    this.isFlowing = false;
 
     if (message) {
       this.message = message.toLowerCase();

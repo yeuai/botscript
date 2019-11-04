@@ -1,4 +1,4 @@
-import { Machine, EventObject, StateMachine, send, assign } from 'xstate';
+import { Machine, EventObject, StateMachine, send, assign, interpret } from 'xstate';
 import { Context } from './context';
 import { Logger } from '../lib/logger';
 import * as utils from '../lib/utils';
@@ -28,15 +28,45 @@ export class BotMachine {
           },
           digest: {
             on: {
-              DIALOG: 'dialogue',
-              FLOW: 'flow',
-              DEFECT: 'nomatch',
+              '': [
+                {
+                  target: 'dialogue',
+                  cond: 'isDialogue',
+                },
+                {
+                  target: 'flow',
+                  cond: 'isFlow',
+                },
+                {
+                  target: 'nomatch',
+                  cond: (ctx, event) => true,
+                },
+              ],
+              // 'DIALOG': 'dialogue',
+              // 'FLOW': 'flow',
+              // 'DEFECT': 'nomatch',
             },
           },
           dialogue: {
             on: {
-              FLOW: 'flow',
-              RESOLVE: 'output',
+              '': [
+                {
+                  target: 'flow',
+                  cond: (context, event) => {
+                    // check remaining flows
+                    return false;
+                  },
+                },
+                {
+                  target: 'output',
+                  cond: (context, event) => {
+                    this.logger.info('Dialogue state resolve and forward to output!');
+                    return true;
+                  },
+                },
+              ],
+              // FLOW: 'flow',
+              // RESOLVE: 'output',
             },
           },
           flow: {
@@ -48,11 +78,19 @@ export class BotMachine {
           },
           nomatch: {
             on: {
-              RETRY: 'digest',
-              RESOLVE: 'output',
+              '': [
+                {
+                  target: 'output',
+                  cond: (context, event) => {
+                    context.req.speechResponse = 'NO REPLY!';
+                    return true;
+                  },
+                },
+              ],
             },
           },
           output: {
+            entry: ['onPopulate'],
             on: {
               POPULATE: 'populate',
               COMMAND: 'command',
@@ -75,32 +113,56 @@ export class BotMachine {
         },
       },
       {
+        guards: {
+          isDialogue: (context, event) => {
+            const req = context.req;
+            const ctx = context.ctx;
+            if (!req.isFlowing) {
+              // process purpose bot
+              this.logger.info('Find dialogue candidate ...');
+              for (const [name, dialog] of ctx.dialogues) {
+                const isMatch = this.explore({ dialog, ctx, req });
+                if (isMatch) {
+                  this.logger.debug('Found a dialogue candidate: ', name, req.variables);
+                  req.currentDialogue = dialog.name;
+                  req.flows = dialog.flows;
+                  // break;
+                  return true;
+                }
+              }
+            }
+            return false;
+          },
+          isFlow: (context, event) => {
+            if (context.req.isFlowing) {
+              this.logger.debug('Request is the dialogue flows: ', context.req.currentFlow);
+            }
+            return context.req.isFlowing;
+          },
+        },
         actions: {
           digest: (context, event) => {
             const req = context.req;
             const ctx = context.ctx;
-            this.logger.debug('Enter action: ', event.type);
-            this.logger.debug('Digest new request: ', req.message);
-            if (!req.isFlowing) {
-              // process purpose bot
-              for (const [name, dialog] of ctx.dialogues) {
-                const isMatch = this.explore({ dialog, ctx, req });
-                this.logger.debug('Test matching: ', name, isMatch);
-                if (isMatch) {
-                  req.currentDialogue = dialog.name;
-                  req.flows = dialog.flows;
-                  break;
-                }
-              }
+            this.logger.debug('Enter digest action: ', event.type, req.message);
+          },
+          onPopulate: (context, event) => {
+            let dialog: Struct;
+            const ctx = context.ctx;
+            const req = context.req;
+            dialog = context.ctx.flows.get(req.currentFlow) as Struct;
+            if (!dialog) {
+              dialog = context.ctx.dialogues.get(context.req.currentDialogue) as Struct;
             }
 
-          },
-          dialogue: (context, event) => {
-            // TODO: find one candidate in dialogue flows
-            const dialog = context.ctx.dialogues.get(context.req.currentDialogue) as Struct;
-            // Get next flows
-
-            this.logger.info('Enter dialogue state', context, event.type, dialog.name);
+            // Generate output!
+            if (dialog) {
+              this.logger.info('Populate speech response: ', req.message);
+              const replyCandidate = utils.random(dialog.replies);
+              req.speechResponse = ctx.interpolate(replyCandidate, req);
+            } else {
+              this.logger.info('No dialogue population!');
+            }
           },
           flows: (context, event) => {
             this.logger.info('Enter flows state', context, event.type);
@@ -116,10 +178,15 @@ export class BotMachine {
    * @param ctx - bot context
    */
   resolve(req: Request, ctx: Context) {
-    this.logger.info('Resolve: ', req.message, req.currentDialogue);
-    const ctxMachine = this.machine.withContext({ ctx, req });
-    ctxMachine.transition('digest', '');
-    // send(req.currentFlow);
+    this.logger.info(`Resolve: ${req.message}, isFlowing: ${req.isFlowing}`);
+    const botMachine = this.machine.withContext({ ctx, req });
+    const botService = interpret(botMachine)
+      .onTransition(state => {
+        this.logger.info('Enter state: ', state.value);
+      })
+      .start();
+    botService.send('DIGEST');
+    this.logger.info('speechResponse: ', req.speechResponse);
   }
 
   /**
@@ -130,7 +197,7 @@ export class BotMachine {
     const result = getActivators(dialog, ctx.definitions)
       .filter((x) => RegExp(x.source, x.flags).test(req.message))
       .some(pattern => {
-        this.logger.info('Found: ', dialog.name, pattern.source);
+        this.logger.debug('Dialogue matches & captures: ', pattern.source);
 
         const captures = execPattern(req.message, pattern);
         Object.keys(captures).forEach(name => {
@@ -140,6 +207,7 @@ export class BotMachine {
         req.variables.$ = captures.$1;
         // reference to the last input
         req.variables.$input = req.message;
+        return true;
       });
     return result;
   }
