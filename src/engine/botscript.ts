@@ -1,7 +1,7 @@
 import { Context } from './context';
 import { Request } from './request';
 import { Struct, TYPES } from './struct';
-import { transform, execPattern } from './pattern';
+import { execPattern, getActivators } from './pattern';
 import { Logger } from '../lib/logger';
 import * as utils from '../lib/utils';
 import { BotMachine } from './machine';
@@ -126,7 +126,7 @@ export class BotScript {
    * @param req
    */
   private buildResponse(req: Request, dialog: Struct) {
-    const result = this.getActivators(dialog)
+    const result = getActivators(dialog, this.context.definitions)
       .filter((x) => RegExp(x.source, x.flags).test(req.message))
       .some(pattern => {
         this.logger.info('Found: ', dialog.name, pattern.source);
@@ -156,17 +156,4 @@ export class BotScript {
     return result;
   }
 
-  /**
-   * Get trigger activators
-   * @param dialog
-   * @param notEqual
-   */
-  private getActivators(dialog: Struct, notEqual = false) {
-    if (dialog.type === 'dialogue') {
-      return dialog.head.map(x => transform(x, this.context.definitions, notEqual));
-    } else {
-      // no activator
-      return [];
-    }
-  }
 }
