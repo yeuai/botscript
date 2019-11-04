@@ -18,7 +18,7 @@ export class Request {
   /**
    * Flows queue are resolved
    */
-  public resolvedFlows: [];
+  public resolvedFlows: string[];
 
   /**
    * Human variables extracted in the conversation
@@ -53,6 +53,7 @@ export class Request {
     this.flows = [];
     this.variables = {};
     this.isFlowing = false;
+    this.resolvedFlows = [];
 
     if (message) {
       this.message = message.toLowerCase();

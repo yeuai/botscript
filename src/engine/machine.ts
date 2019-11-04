@@ -54,6 +54,21 @@ export class BotMachine {
                   target: 'flow',
                   cond: (context, event) => {
                     // check remaining flows
+                    const {req, ctx} = context;
+                    const indexFlow = req.resolvedFlows.indexOf(req.currentFlow);
+                    if (indexFlow >= 0) {
+                      // remove resolved task
+                      req.flows.splice(indexFlow, 1);
+                    }
+
+                    // next flow
+                    const flow = req.flows.find(() => true);
+
+                    if (typeof flow === 'undefined') {
+                      //
+                    } else {
+                      return true;
+                    }
                     return false;
                   },
                 },
@@ -115,8 +130,7 @@ export class BotMachine {
       {
         guards: {
           isDialogue: (context, event) => {
-            const req = context.req;
-            const ctx = context.ctx;
+            const {req, ctx} = context;
             if (!req.isFlowing) {
               // process purpose bot
               this.logger.info('Find dialogue candidate ...');
@@ -142,14 +156,12 @@ export class BotMachine {
         },
         actions: {
           digest: (context, event) => {
-            const req = context.req;
-            const ctx = context.ctx;
+            const {req, ctx} = context;
             this.logger.debug('Enter digest action: ', event.type, req.message);
           },
           onPopulate: (context, event) => {
             let dialog: Struct;
-            const ctx = context.ctx;
-            const req = context.req;
+            const {req, ctx} = context;
             dialog = context.ctx.flows.get(req.currentFlow) as Struct;
             if (!dialog) {
               dialog = context.ctx.dialogues.get(context.req.currentDialogue) as Struct;
