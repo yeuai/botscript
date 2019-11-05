@@ -190,7 +190,7 @@ A conditional prompt allows bot sending to human additional prompt list. This he
 * $input == i dont know => [show the list]
 ```
 
-A conditional command let bot execute an http POST request to an api endpoint with `req` data context. Once the endpoint returns json data with field `.data` then it will be populated before generate speech response.
+A conditional command let bot execute an http POST request to an api endpoint with `req` data context. Once the endpoint returns json data then it will be populated before generate speech response.
 
 ```bash
 * $input == play music @> play favorite music
@@ -221,7 +221,32 @@ Example:
 - You said $action
 ```
 
-## commands 
+## commands
+
+An action command allow you to do more powerful things with bot's responses.
+
+A command must starting with the sign `@`. Followed by the command name and its API endpoint.
+
+A command can be consumed within a dialogue conditions that means the command only executes if the condition satisfied.
+
+The command will be sent with `req` data context. Once the endpoint returns json data then it will be populated before generate speech response.
+
+Syntax:
+
+```bash
+@ COMMAND_NAME [POST|GET] API_ENDPOINT
+```
+
+For example, you can allow the user to ask the bot questions about the current weather or about movie ticket prices, and your bot can send an http request that goes out to the internet to fetch that information.
+
+```bash
+@ geoip https://api.ipify.org/?format=json
+# output result: {"ip":"10.10.10.100"}
+
++ what is my ip
+* true @> geoip
+- Here is your ip: $ip.
+```
 
 ## variables
 
