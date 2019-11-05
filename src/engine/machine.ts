@@ -22,7 +22,7 @@ export class BotMachine {
             on: {
               DIGEST: {
                 target: 'digest',
-                actions: ['digest'],
+                // actions: ['digest'],
               },
             },
           },
@@ -51,31 +51,26 @@ export class BotMachine {
             on: {
               '': [
                 {
-                  target: 'flow',
+                  target: 'output',
                   cond: (context, event) => {
-                    // check remaining flows
                     const {req, ctx} = context;
-                    const indexFlow = req.resolvedFlows.indexOf(req.currentFlow);
-                    if (indexFlow >= 0) {
-                      // remove resolved task
-                      req.flows.splice(indexFlow, 1);
-                    }
-
-                    // next flow
-                    const flow = req.flows.find(() => true);
-
-                    if (typeof flow === 'undefined') {
-                      //
-                    } else {
+                    // TODO: check conditional reply, flow or forward
+                    if (req.missingFlows.length === 0) {
+                      req.isFlowing = false;
+                      this.logger.debug('Dialogue state is resolved then now forward to output!');
                       return true;
+                    } else {
+                      this.logger.debug('Dialogue flows remaining: ', req.missingFlows.length);
+                      return false;
                     }
-                    return false;
                   },
                 },
                 {
-                  target: 'output',
+                  target: 'flow',
                   cond: (context, event) => {
-                    this.logger.info('Dialogue state resolve and forward to output!');
+                    const {req, ctx} = context;
+                    req.isFlowing = true; // init status
+
                     return true;
                   },
                 },
@@ -86,8 +81,61 @@ export class BotMachine {
           },
           flow: {
             on: {
-              NEXT: 'flow',
-              RESOLVE: 'dialogue',
+              '': [
+                {
+                  target: 'output',
+                  cond: (context, event) => {
+                    // popolate flows from currentFlow and assign to request
+                    const {req, ctx} = context;
+
+                    if (req.currentFlowIsResolved) {
+                      // remove current flow
+                      this.logger.debug('Remove current flow: ', req.currentFlow);
+                      req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
+                      req.currentFlow = req.missingFlows.find(() => true) as string;
+                      this.logger.debug('Next flow: ', req.currentFlow);
+                    } else if (!req.currentFlow) {
+                      req.currentFlow = req.missingFlows.find(() => true) as string;
+                      this.logger.debug('Next flow: ', req.currentFlow);
+                    } else {
+                      this.logger.info('Prompt or send reply again!');
+                    }
+
+                    const currentDialogue = ctx.dialogues.get(req.currentDialogue) as Struct;
+                    const currentFlow = ctx.flows.get(req.currentFlow) as Struct;
+                    const setFlows = new Set(req.flows);
+
+                    this.logger.info('Check & Update nested flows!');
+                    // update nested flows
+                    currentFlow.flows.forEach(x => setFlows.add(x));
+                    req.flows = Array.from(setFlows);
+
+                    this.logger.info(`Dialogue is flowing: ${req.isFlowing}, current: ${req.currentFlow || '[not start]'}`);
+                    // if dialogue struct (flow) is node leaf.
+
+                    if (currentDialogue.flows.length > 0) {
+                      // get next flow
+                    }
+                    // check remaining flows
+                    const indexFlow = req.resolvedFlows.indexOf(req.currentFlow);
+                    if (indexFlow >= 0) {
+                      // remove resolved task
+                      req.flows.splice(indexFlow, 1);
+                    }
+
+                    // check flows ended
+                    if (req.missingFlows.length === 0) {
+                      req.isFlowing = false;
+                    } else {
+                      // get next flows ???
+                    }
+
+                    return true;
+                  },
+                },
+              ],
+              // 'NEXT': 'flow',
+              // 'RESOLVE': 'dialogue',
               // REPLY: 'output' (cannot go straight to output, must resolve and back to the dialogue)
             },
           },
@@ -139,32 +187,50 @@ export class BotMachine {
                 if (isMatch) {
                   this.logger.debug('Found a dialogue candidate: ', name, req.variables);
                   req.currentDialogue = dialog.name;
+                  req.originalDialogue = dialog.name;
                   req.flows = dialog.flows;
+                  req.missingFlows = dialog.flows;
                   // break;
                   return true;
                 }
               }
+              this.logger.info('Not found dialogue candidate!');
             }
             return false;
           },
           isFlow: (context, event) => {
             if (context.req.isFlowing) {
-              this.logger.debug('Request is the dialogue flows: ', context.req.currentFlow);
+              const {req, ctx} = context;
+              const flow = ctx.flows.get(req.currentFlow) as Struct;
+
+              this.logger.debug('Dialogue request is in the flow: ', context.req.currentFlow);
+              // Explore and capture variables
+              this.explore({ dialog: flow, ctx, req });
             }
             return context.req.isFlowing;
           },
         },
         actions: {
-          digest: (context, event) => {
+          onDigest: (context, event) => {
             const {req, ctx} = context;
             this.logger.debug('Enter digest action: ', event.type, req.message);
           },
           onPopulate: (context, event) => {
             let dialog: Struct;
             const {req, ctx} = context;
-            dialog = context.ctx.flows.get(req.currentFlow) as Struct;
-            if (!dialog) {
-              dialog = context.ctx.dialogues.get(context.req.currentDialogue) as Struct;
+            // dialog = context.ctx.flows.get(req.currentFlow) as Struct;
+            // if (!dialog) {
+            //   dialog = context.ctx.dialogues.get(context.req.currentDialogue) as Struct;
+            // }
+
+            if (!req.isFlowing) {
+              dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+            } else {
+              dialog = ctx.flows.get(req.currentFlow) as Struct;
+            }
+
+            if (req.currentFlowIsResolved) {
+              // get next flow response
             }
 
             // Generate output!
@@ -176,7 +242,7 @@ export class BotMachine {
               this.logger.info('No dialogue population!');
             }
           },
-          flows: (context, event) => {
+          onFlow: (context, event) => {
             this.logger.info('Enter flows state', context, event.type);
           },
         },
@@ -209,12 +275,14 @@ export class BotMachine {
     const result = getActivators(dialog, ctx.definitions)
       .filter((x) => RegExp(x.source, x.flags).test(req.message))
       .some(pattern => {
-        this.logger.debug('Dialogue matches & captures: ', pattern.source);
+        this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
 
         const captures = execPattern(req.message, pattern);
         Object.keys(captures).forEach(name => {
           req.variables[name] = captures[name];
         });
+        req.currentDialogue = dialog.name;
+        req.currentFlowIsResolved = true;
         // add $ as the first matched variable
         req.variables.$ = captures.$1;
         // reference to the last input

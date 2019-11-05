@@ -16,9 +16,19 @@ export class Request {
   public isFlowing: boolean;
 
   /**
+   * Dialogue flows in queue
+   */
+  public flows: string[];
+
+  /**
    * Flows queue are resolved
    */
   public resolvedFlows: string[];
+
+  /**
+   * Flows are missing
+   */
+  public missingFlows: string[];
 
   /**
    * Human variables extracted in the conversation
@@ -26,19 +36,24 @@ export class Request {
   public variables: any;
 
   /**
-   * Dialogue flows in queue
-   */
-  public flows: string[];
-
-  /**
    * Current flow to be resolved
    */
   public currentFlow: string;
 
   /**
+   * Current flow resolved state
+   */
+  public currentFlowIsResolved: boolean;
+
+  /**
    * Current talking dialogue
    */
   public currentDialogue: string;
+
+  /**
+   * Original talking dialogue
+   */
+  public originalDialogue: string;
 
   /**
    * Prompt human how to answer
@@ -54,6 +69,7 @@ export class Request {
     this.variables = {};
     this.isFlowing = false;
     this.resolvedFlows = [];
+    this.missingFlows = [];
 
     if (message) {
       this.message = message.toLowerCase();
