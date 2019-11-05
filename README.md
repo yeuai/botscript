@@ -94,11 +94,25 @@ A dialogue may contains more than one trigger. Which helps bot to detect exactly
 A trigger may contains:
 
 * definition optionals
-* command evaluation
+* ~~command evaluation~~
 * patterns
 * variable
 
 ## replies
+
+A reply begin with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply is selected.
+
+```bash
++ hello
+- Hello. What is your name?
+- Hi. Could you tell me your name?
+- [yes]. What's your name?
+```
+
+A reply may contains:
+
+* replies definition reference
+* variables
 
 ## flows
 
