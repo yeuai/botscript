@@ -137,7 +137,7 @@ export class BotMachine {
             },
           },
           output: {
-            entry: ['onPopulate', 'onCommand'],
+            entry: ['onPopulate', 'onCommand', 'onRedirect', 'onPrompt'],
             type: 'final',
           },
         },
@@ -209,7 +209,16 @@ export class BotMachine {
             }
           },
           onCommand: (context, event) => {
-            this.logger.info('Execute command', event.type, context.req.speechResponse);
+            this.logger.info('Evaluate conditional command', event.type, context.req.speechResponse);
+            // check command conditions
+          },
+          onRedirect: (context, event) => {
+            this.logger.info('Evaluate conditional redirect', event.type, context.req.speechResponse);
+            // if a condition satisfy then redirect dialogue
+          },
+          onPrompt: (context, event) => {
+            this.logger.info('Evaluate conditional prompt', event.type, context.req.speechResponse);
+            // send extra definition prompt list
           },
         },
       },
