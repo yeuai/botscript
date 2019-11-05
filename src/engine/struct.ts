@@ -88,6 +88,7 @@ export class Struct {
     switch (struct.type) {
       case TYPES['!']:  // definition
         if (struct.body.length === 0) {
+          // tslint:disable-next-line: no-shadowed-variable
           const tokens = struct.head[0].split(' ');
           struct.value = tokens.pop() || '';
           struct.name = tokens.pop() || '';
@@ -113,8 +114,18 @@ export class Struct {
         struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
         struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\s*\*\s*/, ''));
         break;
-      case TYPES['@']:  // command
-        struct.value = struct.name;
+      case TYPES['@']:  // command: SERVICE_NAME [GET|POST] ENDPOINT
+        const tokens = struct.head[0].split(' ');
+        if (tokens.length === 2) {
+          struct.name = tokens[0];
+          struct.options = ['GET', tokens[1]];
+        } else if (tokens.length === 3) {
+          const action = tokens[1] === 'POST' ? 'POST' : 'GET';
+          struct.name = tokens[0];
+          struct.options = [action, tokens[2]];
+        } else {
+          throw new Error('invalid command');
+        }
         break;
       case TYPES['?']:  // question
         struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
