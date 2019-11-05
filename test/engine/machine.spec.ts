@@ -13,6 +13,7 @@ describe('Machine', () => {
 + #{age}
 
 + my name is *{name}
++ *{name} is my name
 ~ age
 - Hello $name, you are $age!
 
@@ -20,6 +21,7 @@ describe('Machine', () => {
 - Hello human!
   `);
   const machine = new BotMachine();
+  const reqContext = new Request();
 
   describe('basic reply', () => {
     it('respond a message to human', async () => {
@@ -32,14 +34,15 @@ describe('Machine', () => {
 
   describe('resolve a basic dialogue flows', () => {
     it('bot should ask human age', async () => {
-      const req = new Request('My name is Vu');
+      const req = reqContext.enter('My name is Vu');
       machine.resolve(req, bot.context);
       const reply = req.speechResponse;
+      assert.isTrue(req.isFlowing, 'enter dialogue flows!');
       assert.match(reply, /how old are you/i, 'bot ask human\'s age');
     });
 
     it('bot respond a greet with human name and age', async () => {
-      const req = new Request('20');
+      const req = reqContext.enter('20');
       machine.resolve(req, bot.context);
       const reply = req.speechResponse;
       assert.match(reply, /hello/i, 'bot send a greeting');

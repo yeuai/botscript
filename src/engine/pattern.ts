@@ -106,7 +106,7 @@ export function execPattern(input: string, pattern: RegExp | any) {
  */
 export function getActivators(dialog: Struct, definitions: Map<string, Struct>, notEqual = false) {
   if (dialog.type === 'dialogue') {
-    return dialog.head.map(x => transform(x, definitions, notEqual));
+    return dialog.triggers.map(x => transform(x, definitions, notEqual));
   } else {
     // no activator
     return [];

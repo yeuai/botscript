@@ -93,9 +93,11 @@ export class BotMachine {
                       this.logger.debug('Remove current flow: ', req.currentFlow);
                       req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
                       req.currentFlow = req.missingFlows.find(() => true) as string;
+                      req.currentFlowIsResolved = false;
                       this.logger.debug('Next flow: ', req.currentFlow);
                     } else if (!req.currentFlow) {
                       req.currentFlow = req.missingFlows.find(() => true) as string;
+                      req.currentFlowIsResolved = false;
                       this.logger.debug('Next flow: ', req.currentFlow);
                     } else {
                       this.logger.info('Prompt or send reply again!');
@@ -113,22 +115,22 @@ export class BotMachine {
                     this.logger.info(`Dialogue is flowing: ${req.isFlowing}, current: ${req.currentFlow || '[not start]'}`);
                     // if dialogue struct (flow) is node leaf.
 
-                    if (currentDialogue.flows.length > 0) {
-                      // get next flow
-                    }
-                    // check remaining flows
-                    const indexFlow = req.resolvedFlows.indexOf(req.currentFlow);
-                    if (indexFlow >= 0) {
-                      // remove resolved task
-                      req.flows.splice(indexFlow, 1);
-                    }
+                    // if (currentDialogue.flows.length > 0) {
+                    //   // get next flow
+                    // }
+                    // // check remaining flows
+                    // const indexFlow = req.resolvedFlows.indexOf(req.currentFlow);
+                    // if (indexFlow >= 0) {
+                    //   // remove resolved task
+                    //   req.flows.splice(indexFlow, 1);
+                    // }
 
-                    // check flows ended
-                    if (req.missingFlows.length === 0) {
-                      req.isFlowing = false;
-                    } else {
-                      // get next flows ???
-                    }
+                    // // check flows ended
+                    // if (req.missingFlows.length === 0) {
+                    //   req.isFlowing = false;
+                    // } else {
+                    //   // get next flows ???
+                    // }
 
                     return true;
                   },
@@ -218,19 +220,13 @@ export class BotMachine {
           onPopulate: (context, event) => {
             let dialog: Struct;
             const {req, ctx} = context;
-            // dialog = context.ctx.flows.get(req.currentFlow) as Struct;
-            // if (!dialog) {
-            //   dialog = context.ctx.dialogues.get(context.req.currentDialogue) as Struct;
-            // }
+
+            this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}`);
 
             if (!req.isFlowing) {
               dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
             } else {
               dialog = ctx.flows.get(req.currentFlow) as Struct;
-            }
-
-            if (req.currentFlowIsResolved) {
-              // get next flow response
             }
 
             // Generate output!

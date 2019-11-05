@@ -53,6 +53,7 @@ export class Struct {
   body: string[];
   flows: string[];
   replies: string[];
+  triggers: string[];
   options: string[];
   value?: any;
 
@@ -99,10 +100,12 @@ export class Struct {
       case TYPES['+']: // dialogue
         struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
         struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
+        struct.triggers = struct.head;
         break;
       case TYPES['~']: // flows
         struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
         struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
+        struct.triggers = struct.body.filter(x => x.startsWith('+')).map(x => x.replace(/^\s*\+\s*/, ''));
         break;
       case TYPES['@']:  // command
         struct.value = struct.name;
