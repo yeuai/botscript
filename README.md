@@ -149,12 +149,38 @@ There are three types of condition in botscript dialogues:
 * Conditional reply
 * Conditional flow
 * Conditional redirect
+* Conditional command
+* Conditional prompt
 
 A conditional reply let bot replies smarter base on the condition or pick random replies from a list definition. That means before reply bot will check its memory and create reponse if the bot knows.
 
+```bash
+* $name == undefined -> You never told me your name
+```
+
 A conditional flow let bot resolves an additional task if the condition is match.
 
+```bash
+* $topic == buy phone ~> ask phone
+```
+
 A conditional redirect let bot breaks current dialogue and flows to turn to other dialogue. This helps bot cancel current task and do a new one if the condition is met.
+
+```bash
+* $action == cancel >> task cancel
+```
+
+A conditional command let bot execute an http POST request to api endpoint with `req` data context.
+
+```bash
+* $input == play music @> play favorite music
+```
+
+A conditional prompt allows bot sending to human additional prompt list. This helps human knows how to reply to the bot after that.
+
+```bash
+* $input == i dont know ?> [show the list]
+```
 
 Example:
 
