@@ -184,16 +184,17 @@ A conditional redirect let bot breaks current dialogue and flows to turn to othe
 * $action == cancel >> task cancel
 ```
 
-A conditional command let bot execute an http POST request to api endpoint with `req` data context.
-
-```bash
-* $input == play music @> play favorite music
-```
-
 A conditional prompt allows bot sending to human additional prompt list. This helps human knows how to reply to the bot after that.
 
 ```bash
-* $input == i dont know ?> [show the list]
+* $input == i dont know => [show the list]
+```
+
+A conditional command let bot execute an http POST request to an api endpoint with `req` data context. Once the endpoint returns json data with field `.data` then it will be populated before generate speech response.
+
+```bash
+* $input == play music @> play favorite music
+* $input == confirm order @> send the order
 ```
 
 Example:
@@ -220,7 +221,7 @@ Example:
 - You said $action
 ```
 
-## commands
+## commands 
 
 ## variables
 
