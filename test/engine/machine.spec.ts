@@ -1,8 +1,6 @@
 import { BotMachine, BotScript, Request } from '../../src/engine';
 import { expect, assert } from 'chai';
 
-const INPUT_TEXT = 'I would like to buy 10 tickets';
-
 describe('Machine', () => {
 
   const bot = new BotScript();

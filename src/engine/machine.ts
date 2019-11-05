@@ -53,7 +53,7 @@ export class BotMachine {
                 {
                   target: 'output',
                   cond: (context, event) => {
-                    const {req, ctx} = context;
+                    const { req, ctx } = context;
                     // TODO: check conditional reply, flow or forward
                     if (req.missingFlows.length === 0) {
                       req.isFlowing = false;
@@ -68,7 +68,7 @@ export class BotMachine {
                 {
                   target: 'flow',
                   cond: (context, event) => {
-                    const {req, ctx} = context;
+                    const { req, ctx } = context;
                     req.isFlowing = true; // init status
 
                     return true;
@@ -86,7 +86,7 @@ export class BotMachine {
                   target: 'output',
                   cond: (context, event) => {
                     // popolate flows from currentFlow and assign to request
-                    const {req, ctx} = context;
+                    const { req, ctx } = context;
 
                     if (req.currentFlowIsResolved) {
                       // remove current flow
@@ -137,24 +137,7 @@ export class BotMachine {
             },
           },
           output: {
-            entry: ['onPopulate'],
-            on: {
-              POPULATE: 'populate',
-              COMMAND: 'command',
-              REPLY: 'response',
-            },
-          },
-          command: {
-            on: {
-              RESOLVE: 'output',
-            },
-          },
-          populate: {
-            on: {
-              RESOLVE: 'output',
-            },
-          },
-          response: {
+            entry: ['onPopulate', 'onCommand'],
             type: 'final',
           },
         },
@@ -162,7 +145,7 @@ export class BotMachine {
       {
         guards: {
           isDialogue: (context, event) => {
-            const {req, ctx} = context;
+            const { req, ctx } = context;
             if (!req.isFlowing) {
               // process purpose bot
               this.logger.info('Find dialogue candidate ...');
@@ -184,7 +167,7 @@ export class BotMachine {
           },
           isFlow: (context, event) => {
             if (context.req.isFlowing) {
-              const {req, ctx} = context;
+              const { req, ctx } = context;
               const flow = ctx.flows.get(req.currentFlow) as Struct;
 
               this.logger.debug('Dialogue request is in the flow: ', context.req.currentFlow);
@@ -201,12 +184,12 @@ export class BotMachine {
         },
         actions: {
           onDigest: (context, event) => {
-            const {req, ctx} = context;
+            const { req, ctx } = context;
             this.logger.debug('Enter digest action: ', event.type, req.message);
           },
           onPopulate: (context, event) => {
             let dialog: Struct;
-            const {req, ctx} = context;
+            const { req, ctx } = context;
 
             this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}`);
 
@@ -225,8 +208,8 @@ export class BotMachine {
               this.logger.info('No dialogue population!');
             }
           },
-          onFlow: (context, event) => {
-            this.logger.info('Enter flows state', context, event.type);
+          onCommand: (context, event) => {
+            this.logger.info('Execute command', event.type, context.req.speechResponse);
           },
         },
       },
@@ -248,11 +231,12 @@ export class BotMachine {
       .start();
     botService.send('DIGEST');
     this.logger.info('speechResponse: ', req.speechResponse);
+    return req;
   }
 
   /**
    * Explore dialogue triggers
-   * @param param0
+   * @param context, ctx, req
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
     const result = getActivators(dialog, ctx.definitions)
@@ -275,40 +259,4 @@ export class BotMachine {
     return result;
   }
 
-  /**
-   * Build current context response
-   * @param dialog
-   * @param trigger
-   * @param req
-   */
-  private buildResponse(req: Request, dialog: Struct, ctx: Context) {
-    const result = getActivators(dialog, ctx.definitions)
-      .filter((x) => RegExp(x.source, x.flags).test(req.message))
-      .some(pattern => {
-        this.logger.info('Found: ', dialog.name, pattern.source);
-
-        if (dialog.flows.length > 0) {
-          // TODO: resolves deepest flow (node leaf)
-          req.flows = dialog.flows; // .map(x => x.replace(/ .*/, ''));
-          // mark dialogue name as the current node
-          req.currentDialogue = dialog.name;
-          // TODO: fires machine (FSM) start
-        }
-
-        const captures = execPattern(req.message, pattern);
-        Object.keys(captures).forEach(name => {
-          req.variables[name] = captures[name];
-        });
-        // add $ as the first matched variable
-        req.variables.$ = captures.$1;
-        // reference to the last input
-        req.variables.$input = req.message;
-
-        const replyCandidate = utils.random(dialog.replies);
-        req.speechResponse = ctx.interpolate(replyCandidate, req);
-        return true;
-      });
-
-    return result;
-  }
 }
