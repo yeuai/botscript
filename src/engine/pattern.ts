@@ -101,14 +101,9 @@ export function execPattern(input: string, pattern: RegExp | any) {
 
 /**
  * Get trigger activators
- * @param dialog
+ * @param dialog random or dialogue flow
  * @param notEqual
  */
 export function getActivators(dialog: Struct, definitions: Map<string, Struct>, notEqual = false) {
-  if (dialog.type === 'dialogue') {
-    return dialog.triggers.map(x => transform(x, definitions, notEqual));
-  } else {
-    // no activator
-    return [];
-  }
+  return dialog.triggers.map(x => transform(x, definitions, notEqual));
 }
