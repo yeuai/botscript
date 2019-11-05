@@ -41,10 +41,19 @@ describe('Machine', () => {
       assert.match(reply, /how old are you/i, 'bot ask human\'s age');
     });
 
+    it('bot should prompt again', async () => {
+      const req = reqContext.enter('something');
+      machine.resolve(req, bot.context);
+      const reply = req.speechResponse;
+      assert.isTrue(req.isFlowing, 'still in dialogue flows!');
+      assert.match(reply, /how old are you/i, 'prompt one again');
+    });
+
     it('bot respond a greet with human name and age', async () => {
       const req = reqContext.enter('20');
       machine.resolve(req, bot.context);
       const reply = req.speechResponse;
+      assert.isFalse(req.isFlowing, 'exit dialogue flows!');
       assert.match(reply, /hello/i, 'bot send a greeting');
       assert.equal(req.variables.name, 'Vu', 'human name');
       assert.equal(req.variables.age, '20', 'human age');
