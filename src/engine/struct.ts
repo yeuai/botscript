@@ -54,6 +54,7 @@ export class Struct {
   flows: string[];
   replies: string[];
   triggers: string[];
+  conditions: string[];
   options: string[];
   value?: any;
 
@@ -70,6 +71,9 @@ export class Struct {
     this.content = content;
     this.name = this.head.find(() => true) || '';
     this.flows = [];
+    this.replies = [];
+    this.triggers = [];
+    this.conditions = [];
     this.options = [];
   }
 
@@ -98,14 +102,16 @@ export class Struct {
         }
         break;
       case TYPES['+']: // dialogue
-        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
-        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
         struct.triggers = struct.head;
+        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
+        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
+        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\s*\*\s*/, ''));
         break;
       case TYPES['~']: // flows
-        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
-        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
         struct.triggers = struct.body.filter(x => x.startsWith('+')).map(x => x.replace(/^\s*\+\s*/, ''));
+        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
+        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
+        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\s*\*\s*/, ''));
         break;
       case TYPES['@']:  // command
         struct.value = struct.name;
