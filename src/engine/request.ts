@@ -1,29 +1,88 @@
 /**
- * Dialogue request
+ * Dialogue request (human context)
  */
 export class Request {
 
   public agentId: string;
   public sessionId: string;
-  public input: string;
+  public message: string;
   public speechResponse: string;
-  public flows: string[];
-  public complete: boolean;
-  public variables: any;
   public extractedParameters: any;
-  public missingParameters: [];
-  public currentNode: string;
+
+  /**
+   * This flag indicates the dialogue is flowing
+   * Bot must enter the flow and resolve it
+   */
+  public isFlowing: boolean;
+
+  /**
+   * Dialogue flows in queue
+   */
+  public flows: string[];
+
+  /**
+   * Flows queue are resolved
+   */
+  public resolvedFlows: string[];
+
+  /**
+   * Flows are missing
+   */
+  public missingFlows: string[];
+
+  /**
+   * Human variables extracted in the conversation
+   */
+  public variables: any;
+
+  /**
+   * Current flow to be resolved
+   */
+  public currentFlow: string;
+
+  /**
+   * Current flow resolved state
+   */
+  public currentFlowIsResolved: boolean;
+
+  /**
+   * Current talking dialogue
+   */
+  public currentDialogue: string;
+
+  /**
+   * Original talking dialogue
+   */
+  public originalDialogue: string;
+
+  /**
+   * Prompt human how to answer
+   */
+  public prompt: string[];
 
   /**
    * Initialize a new message request
-   * @param input message text input
+   * @param message text input
    */
-  constructor(input?: string) {
+  constructor(message?: string) {
     this.flows = [];
     this.variables = {};
+    this.isFlowing = false;
+    this.resolvedFlows = [];
+    this.missingFlows = [];
 
-    if (input) {
-      this.input = input.toLowerCase();
+    if (message) {
+      this.message = message.toLowerCase();
     }
+  }
+
+  /**
+   * Update new message text
+   * FOR: Testing
+   * @param text
+   */
+  enter(text: string) {
+    this.message = text;
+    return this;
   }
 }

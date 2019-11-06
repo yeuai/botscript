@@ -1,9 +1,7 @@
 import { Context } from './context';
 import { Request } from './request';
-import { Struct, TYPES } from './struct';
-import { transform, execPattern } from './pattern';
+import { Struct } from './struct';
 import { Logger } from '../lib/logger';
-import * as utils from '../lib/utils';
 import { BotMachine } from './machine';
 
 /**
@@ -11,22 +9,25 @@ import { BotMachine } from './machine';
  */
 export class BotScript {
 
-  data: Context;
+  /**
+   * Bot data context
+   */
+  context: Context;
+
+  /**
+   * Bot state machine
+   */
   machine: BotMachine;
+
+  /**
+   * Bot logger
+   */
   logger: Logger;
 
   constructor() {
-    this.data = new Context();
+    this.context = new Context();
     this.logger = new Logger();
-    this.machine = new BotMachine(this.data);
-  }
-
-  /**
-   * Return ready bot engine
-   * TODO: Remove
-   */
-  then(/** */) {
-    return this;
+    this.machine = new BotMachine();
   }
 
   /**
@@ -36,17 +37,17 @@ export class BotScript {
   private type(type: string): Map<string, any> {
     switch (type) {
       case 'variable':
-        return this.data.variables;
+        return this.context.variables;
       case 'dialogue':
-        return this.data.dialogues;
+        return this.context.dialogues;
       case 'definition':
-        return this.data.definitions;
+        return this.context.definitions;
       case 'question':
-        return this.data.questions;
+        return this.context.questions;
       case 'flows':
-        return this.data.flows;
+        return this.context.flows;
       case 'command':
-        return this.data.commands;
+        return this.context.commands;
       default:
         throw new Error('Not found type: ' + type);
     }
@@ -87,63 +88,9 @@ export class BotScript {
    * @param req
    */
   handle(req: Request) {
-    if (!req.complete) {
-      // process purpose bot
-      this.data.dialogues.forEach((dialog: any, name: string) => {
-        const isMatch = this.buildResponse(req, dialog);
-        this.logger.debug('Test matching: ', name, isMatch);
-      });
-    }
-
-    return req;
+    this.logger.debug('New request: ', req.message);
+    // fires state machine to resolve request
+    return this.machine.resolve(req, this.context);
   }
 
-  /**
-   * Build current context response
-   * @param dialog
-   * @param trigger
-   * @param req
-   */
-  private buildResponse(req: Request, dialog: Struct) {
-    const result = this.getActivators(dialog)
-      .filter((x) => RegExp(x.source, x.flags).test(req.input))
-      .some(pattern => {
-        this.logger.info('Found: ', dialog.name, pattern.source);
-
-        if (dialog.flows.length > 0) {
-          // get the first word as contexts
-          // TODO: resolves deepest flow (node leaf)
-          req.flows = dialog.flows.map(x => x.replace(/ .*/, ''));
-          // mark dialogue name as the current node
-          req.currentNode = dialog.name;
-          // TODO: fires machine (FSM) start
-        }
-
-        const captures = execPattern(req.input, pattern);
-        Object.keys(captures).forEach(name => {
-          req.variables[name] = captures[name];
-        });
-        // add $ as the first matched variable
-        req.variables.$ = captures.$1;
-
-        const replyCandidate = utils.random(dialog.options);
-        req.speechResponse = this.data.interpolate(replyCandidate, req);
-      });
-
-    return result;
-  }
-
-  /**
-   * Get trigger activators
-   * @param dialog
-   * @param notEqual
-   */
-  private getActivators(dialog: Struct, notEqual = false) {
-    if (dialog.type === 'dialogue') {
-      return dialog.head.map(x => transform(x, this.data.definitions, notEqual));
-    } else {
-      // no activator
-      return [];
-    }
-  }
 }

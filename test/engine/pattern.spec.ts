@@ -1,4 +1,4 @@
-import { execPattern, transform } from './pattern';
+import { execPattern, transform } from '../../src/engine';
 import { expect, assert } from 'chai';
 
 const INPUT_TEXT = 'I would like to buy 10 tickets';

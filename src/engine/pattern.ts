@@ -98,3 +98,12 @@ export function execPattern(input: string, pattern: RegExp | any) {
   captures = keys.map(key => ({ [key.match(/^\d+$/) ? `$${parseInt(key)}` : key]: captures[key] })).splice(1);
   return captures.length > 0 ? captures.reduce((a: any, b: any) => Object.assign(a, b)) : [];
 }
+
+/**
+ * Get trigger activators
+ * @param dialog random or dialogue flow
+ * @param notEqual
+ */
+export function getActivators(dialog: Struct, definitions: Map<string, Struct>, notEqual = false) {
+  return dialog.triggers.map(x => transform(x, definitions, notEqual));
+}

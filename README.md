@@ -14,7 +14,7 @@ To get started playing with BotScript, you must follows the following rules:
 
 ## definition
 
-A `definition` is an identifier of an entity or a variable.
+A `definition` is an identifier of an entity, a list or a variable.
 
 The syntax start with symbol `!`:
 
