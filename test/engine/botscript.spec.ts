@@ -3,8 +3,9 @@ import { assert } from 'chai';
 
 describe('Machine', () => {
 
-  const reqContext = new Request();
   const bot = new BotScript();
+  const flowsRequest = new Request();
+
   bot.parse(`
 ~ age
 - How old are you?
@@ -36,7 +37,7 @@ describe('Machine', () => {
 
   describe('resolve a basic dialogue flows', () => {
     it('bot should ask human age', async () => {
-      const req = reqContext.enter('My name is Vu');
+      const req = flowsRequest.enter('My name is Vu');
       bot.handle(req);
       const reply = req.speechResponse;
       assert.isTrue(req.isFlowing, 'enter dialogue flows!');
@@ -44,14 +45,14 @@ describe('Machine', () => {
     });
 
     it('bot should prompt again', async () => {
-      const req = reqContext.enter('something');
+      const req = flowsRequest.enter('something');
       bot.handle(req);
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
       assert.match(req.speechResponse, /how old are you/i, 'prompt one again');
     });
 
     it('bot ask human age', async () => {
-      const req = reqContext.enter('20');
+      const req = flowsRequest.enter('20');
       bot.handle(req);
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
       assert.equal(req.variables.name, 'Vu', 'human name');
@@ -60,7 +61,7 @@ describe('Machine', () => {
     });
 
     it('bot respond a greet with human name, age and email', async () => {
-      const req = reqContext.enter('my email is vunb@example.com');
+      const req = flowsRequest.enter('my email is vunb@example.com');
       bot.handle(req);
       assert.isFalse(req.isFlowing, 'exit dialogue flows!');
       assert.equal(req.variables.name, 'Vu', 'human name');
