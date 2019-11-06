@@ -17,7 +17,7 @@ export class Context {
   // TODO: remove `variables`, it should attach within msg request
   variables: Map<string, Struct>;
   // support custom patterns
-  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => void }>;
+  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp }>;
 
   constructor() {
     this.definitions = new Map();

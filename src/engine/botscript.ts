@@ -93,4 +93,16 @@ export class BotScript {
     return this.machine.resolve(req, this.context);
   }
 
+  /**
+   * Add trigger pattern capability
+   * @param options name, match, func
+   */
+  addPatternCapability({name, match, func}: {
+    name: string,
+    match: RegExp,
+    func: (pattern: string) => RegExp,
+  }) {
+    this.context.patterns.set(name, {name, match, func});
+  }
+
 }
