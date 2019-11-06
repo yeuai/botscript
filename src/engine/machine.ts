@@ -121,7 +121,7 @@ export class BotMachine {
                       req.flows = Array.from(setFlows);
                     }
 
-                    this.logger.info(`Dialogue is flowing: ${req.isFlowing}, current: ${req.currentFlow || '[invalid]'}`);
+                    this.logger.info(`Dialogue is flowing: ${req.isFlowing}, current: ${req.currentFlow || '[none]'}`);
                     return true;
                   },
                 },

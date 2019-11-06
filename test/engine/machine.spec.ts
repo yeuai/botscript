@@ -1,8 +1,9 @@
-import { BotMachine, BotScript, Request } from '../../src/engine';
-import { expect, assert } from 'chai';
+import { BotScript, Request } from '../../src/engine';
+import { assert } from 'chai';
 
 describe('Machine', () => {
 
+  const reqContext = new Request();
   const bot = new BotScript();
   bot.parse(`
 ~ age
@@ -10,16 +11,19 @@ describe('Machine', () => {
 + I am #{age}
 + #{age}
 
+~ email
+- What is your email
++ My email is *{email}
+
 + my name is *{name}
 + *{name} is my name
 ~ age
-- Hello $name, you are $age!
+~ email
+- Hello $name, you are $age and email $email!
 
 + hello bot
 - Hello human!
   `);
-  const machine = new BotMachine();
-  const reqContext = new Request();
 
   describe('basic reply', () => {
     it('respond a message to human', async () => {
@@ -42,19 +46,27 @@ describe('Machine', () => {
     it('bot should prompt again', async () => {
       const req = reqContext.enter('something');
       bot.handle(req);
-      const reply = req.speechResponse;
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
-      assert.match(reply, /how old are you/i, 'prompt one again');
+      assert.match(req.speechResponse, /how old are you/i, 'prompt one again');
     });
 
-    it('bot respond a greet with human name and age', async () => {
+    it('bot ask human age', async () => {
       const req = reqContext.enter('20');
       bot.handle(req);
-      const reply = req.speechResponse;
-      assert.isFalse(req.isFlowing, 'exit dialogue flows!');
-      assert.match(reply, /hello/i, 'bot send a greeting');
+      assert.isTrue(req.isFlowing, 'still in dialogue flows!');
       assert.equal(req.variables.name, 'Vu', 'human name');
       assert.equal(req.variables.age, '20', 'human age');
+      assert.match(req.speechResponse, /What is your email/i, 'bot send a next question');
+    });
+
+    it('bot respond a greet with human name, age and email', async () => {
+      const req = reqContext.enter('my email is vunb@example.com');
+      bot.handle(req);
+      assert.isFalse(req.isFlowing, 'exit dialogue flows!');
+      assert.equal(req.variables.name, 'Vu', 'human name');
+      assert.equal(req.variables.age, '20', 'human age');
+      assert.equal(req.variables.email, 'vunb@example.com', 'human email');
+      assert.match(req.speechResponse, /hello/i, 'bot send a greeting');
     });
   });
 
@@ -62,8 +74,7 @@ describe('Machine', () => {
     it('should respond no reply!', async () => {
       const req = new Request('sfdsfi!');
       bot.handle(req);
-      const reply = req.speechResponse;
-      assert.match(reply, /no reply/i, 'bot no reply');
+      assert.match(req.speechResponse, /no reply/i, 'bot no reply');
     });
   });
 });
