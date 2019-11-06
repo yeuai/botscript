@@ -1,5 +1,6 @@
-import { Machine } from 'xstate';
-
+/**
+ * Struct types
+ */
 export const TYPES: any = ({
   '!': 'definition',
   '+': 'dialogue',
@@ -8,6 +9,7 @@ export const TYPES: any = ({
   '?': 'question',
   '~': 'flows',
   '#': 'comment',
+  '*': 'condition',
 });
 
 /**
@@ -35,12 +37,6 @@ function getScriptHead(script: string): string[] {
   const type = script.charAt(0);
   return script.trim().split('\n').filter(x => x.startsWith(type)).map(x => x.substring(1).trim());
 }
-
-// export function createStateMachine() {
-//   return Machine({
-
-//   });
-// }
 
 /**
  * Script data structure
@@ -126,9 +122,6 @@ export class Struct {
         } else {
           throw new Error('invalid command');
         }
-        break;
-      case TYPES['?']:  // question
-        struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
         break;
 
     }

@@ -36,14 +36,10 @@ export class BotScript {
    */
   private type(type: string): Map<string, any> {
     switch (type) {
-      case 'variable':
-        return this.context.variables;
-      case 'dialogue':
-        return this.context.dialogues;
       case 'definition':
         return this.context.definitions;
-      case 'question':
-        return this.context.questions;
+      case 'dialogue':
+        return this.context.dialogues;
       case 'flows':
         return this.context.flows;
       case 'command':
