@@ -88,20 +88,28 @@ export class BotMachine {
                     // popolate flows from currentFlow and assign to request
                     const { req, ctx } = context;
 
+                    // TODO: add conditional flows if conditions are met.
+                    const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+                    if (utils.testAddConditionalFlow(dialog, req.variables)) {
+                      this.logger.info('Add conditional flow!');
+                    }
+
                     if (req.currentFlowIsResolved) {
-                      // remove current flow
+                      // remove current flow & get next
                       this.logger.debug('Remove current flow: ', req.currentFlow);
+                      req.resolvedFlows.push(req.currentFlow);
                       req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
                       req.currentFlow = req.missingFlows.find(() => true) as string;
                       req.isFlowing = req.missingFlows.some(() => true);
                       req.currentFlowIsResolved = false;  // reset state
                       this.logger.debug('Next flow: ', req.currentFlow);
                     } else if (!req.currentFlow) {
+                      // get next flow
                       req.currentFlow = req.missingFlows.find(() => true) as string;
                       req.currentFlowIsResolved = false;
                       this.logger.debug('Start new dialogue flow: ', req.currentFlow);
                     } else {
-                      this.logger.info('TODO: Prompt or send reply again!');
+                      this.logger.info('Prompt or send reply again!');
                     }
 
                     this.logger.info('Check & Update nested flows!');

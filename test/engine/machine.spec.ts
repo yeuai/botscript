@@ -24,7 +24,7 @@ describe('Machine', () => {
   describe('basic reply', () => {
     it('respond a message to human', async () => {
       const req = new Request('hello bot');
-      machine.resolve(req, bot.context);
+      bot.handle(req);
       const reply = req.speechResponse;
       assert.match(reply, /hello human/i, 'bot reply human');
     });
@@ -33,7 +33,7 @@ describe('Machine', () => {
   describe('resolve a basic dialogue flows', () => {
     it('bot should ask human age', async () => {
       const req = reqContext.enter('My name is Vu');
-      machine.resolve(req, bot.context);
+      bot.handle(req);
       const reply = req.speechResponse;
       assert.isTrue(req.isFlowing, 'enter dialogue flows!');
       assert.match(reply, /how old are you/i, 'bot ask human\'s age');
@@ -41,7 +41,7 @@ describe('Machine', () => {
 
     it('bot should prompt again', async () => {
       const req = reqContext.enter('something');
-      machine.resolve(req, bot.context);
+      bot.handle(req);
       const reply = req.speechResponse;
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
       assert.match(reply, /how old are you/i, 'prompt one again');
@@ -49,7 +49,7 @@ describe('Machine', () => {
 
     it('bot respond a greet with human name and age', async () => {
       const req = reqContext.enter('20');
-      machine.resolve(req, bot.context);
+      bot.handle(req);
       const reply = req.speechResponse;
       assert.isFalse(req.isFlowing, 'exit dialogue flows!');
       assert.match(reply, /hello/i, 'bot send a greeting');
@@ -61,7 +61,7 @@ describe('Machine', () => {
   describe('no reply', () => {
     it('should respond no reply!', async () => {
       const req = new Request('sfdsfi!');
-      machine.resolve(req, bot.context);
+      bot.handle(req);
       const reply = req.speechResponse;
       assert.match(reply, /no reply/i, 'bot no reply');
     });
