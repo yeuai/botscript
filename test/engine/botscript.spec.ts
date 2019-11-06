@@ -1,7 +1,7 @@
 import { BotScript, Request } from '../../src/engine';
 import { assert } from 'chai';
 
-describe('Machine', () => {
+describe('BotScript', () => {
 
   const bot = new BotScript();
   const flowsRequest = new Request();
@@ -30,8 +30,7 @@ describe('Machine', () => {
     it('respond a message to human', async () => {
       const req = new Request('hello bot');
       bot.handle(req);
-      const reply = req.speechResponse;
-      assert.match(reply, /hello human/i, 'bot reply human');
+      assert.match(req.speechResponse, /hello human/i, 'bot reply human');
     });
   });
 
@@ -39,9 +38,8 @@ describe('Machine', () => {
     it('bot should ask human age', async () => {
       const req = flowsRequest.enter('My name is Vu');
       bot.handle(req);
-      const reply = req.speechResponse;
       assert.isTrue(req.isFlowing, 'enter dialogue flows!');
-      assert.match(reply, /how old are you/i, 'bot ask human\'s age');
+      assert.match(req.speechResponse, /how old are you/i, 'bot ask human\'s age');
     });
 
     it('bot should prompt again', async () => {
