@@ -256,7 +256,7 @@ export class BotMachine {
    * @param context, ctx, req
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
-    const result = getActivators(dialog, ctx.definitions)
+    const result = getActivators(dialog, ctx)
       .filter((x) => RegExp(x.source, x.flags).test(req.message))
       .some(pattern => {
         this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);

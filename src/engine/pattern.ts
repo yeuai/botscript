@@ -1,5 +1,6 @@
 import XRegExp from 'xregexp';
 import { Struct } from './struct';
+import { Context } from './context';
 
 const PATTERN_INTERPOLATIONS = [
   {
@@ -50,7 +51,14 @@ const PATTERN_INTERPOLATIONS = [
  * @param definitions
  * @param notEqual
  */
-export function transform(pattern: string, definitions: Map<string, Struct>, notEqual: boolean) {
+export function transform(pattern: string, context: Context, notEqual: boolean) {
+
+  // test custom patterns in triggers
+  for (const [name, value] of context.patterns) {
+    if (value.match.test(pattern)) {
+      return value.func(pattern);
+    }
+  }
 
   // is it already a string pattern?
   if (/^\/.+\/$/m.test(pattern)) {
@@ -58,6 +66,8 @@ export function transform(pattern: string, definitions: Map<string, Struct>, not
     return XRegExp(pattern);
   }
 
+  // definition poplulation
+  const definitions = context.definitions;
   // basic pattern
   PATTERN_INTERPOLATIONS.forEach(p => {
     const { search, replaceWith } = p;
@@ -93,7 +103,7 @@ export function transform(pattern: string, definitions: Map<string, Struct>, not
  * @param pattern
  */
 export function execPattern(input: string, pattern: RegExp | any) {
-  let captures = !pattern.label ? XRegExp.exec(input, pattern) : pattern.exec(input);
+  let captures = !pattern.name ? XRegExp.exec(input, pattern) : pattern.exec(input);
   const keys = Object.keys(captures).filter(key => !['index', 'input', 'groups'].includes(key));
   captures = keys.map(key => ({ [key.match(/^\d+$/) ? `$${parseInt(key)}` : key]: captures[key] })).splice(1);
   return captures.length > 0 ? captures.reduce((a: any, b: any) => Object.assign(a, b)) : [];
@@ -104,6 +114,6 @@ export function execPattern(input: string, pattern: RegExp | any) {
  * @param dialog random or dialogue flow
  * @param notEqual
  */
-export function getActivators(dialog: Struct, definitions: Map<string, Struct>, notEqual = false) {
-  return dialog.triggers.map(x => transform(x, definitions, notEqual));
+export function getActivators(dialog: Struct, context: Context, notEqual = false) {
+  return dialog.triggers.map(x => transform(x, context, notEqual));
 }
