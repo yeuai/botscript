@@ -76,4 +76,28 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /no reply/i, 'bot no reply');
     });
   });
+
+  describe('add custom pattern', () => {
+    it('should support TokensRegex', async () => {
+      // tslint:disable-next-line: no-shadowed-variable
+      const bot = new BotScript();
+      const req = new Request('love you');
+      bot.parse(`
+        + ([{ tag:VB }]) [{ word:you }]
+        - So you want to $1 me, huh?
+      `);
+      bot.addPatternCapability({
+        name: 'TokensRegex',
+        match: /\[\s*\{\s*(?:word|tag|lemma|ner|normalized):/i,
+        func: (pattern) => ({
+          source: pattern,
+          test: (input) => true,
+          exec: (input) => [input, 'love'],
+          toString: () => pattern,
+        }),
+      });
+      bot.handle(req);
+      assert.match(req.speechResponse, /you want to love/i, 'bot reply');
+    });
+  });
 });

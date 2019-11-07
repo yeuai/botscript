@@ -1,5 +1,8 @@
+/**
+ * Pattern activator
+ */
 export interface IActivator {
-  name: string;
+  source: string;
   test(input: string): boolean;
   exec(input: string): string[];
   toString(): string;

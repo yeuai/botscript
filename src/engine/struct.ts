@@ -26,7 +26,7 @@ function getScriptType(script: string) {
  */
 function getScriptBody(script: string): string[] {
   const type = script.charAt(0);
-  return script.trim().split('\n').filter(x => !x.startsWith(type));
+  return script.split('\n').map(x => x.trim()).filter(x => !x.startsWith(type));
 }
 
 /**
@@ -35,7 +35,7 @@ function getScriptBody(script: string): string[] {
  */
 function getScriptHead(script: string): string[] {
   const type = script.charAt(0);
-  return script.trim().split('\n').filter(x => x.startsWith(type)).map(x => x.substring(1).trim());
+  return script.split('\n').map(x => x.trim()).filter(x => x.startsWith(type)).map(x => x.substring(1).trim());
 }
 
 /**
