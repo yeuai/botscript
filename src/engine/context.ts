@@ -1,6 +1,7 @@
 import { random } from '../lib/utils';
 import { Request } from './request';
 import { Struct } from './struct';
+import { IActivator } from '../interfaces/activator';
 
 /**
  * Bot context
@@ -13,7 +14,7 @@ export class Context {
   commands: Map<string, Struct>;
   flows: Map<string, Struct>;
   // support custom patterns
-  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp }>;
+  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp | IActivator }>;
 
   constructor() {
     this.definitions = new Map();

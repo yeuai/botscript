@@ -1,6 +1,7 @@
 import XRegExp from 'xregexp';
 import { Struct } from './struct';
 import { Context } from './context';
+import { IActivator } from '../interfaces/activator';
 
 const PATTERN_INTERPOLATIONS = [
   {
@@ -102,11 +103,11 @@ export function transform(pattern: string, context: Context, notEqual: boolean) 
  * @param input
  * @param pattern
  */
-export function execPattern(input: string, pattern: RegExp | any) {
-  let captures = !pattern.name ? XRegExp.exec(input, pattern) : pattern.exec(input);
-  const keys = Object.keys(captures).filter(key => !['index', 'input', 'groups'].includes(key));
-  captures = keys.map(key => ({ [key.match(/^\d+$/) ? `$${parseInt(key)}` : key]: captures[key] })).splice(1);
-  return captures.length > 0 ? captures.reduce((a: any, b: any) => Object.assign(a, b)) : [];
+export function execPattern(input: string, pattern: RegExp | IActivator) {
+  const result = pattern instanceof RegExp ? XRegExp.exec(input, pattern) : pattern.exec(input);
+  const keys = Object.keys(result).filter(key => !['index', 'input', 'groups'].includes(key));
+  const captures = keys.map(key => ({ [key.match(/^\d+$/) ? `$${parseInt(key)}` : key]: result[key as any] })).splice(1);
+  return captures.reduce((a, b) => Object.assign(a, b), {});
 }
 
 /**

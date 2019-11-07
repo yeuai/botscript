@@ -3,6 +3,7 @@ import { Request } from './request';
 import { Struct } from './struct';
 import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
+import { IActivator } from '../interfaces/activator';
 
 /**
  * BotScript dialogue engine
@@ -96,7 +97,7 @@ export class BotScript {
   addPatternCapability({name, match, func}: {
     name: string,
     match: RegExp,
-    func: (pattern: string) => RegExp,
+    func: (pattern: string) => RegExp | IActivator,
   }) {
     this.context.patterns.set(name, {name, match, func});
   }

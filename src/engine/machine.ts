@@ -257,9 +257,9 @@ export class BotMachine {
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
     const result = getActivators(dialog, ctx)
-      .filter((x) => RegExp(x.source, x.flags).test(req.message))
+      .filter((x) => x.test(req.message))
       .some(pattern => {
-        this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
+        this.logger.debug('Dialogue matches & captures (resolved): ', pattern instanceof RegExp ? pattern.source : pattern.toString());
 
         const captures = execPattern(req.message, pattern);
         Object.keys(captures).forEach(name => {

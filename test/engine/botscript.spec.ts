@@ -49,7 +49,7 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /how old are you/i, 'prompt one again');
     });
 
-    it('bot ask human age', async () => {
+    it('bot should ask human email', async () => {
       const req = flowsRequest.enter('20');
       bot.handle(req);
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
