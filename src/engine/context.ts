@@ -1,31 +1,26 @@
 import { random } from '../lib/utils';
 import { Request } from './request';
 import { Struct } from './struct';
+import { IActivator } from '../interfaces/activator';
 
 /**
  * Bot context
  */
 export class Context {
 
+  // dialogue structures
   definitions: Map<string, Struct>;
   dialogues: Map<string, Struct>;
   commands: Map<string, Struct>;
-  // TODO: remove `questions`, it should be a definition form
-  questions: Map<string, Struct>;
-  // TODO: remove `flows`, it should be directives within dialogue
   flows: Map<string, Struct>;
-  // TODO: remove `variables`, it should attach within msg request
-  variables: Map<string, Struct>;
   // support custom patterns
-  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => void }>;
+  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp | IActivator }>;
 
   constructor() {
     this.definitions = new Map();
     this.dialogues = new Map();
     this.flows = new Map();
     this.commands = new Map();
-    this.questions = new Map();
-    this.variables = new Map();
     this.patterns = new Map();
   }
 

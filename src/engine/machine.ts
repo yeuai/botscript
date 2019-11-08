@@ -145,7 +145,12 @@ export class BotMachine {
             },
           },
           output: {
-            entry: ['onPopulate', 'onCommand', 'onRedirect', 'onPrompt'],
+            entry: [
+              'onCommand',
+              'onRedirect',
+              'onPrompt',
+              'onPopulate',
+            ],
             type: 'final',
           },
         },
@@ -209,9 +214,9 @@ export class BotMachine {
 
             // Generate output!
             if (dialog) {
-              this.logger.info('Populate speech response: ', req.message);
               const replyCandidate = utils.random(dialog.replies);
-              req.speechResponse = ctx.interpolate(replyCandidate, req);
+              this.logger.info('Populate speech response: ', req.message, replyCandidate);
+              req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
             } else {
               this.logger.info('No dialogue population!');
             }
@@ -256,8 +261,8 @@ export class BotMachine {
    * @param context, ctx, req
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
-    const result = getActivators(dialog, ctx.definitions)
-      .filter((x) => RegExp(x.source, x.flags).test(req.message))
+    const result = getActivators(dialog, ctx)
+      .filter((x) => x.test(req.message))
       .some(pattern => {
         this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
 

@@ -3,6 +3,7 @@ import { Request } from './request';
 import { Struct } from './struct';
 import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
+import { IActivator } from '../interfaces/activator';
 
 /**
  * BotScript dialogue engine
@@ -36,14 +37,10 @@ export class BotScript {
    */
   private type(type: string): Map<string, any> {
     switch (type) {
-      case 'variable':
-        return this.context.variables;
-      case 'dialogue':
-        return this.context.dialogues;
       case 'definition':
         return this.context.definitions;
-      case 'question':
-        return this.context.questions;
+      case 'dialogue':
+        return this.context.dialogues;
       case 'flows':
         return this.context.flows;
       case 'command':
@@ -85,12 +82,27 @@ export class BotScript {
 
   /**
    * Handle message request then create response back
-   * @param req
+   * @param req human request context
+   * @param ctx bot data context
    */
-  handle(req: Request) {
+  handle(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
+    const context = ctx || this.context;
     // fires state machine to resolve request
-    return this.machine.resolve(req, this.context);
+    return this.machine.resolve(req, context);
+  }
+
+  /**
+   * Add trigger pattern capability
+   * @param options name, match, func
+   */
+  addPatternCapability({name, match, func}: {
+    name: string,
+    match: RegExp,
+    func: (pattern: string) => RegExp | IActivator,
+  }) {
+    this.context.patterns.set(name, {name, match, func});
+    return this;
   }
 
 }
