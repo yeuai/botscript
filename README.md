@@ -165,6 +165,7 @@ There are three types of condition in botscript dialogues:
 * Conditional redirect
 * Conditional command
 * Conditional prompt
+* Conditional event
 
 A conditional reply let bot replies smarter base on the condition or pick random replies from a list definition. That means before reply bot will check its memory and create reponse if the bot knows.
 
@@ -195,6 +196,12 @@ A conditional command let bot execute an http POST request to an api endpoint wi
 ```bash
 * $input == play music @> play favorite music
 * $input == confirm order @> send the order
+```
+
+A conditional event can be integrated with code instead of using `conditional command`.
+
+```bash
+* $var == true +> event name
 ```
 
 Example:
@@ -269,6 +276,47 @@ Example:
 ```
 
 ## patterns
+
+A pattern within trigger which helps the dialogue `human <-> bot` can be activated and bot has a better capability to reply human.  
+
+Advanced pattern helps bot exactly knows what human is saying.
+
+There are two ways add pattern capability in BotScript:
+
+* Built-in pattern capability using Regular Expression
+* Custom pattern capability by add new handler
+
+### 1. Built-in pattern capability using Regular Expression
+
+Built-in pattern capability already supported in BotScript. Just declare and use basic [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) within form: `/(\w+)\s(\w+)/` and it will capture two words `John Smith`, for example.
+
+A pattern must be wrapped in `/` and use advanced syntax which [XRegExp](http://xregexp.com/) supports.
+
+Example:
+
+```bash
+# I like to buy it -> Do you really buy it
+# I really need this -> So you need this, right?
++ /^I (?:.+\s)?(\w+) (?:.+\s)?(it|this)/
+- Do you really $1 $2?
+- So you $1 $2, right?
+```
+
+### 2. Custom pattern capability by add new handler
+
+This way, bot is added a new matching handler and trying to match the input which human say, with highest priority. This feature is enabled through code integration.
+
+NLP can be integrated by this way. See [an example](./examples/nlp.js).
+
+Example:
+
+```bash
++ ([ner: PERSON]+) /was|is/ /an?/ []{0,3} /painter|artist/
+- An accomplished artist you say.
+- Yeah, i know $1
+```
+
+By combining `NLP`, `Command Service`, `Events` you can teach the bot to be smarter.
 
 # Examples
 
