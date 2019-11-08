@@ -290,7 +290,7 @@ There are two ways add pattern capability in BotScript:
 
 Built-in pattern capability already supported in BotScript. Just declare and use basic [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) within form: `/(\w+)\s(\w+)/` and it will capture two words `John Smith`, for example.
 
-A pattern must be wrapped in `/` and use advanced syntax which [XRegExp](http://xregexp.com/) supports.
+A pattern must be wrapped in `/` to use advanced syntax which [XRegExp](http://xregexp.com/) supports.
 
 Example:
 
@@ -313,7 +313,7 @@ Example:
 ```bash
 + ([ner: PERSON]+) /was|is/ /an?/ []{0,3} /painter|artist/
 - An accomplished artist you say.
-- Yeah, i know $1
+- Yeah, i know $1!
 ```
 
 By combining `NLP`, `Command Service`, `Events` you can teach the bot to be smarter.
