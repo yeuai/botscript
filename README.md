@@ -100,7 +100,7 @@ A trigger may contains:
 
 ## replies
 
-A reply begin with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply is selected.
+A reply begin with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply will be selected.
 
 ```bash
 + hello
