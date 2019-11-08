@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 describe('TODO', () => {
-  it('calculates simple math', async () => {
+  it('simple test', async () => {
     expect(1 + 1).eq(2);
   });
 });

@@ -2,6 +2,9 @@ import XRegExp from 'xregexp';
 import { Struct } from './struct';
 import { Context } from './context';
 import { IActivator } from '../interfaces/activator';
+import { Logger } from '../lib/logger';
+
+const logger = new Logger('Pattern');
 
 const PATTERN_INTERPOLATIONS = [
   {
@@ -47,16 +50,17 @@ const PATTERN_INTERPOLATIONS = [
 ];
 
 /**
- * Transform interpolation pattern
- * @param pattern
- * @param definitions
- * @param notEqual
+ * Transform & interpolate pattern
+ * @param pattern dialogue trigger
+ * @param context bot data context
+ * @param notEqual negative flag
  */
 export function transform(pattern: string, context: Context, notEqual: boolean) {
 
   // test custom patterns in triggers
   for (const [name, value] of context.patterns) {
     if (value.match.test(pattern)) {
+      logger.debug('Pattern match: ', name, pattern, value.match.source);
       return value.func(pattern);
     }
   }
@@ -113,7 +117,7 @@ export function execPattern(input: string, pattern: RegExp | IActivator) {
 /**
  * Get trigger activators
  * @param dialog random or dialogue flow
- * @param notEqual
+ * @param notEqual negative flag
  */
 export function getActivators(dialog: Struct, context: Context, notEqual = false) {
   return dialog.triggers.map(x => transform(x, context, notEqual));

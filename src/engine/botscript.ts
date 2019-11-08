@@ -82,12 +82,14 @@ export class BotScript {
 
   /**
    * Handle message request then create response back
-   * @param req
+   * @param req human request context
+   * @param ctx bot data context
    */
-  handle(req: Request) {
+  handle(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
+    const context = ctx || this.context;
     // fires state machine to resolve request
-    return this.machine.resolve(req, this.context);
+    return this.machine.resolve(req, context);
   }
 
   /**
@@ -100,6 +102,7 @@ export class BotScript {
     func: (pattern: string) => RegExp | IActivator,
   }) {
     this.context.patterns.set(name, {name, match, func});
+    return this;
   }
 
 }
