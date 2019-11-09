@@ -66,11 +66,13 @@ Example:
 
 A dialogue may contains:
 
+* triggers
+* replies
 * flows
 * conditions
 * variables
 * commands
-* patterns
+* prompts
 
 ## triggers
 
@@ -93,8 +95,7 @@ A dialogue may contains more than one trigger. Which helps bot to detect exactly
 
 A trigger may contains:
 
-* definition optionals
-* ~~command evaluation~~
+* definitions
 * patterns
 * variable
 
@@ -111,7 +112,7 @@ A reply begin with `-` symbol in the dialogue and goes with the trigger. If the 
 
 A reply may contains:
 
-* replies definition reference
+* definitions
 * variables
 
 ## flows
@@ -148,9 +149,13 @@ The dialogue jumps to the splash flow then back to continue.
 
 A flow may contains:
 
-* flows
-* prompt
+* triggers
 * replies
+* flows
+* conditions
+* commands
+* variables
+* prompts
 
 ## prompts
 
