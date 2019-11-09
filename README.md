@@ -152,9 +152,9 @@ A flow may contains:
 * prompt
 * replies
 
-## prompt
+## prompts
 
-Prompt are suggested answers which helps human quickly select and reply.
+Prompt is suggested answers which helps human quickly select and reply.
 
 Prompt must be started with symbol `?`.
 
