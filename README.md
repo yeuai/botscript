@@ -154,6 +154,27 @@ A flow may contains:
 
 ## prompt
 
+Prompt are suggested answers which helps human quickly select and reply.
+
+Prompt must be started with symbol `?`.
+
+Prompt declared in a dialogue, flows or defined within a conditional prompt. If the conditional prompt is satisfied, the prompt in the dialogue will be overrided.
+
+If the dialogue has multiple prompts then a random one will be selected.
+
+Example:
+
+```bash
+! pizza_types
+- Pepperoni
+- Margherita
+- Hawaiian
+
++ I need a pizza
+- What kind of pizza?
+? [pizza_types]
+```
+
 ## conditions
 
 A condition begin with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
@@ -188,7 +209,7 @@ A conditional redirect let bot breaks current dialogue and flows to turn to othe
 A conditional prompt allows bot sending to human additional prompt list. This helps human knows how to reply to the bot after that.
 
 ```bash
-* $input == i dont know => [show the list]
+* $input == i dont know ?> [show the list]
 ```
 
 A conditional command let bot execute an http POST request to an api endpoint with `req` data context. Once the endpoint returns json data then it will be populated before generate speech response.
