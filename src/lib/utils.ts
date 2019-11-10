@@ -1,5 +1,6 @@
 import { evalSync } from 'jexl';
 import { Struct, Request } from '../engine';
+import { TestConditionalCallback } from '../interfaces/types';
 import { Logger } from './logger';
 
 const logger = new Logger('Utils');
@@ -30,22 +31,22 @@ export async function httpPost(options: string[], data: any) {
 }
 
 /**
- * Test & add conditional flow
+ * Test conditional flow
  * @param dialogue
  * @param variables
  */
-export function testAddConditionalFlow(dialogue: Struct, req: Request) {
+export function testConditionalFlow(dialogue: Struct, req: Request, callback: TestConditionalCallback) {
   const conditions = dialogue.conditions.filter(x => /~>/.test(x));
   for (const cond of conditions) {
     const tokens = cond.split('~>').map(x => x.trim());
-    if (tokens[0] === 'true') { // TODO: Test `cond`
+    if (tokens.length === 2) {
+      const expr = tokens[0];
       const flow = tokens[1];
-      if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
-        req.missingFlows.push(flow);
+      if (evaluate(expr, req.variables, req.botId)) {
+        callback(flow, req);
       }
     }
   }
-  return false;
 }
 
 /**
@@ -56,10 +57,11 @@ export function testAddConditionalFlow(dialogue: Struct, req: Request) {
 export function evaluate(code: string, context: any, botid = 'BotScript') {
   const keys = Object.keys(context || {});
   const vars = Object.assign({}, ...keys.map(x => ({
-    [`$${x}`]: context[x],
+    [x.startsWith('$') ? x : `$${x}`]: context[x],
   })));
 
   try {
+    logger.debug(`Bot: ${botid}, Eval: ${code}`);
     return evalSync(code, vars);
   } catch (err) {
     logger.warn('Error while eval expression', { botid, msg: (err && err.message) });

@@ -27,8 +27,10 @@ export class Context {
   /**
    * Get bot id from definition
    */
-  get id() {
-    return this.definitions.get('botid');
+  get id(): string {
+    return this.definitions.has('botid')
+      ? (this.definitions.get('botid') as Struct).value
+      : '';
   }
 
   /**

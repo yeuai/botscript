@@ -89,6 +89,7 @@ export class BotScript {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
     // fires state machine to resolve request
+    req.botId = context.id;
     return this.machine.resolve(req, context);
   }
 

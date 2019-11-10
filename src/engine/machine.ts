@@ -90,9 +90,12 @@ export class BotMachine {
 
                     // TODO: add conditional flows if conditions are met.
                     const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
-                    if (utils.testAddConditionalFlow(dialog, req.variables)) {
-                      this.logger.info('Add conditional flow!');
-                    }
+                    utils.testConditionalFlow(dialog, req, (flow: string) => {
+                      if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
+                        this.logger.info('Add conditional flow: ', flow);
+                        req.missingFlows.push(flow);
+                      }
+                    });
 
                     if (req.currentFlowIsResolved) {
                       // remove current flow & get next

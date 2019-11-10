@@ -119,4 +119,39 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /you are genius/i, 'bot reply');
     });
   });
+
+  describe('conditional flow', () => {
+    const condFlowBot = new BotScript();
+    condFlowBot.parse(`
+    ~ ask topic
+    - What topic do you want to ask?
+    + *{topic}
+
+    ~ buy phone
+    - What do you want to buy
+    + I want to buy *{item}
+    + *{item}
+
+    + i want to ask
+    * $topic == 'buy phone' ~> buy phone
+    ~ ask topic
+    - You are done! Item: $item
+    `);
+
+    it('handle conditional flows', async () => {
+      const req = new Request('i want to ask');
+      condFlowBot.handle(req);
+      assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
+      assert.equal(req.currentFlow, 'ask topic');
+
+      condFlowBot.handle(req.enter('buy phone'));
+      assert.match(req.speechResponse, /what do you want to buy/i);
+      assert.equal(req.currentFlow, 'buy phone');
+
+      condFlowBot.handle(req.enter('apple'));
+      assert.match(req.speechResponse, /you are done/i);
+      assert.equal(req.currentFlow, undefined);
+
+    });
+  });
 });

@@ -3,7 +3,7 @@
  */
 export class Request {
 
-  public agentId: string;
+  public botId: string;
   public sessionId: string;
   public message: string;
   public speechResponse: string;
