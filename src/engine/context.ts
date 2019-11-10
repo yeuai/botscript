@@ -25,6 +25,13 @@ export class Context {
   }
 
   /**
+   * Get bot id from definition
+   */
+  get id() {
+    return this.definitions.get('botid');
+  }
+
+  /**
    * Get definition interpolation
    * @param text
    */

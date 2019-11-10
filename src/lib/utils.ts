@@ -1,4 +1,8 @@
+import { evalSync } from 'jexl';
 import { Struct, Request } from '../engine';
+import { Logger } from './logger';
+
+const logger = new Logger('Utils');
 
 /**
  * Get random candidate
@@ -42,4 +46,24 @@ export function testAddConditionalFlow(dialogue: Struct, req: Request) {
     }
   }
   return false;
+}
+
+/**
+ * Safe eval expression
+ * @param code str
+ * @param context variables
+ */
+export function evaluate(code: string, context: any, botid = 'BotScript') {
+  const keys = Object.keys(context || {});
+  const vars = Object.assign({}, ...keys.map(x => ({
+    [`$${x}`]: context[x],
+  })));
+
+  try {
+    return evalSync(code, vars);
+  } catch (err) {
+    logger.warn('Error while eval expression', { botid, msg: (err && err.message) });
+    return undefined;
+  }
+
 }

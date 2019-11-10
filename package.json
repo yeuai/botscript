@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.4",
     "@types/debug": "^4.1.5",
+    "@types/jexl": "^2.1.0",
     "@types/mocha": "^5.2.7",
     "@types/xregexp": "^3.0.30",
     "chai": "^4.2.0",
@@ -34,6 +35,7 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
+    "jexl": "^2.2.2",
     "xregexp": "^4.2.4",
     "xstate": "^4.6.7"
   }
