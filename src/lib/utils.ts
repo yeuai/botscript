@@ -1,6 +1,6 @@
 import { evalSync } from 'jexl';
 import { Struct, Request } from '../engine';
-import { TestConditionalCallback } from '../interfaces/types';
+import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
 
 const logger = new Logger('Utils');
@@ -36,17 +36,7 @@ export async function httpPost(options: string[], data: any) {
  * @param variables
  */
 export function testConditionalFlow(dialogue: Struct, req: Request, callback: TestConditionalCallback) {
-  const conditions = dialogue.conditions.filter(x => /~>/.test(x));
-  for (const cond of conditions) {
-    const tokens = cond.split('~>').map(x => x.trim());
-    if (tokens.length === 2) {
-      const expr = tokens[0];
-      const flow = tokens[1];
-      if (evaluate(expr, req.variables, req.botId)) {
-        callback(flow, req);
-      }
-    }
-  }
+  return testConditionalType(Types.Flow, dialogue, req, callback);
 }
 
 /**
@@ -56,18 +46,7 @@ export function testConditionalFlow(dialogue: Struct, req: Request, callback: Te
  * @param callback
  */
 export function testConditionalReply(dialogue: Struct, req: Request, callback: TestConditionalCallback) {
-  const conditions = dialogue.conditions.filter(x => /->/.test(x));
-  for (const cond of conditions) {
-    const tokens = cond.split('->').map(x => x.trim());
-    if (tokens.length === 2) {
-      const expr = tokens[0];
-      const reply = tokens[1];
-      if (evaluate(expr, req.variables, req.botId)) {
-        callback(reply, req);
-        return;
-      }
-    }
-  }
+  return testConditionalType(Types.Reply, dialogue, req, callback);
 }
 
 /**
@@ -77,16 +56,20 @@ export function testConditionalReply(dialogue: Struct, req: Request, callback: T
  * @param req
  * @param callback stop if callback returns true
  */
-export function testConditionalType(type: string, dialogue: Struct, req: Request, callback: TestConditionalCallback) {
+export function testConditionalType(type: Types, dialogue: Struct, req: Request, callback: TestConditionalCallback) {
+  if (!dialogue) {
+    return;
+  }
+
   const separator = new RegExp(`\\${type}>`);
-  const conditions = ((dialogue && dialogue.conditions) || []).filter(x => separator.test(x));
+  const conditions = (dialogue.conditions || []).filter(x => separator.test(x));
   conditions.some(cond => {
     const tokens = cond.split(separator).map(x => x.trim());
     if (tokens.length === 2) {
       const expr = tokens[0];
-      const reply = tokens[1];
+      const value = tokens[1];
       if (evaluate(expr, req.variables, req.botId)) {
-        return callback(reply, req);
+        return callback(value, req);
       }
     }
   });

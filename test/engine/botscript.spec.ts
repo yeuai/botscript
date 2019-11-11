@@ -34,7 +34,7 @@ describe('BotScript', () => {
     });
   });
 
-  describe('resolve a basic dialogue flows', () => {
+  describe('basic dialogue flows', () => {
     it('bot should ask human age', async () => {
       const req = flowsRequest.enter('My name is Vu');
       bot.handle(req);
