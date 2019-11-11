@@ -120,7 +120,7 @@ describe('BotScript', () => {
     });
   });
 
-  describe('conditional flow', () => {
+  describe('conditional dialogues', () => {
     const condFlowBot = new BotScript();
     condFlowBot.parse(`
     ~ ask topic
