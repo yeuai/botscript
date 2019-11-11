@@ -217,9 +217,18 @@ export class BotMachine {
 
             // Generate output!
             if (dialog) {
-              const replyCandidate = utils.random(dialog.replies);
-              this.logger.info('Populate speech response: ', req.message, replyCandidate);
-              req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
+              let vResult = false;
+              utils.testConditionalReply(dialog, req, (reply) => {
+                vResult = true;
+                this.logger.info('Populate speech response, with conditional reply:', req.message, reply);
+                req.speechResponse = ctx.interpolate(reply || '[empty]', req);
+              });
+
+              if (!vResult) {
+                const replyCandidate = utils.random(dialog.replies);
+                this.logger.info('Populate speech response: ', req.message, replyCandidate);
+                req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
+              }
             } else {
               this.logger.info('No dialogue population!');
             }
@@ -229,10 +238,12 @@ export class BotMachine {
             // check command conditions
           },
           onRedirect: (context, event) => {
+            // TODO: change conditional redirect
             this.logger.info('Evaluate conditional redirect', event.type, context.req.speechResponse);
             // if a condition satisfy then redirect dialogue
           },
           onPrompt: (context, event) => {
+            // TODO: get conditional prompt
             this.logger.info('Evaluate conditional prompt', event.type, context.req.speechResponse);
             // send extra definition prompt list
           },

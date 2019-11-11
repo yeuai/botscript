@@ -50,6 +50,27 @@ export function testConditionalFlow(dialogue: Struct, req: Request, callback: Te
 }
 
 /**
+ * Test conditional reply
+ * @param dialogue
+ * @param req
+ * @param callback
+ */
+export function testConditionalReply(dialogue: Struct, req: Request, callback: TestConditionalCallback) {
+  const conditions = dialogue.conditions.filter(x => /->/.test(x));
+  for (const cond of conditions) {
+    const tokens = cond.split('->').map(x => x.trim());
+    if (tokens.length === 2) {
+      const expr = tokens[0];
+      const flow = tokens[1];
+      if (evaluate(expr, req.variables, req.botId)) {
+        callback(flow, req);
+        return;
+      }
+    }
+  }
+}
+
+/**
  * Safe eval expression
  * @param code str
  * @param context variables

@@ -134,11 +134,12 @@ describe('BotScript', () => {
 
     + i want to ask
     * $topic == 'buy phone' ~> buy phone
+    * $item == 'orange' -> Sorry! We don't have orange.
     ~ ask topic
     - You are done! Item: $item
     `);
 
-    it('handle conditional flows', async () => {
+    it('should handle conditional flows', async () => {
       const req = new Request('i want to ask');
       condFlowBot.handle(req);
       assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
@@ -152,6 +153,21 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /you are done/i);
       assert.equal(req.currentFlow, undefined);
 
+    });
+
+    it('should handle conditional reply', async () => {
+      const req = new Request('i want to ask');
+      condFlowBot.handle(req);
+      assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
+      assert.equal(req.currentFlow, 'ask topic');
+
+      condFlowBot.handle(req.enter('buy phone'));
+      assert.match(req.speechResponse, /what do you want to buy/i);
+      assert.equal(req.currentFlow, 'buy phone');
+
+      condFlowBot.handle(req.enter('orange'));
+      assert.match(req.speechResponse, /sorry/i);
+      assert.equal(req.currentFlow, undefined);
     });
   });
 });
