@@ -5,6 +5,7 @@ import * as utils from '../lib/utils';
 import { Request } from './request';
 import { getActivators, execPattern } from './pattern';
 import { Struct } from './struct';
+import { Types } from '../interfaces/types';
 
 export class BotMachine {
 
@@ -234,8 +235,18 @@ export class BotMachine {
             }
           },
           onCommand: (context, event) => {
-            this.logger.info('Evaluate conditional command', event.type, context.req.speechResponse);
+            const { req, ctx } = context;
+            const dialog = ctx.dialogues.get(req.currentDialogue) as Struct;
+            this.logger.info('Evaluate conditional command', event.type, req.speechResponse);
             // check command conditions
+            utils.testConditionalType(Types.Command, dialog, req, (cmd) => {
+              // execute commands
+              this.logger.debug('Execute command: ', cmd);
+
+              // populate result into variables
+              // this.logger.debug('Populate command result into variables:', cmd, result);
+              Object.assign(req.variables, {});
+            });
           },
           onRedirect: (context, event) => {
             // TODO: change conditional redirect

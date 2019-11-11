@@ -61,13 +61,35 @@ export function testConditionalReply(dialogue: Struct, req: Request, callback: T
     const tokens = cond.split('->').map(x => x.trim());
     if (tokens.length === 2) {
       const expr = tokens[0];
-      const flow = tokens[1];
+      const reply = tokens[1];
       if (evaluate(expr, req.variables, req.botId)) {
-        callback(flow, req);
+        callback(reply, req);
         return;
       }
     }
   }
+}
+
+/**
+ * Test conditional dialogues given type
+ * @param type
+ * @param dialogue
+ * @param req
+ * @param callback stop if callback returns true
+ */
+export function testConditionalType(type: string, dialogue: Struct, req: Request, callback: TestConditionalCallback) {
+  const separator = new RegExp(`\\${type}>`);
+  const conditions = ((dialogue && dialogue.conditions) || []).filter(x => separator.test(x));
+  conditions.some(cond => {
+    const tokens = cond.split(separator).map(x => x.trim());
+    if (tokens.length === 2) {
+      const expr = tokens[0];
+      const reply = tokens[1];
+      if (evaluate(expr, req.variables, req.botId)) {
+        return callback(reply, req);
+      }
+    }
+  });
 }
 
 /**
