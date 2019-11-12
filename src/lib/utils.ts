@@ -1,4 +1,5 @@
 import { evalSync } from 'jexl';
+import fetch from 'node-fetch';
 import { Struct, Request } from '../engine';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
@@ -11,23 +12,6 @@ const logger = new Logger('Utils');
  */
 export function random<T>(candidates: T[]) {
   return candidates[Math.floor(Math.random() * candidates.length)];
-}
-
-/**
- * send http get action
- * @param options
- */
-export async function httpGet(options: string[]) {
-
-}
-
-/**
- * send http post action
- * @param options
- * @param data
- */
-export async function httpPost(options: string[], data: any) {
-
 }
 
 /**
@@ -94,4 +78,24 @@ export function evaluate(code: string, context: any, botid = 'BotScript') {
     return undefined;
   }
 
+}
+
+/**
+ * Call http service
+ * @param command
+ * @param req
+ */
+export async function callHttpService(command: Struct, req: Request) {
+  const headers = command.body.map(x => x.split(':'));
+  const method = command.options[0];
+  const url = command.options[1];
+  const body = req.variables;
+
+  return fetch(url, { headers, method, body }).then(res => res.json())
+    .then(data => {
+      // append data
+      Object.assign(req.variables, data);
+    }, err => {
+      logger.error('Can not send request:', url, method, body, headers);
+    });
 }
