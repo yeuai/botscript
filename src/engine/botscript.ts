@@ -58,6 +58,8 @@ export class BotScript {
     const scripts = content
       // convert CRLF into LF
       .replace(/\r\n/g, '\n')
+      // remove spacing
+      .replace(/\n +/g, '\n')
       // remove comments
       .replace(/^#.*$\n/igm, '')
       // separate definition struct (normalize)
