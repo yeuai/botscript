@@ -92,10 +92,8 @@ export async function callHttpService(command: Struct, req: Request) {
   const body = req.variables;
 
   return fetch(url, { headers, method, body }).then(res => res.json())
-    .then(data => {
-      // append data
-      Object.assign(req.variables, data);
-    }, err => {
-      logger.error('Can not send request:', url, method, body, headers);
+    .catch(err => {
+      logger.error('Can not send request:', url, method, body, headers, err);
+      return undefined;
     });
 }

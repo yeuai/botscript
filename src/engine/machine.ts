@@ -240,12 +240,18 @@ export class BotMachine {
             this.logger.info('Evaluate conditional command', event.type, req.speechResponse);
             // check command conditions
             utils.testConditionalType(Types.Command, dialog, req, (cmd) => {
-              // execute commands
-              this.logger.debug('Execute command: ', cmd);
+              if (ctx.commands.has(cmd)) {
+                const command = ctx.commands.get(cmd) as Struct;
+                // execute commands
+                this.logger.debug('Execute command: ', cmd);
+                const result = utils.callHttpService(command, req);
 
-              // populate result into variables
-              // this.logger.debug('Populate command result into variables:', cmd, result);
-              Object.assign(req.variables, {});
+                // populate result into variables
+                this.logger.debug('Populate command result into variables:', cmd, result);
+                Object.assign(req.variables, result);
+              } else {
+                this.logger.warn('No command definition: ', cmd);
+              }
             });
           },
           onRedirect: (context, event) => {
