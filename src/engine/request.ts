@@ -7,6 +7,7 @@ export class Request {
   public sessionId: string;
   public message: string;
   public speechResponse: string;
+  // TODO: Remove
   public extractedParameters: any;
 
   /**

@@ -99,7 +99,7 @@ export class BotScript {
 
   /**
    * Handle message request then create response back
-   * TODO: Please use handleAsync with supported conditional dialogues
+   * Notice: use handleAsync with supported conditional dialogues
    * @param req human request context
    * @param ctx bot data context
    */
@@ -182,6 +182,13 @@ export class BotScript {
         return req;
       } else if (x.type === Types.Forward) {
         // conditional forward
+        if (ctx.dialogues.has(x.value)) {
+          req.isFlowing = false;
+          this.logger.info('Redirect dialogue to:', x.value);
+          this.machine.resolve(req, ctx);
+        } else {
+          this.logger.warn('No forward destination:', x.value);
+        }
       } else if (x.type === Types.Reply) {
         // conditional reply
         const reply = x.value;
@@ -203,7 +210,7 @@ export class BotScript {
           this.logger.debug('Populate command result into variables:', x.value, result);
           Object.assign(req.variables, result);
         } else {
-          this.logger.warn('No command definition: ', x.value);
+          this.logger.warn('No command definition:', x.value);
         }
       }
 
@@ -218,21 +225,21 @@ export class BotScript {
    */
   private populateReply(req: Request, ctx: Context): Request {
 
-    this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}`);
+    let replyCandidate = req.speechResponse;
+    this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}, replyCandidate=${replyCandidate}`);
 
     // no reply candidate
-    if (!req.speechResponse) {
+    if (!replyCandidate) {
       let dialog: Struct;
       if (!req.isFlowing) {
-        // TODO: Get current dialogue?
+        // TODO/Refactor: Get current dialogue?
         dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
       } else {
         dialog = ctx.flows.get(req.currentFlow) as Struct;
       }
       if (dialog) {
         this.logger.info('Get dialogue candidate:', dialog.name);
-        const replyCandidate = utils.random(dialog.replies);
-        req.speechResponse = replyCandidate;
+        replyCandidate = utils.random(dialog.replies);
       } else {
         this.logger.info('No dialogue population!');
       }
@@ -241,8 +248,8 @@ export class BotScript {
     }
 
     // Generate output!
-    req.speechResponse = ctx.interpolate(req.speechResponse || '[empty]', req);
-    this.logger.info(`Populate speech response: ${req.message} -> ${req.speechResponse}`);
+    req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
+    this.logger.info(`Populate speech response: ${req.message} -> ${replyCandidate} -> ${req.speechResponse}`);
 
     return req;
   }

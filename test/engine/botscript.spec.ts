@@ -7,23 +7,29 @@ describe('BotScript', () => {
   const flowsRequest = new Request();
 
   bot.parse(`
-~ age
-- How old are you?
-+ I am #{age}
-+ #{age}
+  ! name BotScript
 
-~ email
-- What is your email
-+ My email is *{email}
+  + hello bot
+  - Hello human!
 
-+ my name is *{name}
-+ *{name} is my name
-~ age
-~ email
-- Hello $name, you are $age and email $email!
+  + what is your name
+  - My name is [name]
 
-+ hello bot
-- Hello human!
+  ~ age
+  - How old are you?
+  + I am #{age}
+  + #{age}
+
+  ~ email
+  - What is your email
+  + My email is *{email}
+
+  + my name is *{name}
+  + *{name} is my name
+  ~ age
+  ~ email
+  - Hello $name, you are $age and email $email!
+
   `);
 
   describe('basic reply', () => {
@@ -31,6 +37,12 @@ describe('BotScript', () => {
       const req = new Request('hello bot');
       bot.handle(req);
       assert.match(req.speechResponse, /hello human/i, 'bot reply human');
+    });
+
+    it('should reply with definition', async () => {
+      const req = new Request('what is your name');
+      bot.handle(req);
+      assert.match(req.speechResponse, /my name is botscript/i, 'bot shows his name');
     });
   });
 

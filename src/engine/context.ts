@@ -53,7 +53,7 @@ export class Context {
   interpolateDefinition(text: string) {
     return text.replace(/\[([\w-]+)\]/g, (match, defName) => {
       const list = this.definitions.get(defName.toLowerCase());
-      return list ? random(list.value) : defName;
+      return list ? random(list.options) : defName;
     });
   }
 
