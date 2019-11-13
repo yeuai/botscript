@@ -301,6 +301,7 @@ export class BotMachine {
    */
   resolve(req: Request, ctx: Context) {
     // reset speech response
+    req.prompt = [];
     req.speechResponse = '';
     this.logger.info(`Resolve: ${req.message}, isFlowing: ${req.isFlowing}`);
     const botMachine = this.machine.withContext({ ctx, req });

@@ -216,6 +216,12 @@ export class BotScript extends EventEmitter  {
         req.speechResponse = reply;
       } else if (x.type === Types.Prompt) {
         // conditional prompt
+        this.logger.debug('Get prompt definition:', x.value);
+        if (ctx.definitions.has(x.value)) {
+          req.prompt = (ctx.definitions.get(x.value) as Struct).options;
+        } else {
+          this.logger.warn('No prompt definition:', x.value);
+        }
       } else if (x.type === Types.Command) {
         // conditional command
         if (ctx.commands.has(x.value)) {

@@ -135,6 +135,11 @@ describe('BotScript', () => {
   describe('conditional dialogues', () => {
     const condBot = new BotScript();
     condBot.parse(`
+    ! topics
+    - warranty
+    - support
+    - feedback
+
     ~ ask topic
     - What topic do you want to ask?
     + *{topic}
@@ -172,6 +177,11 @@ describe('BotScript', () => {
     + turn off the light
     * true +> notify
     - Ok!
+
+    # conditional prompt
+    + help me
+    * true ?> topics
+    - Please choose a topic!
     `);
 
     /**
@@ -233,6 +243,13 @@ describe('BotScript', () => {
       await condBot.handleAsync(req);
       assert.match(req.speechResponse, /ok/i, 'bot reply');
       assert.equal(req.variables.notified, true, 'add more info');
+    });
+
+    it('should handle conditional prompt', async () => {
+      const req = new Request('help me');
+      await condBot.handleAsync(req);
+      assert.match(req.speechResponse, /choose a topic/i, 'bot reply');
+      assert.deepEqual(req.prompt, ['warranty', 'support', 'feedback'], 'get prompts');
     });
   });
 });
