@@ -211,6 +211,11 @@ export class BotScript {
     return req;
   }
 
+  /**
+   * Generate speech response
+   * @param req
+   * @param ctx
+   */
   private populateReply(req: Request, ctx: Context): Request {
 
     this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}`);
