@@ -133,6 +133,8 @@ describe('BotScript', () => {
     + *{item}
 
     @ geoip https://api.ipify.org/?format=json
+    #- header: value
+    #- header: value (2)
 
     # conditional flows
     + i want to ask
