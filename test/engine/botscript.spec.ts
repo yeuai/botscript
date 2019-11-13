@@ -144,6 +144,9 @@ describe('BotScript', () => {
     + I want to buy *{item}
     + *{item}
 
+    + cancel
+    - You are canceled!
+
     @ geoip https://api.ipify.org/?format=json
     #- header: value
     #- header: value (2)
@@ -159,6 +162,11 @@ describe('BotScript', () => {
     + what is my ip
     * true @> geoip
     - Here is your ip: $ip
+
+    # conditional redirect
+    + i dont wanna talk to you
+    * true >> cancel
+    - Ok!
     `);
 
     it('should handle conditional flows', async () => {
@@ -197,6 +205,14 @@ describe('BotScript', () => {
       await condFlowBot.handleAsync(req);
       assert.match(req.speechResponse, /here is your ip/i, 'bot reply');
       assert.match(req.variables.ip, /^(([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])(\.(?!$)|(?=$))){4}$/, 'match ip');
+    });
+
+    it('should handle conditional redirect', async () => {
+      const req = new Request('i dont wanna talk to you');
+      await condFlowBot.handleAsync(req);
+      assert.isTrue(req.isForward);
+      assert.isFalse(req.isFlowing);
+      assert.match(req.speechResponse, /you are canceled/i, 'bot reply');
     });
   });
 });

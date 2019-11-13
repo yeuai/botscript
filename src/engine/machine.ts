@@ -32,6 +32,10 @@ export class BotMachine {
               '': [
                 {
                   target: 'dialogue',
+                  cond: 'isForward',
+                },
+                {
+                  target: 'dialogue',
                   cond: 'isDialogue',
                 },
                 {
@@ -54,8 +58,7 @@ export class BotMachine {
                 {
                   target: 'output',
                   cond: (context, event) => {
-                    const { req, ctx } = context;
-                    // TODO: check conditional reply, flow or forward
+                    const { req } = context;
                     if (req.missingFlows.length === 0) {
                       req.isFlowing = false;
                       this.logger.debug('Dialogue state is resolved then now forward to output!');
@@ -69,7 +72,7 @@ export class BotMachine {
                 {
                   target: 'flow',
                   cond: (context, event) => {
-                    const { req, ctx } = context;
+                    const { req } = context;
                     req.isFlowing = true; // init status
 
                     return true;
@@ -161,6 +164,21 @@ export class BotMachine {
       },
       {
         guards: {
+          isForward: (context, event) => {
+            const { req, ctx } = context;
+            if (req.isForward) {
+              const dialog = ctx.dialogues.get(req.currentDialogue) as Struct;
+              this.explore({ dialog, ctx, req });
+
+              this.logger.debug('Redirect to: ', dialog.name, req.variables);
+              req.currentDialogue = dialog.name;
+              req.originalDialogue = dialog.name;
+              req.flows = dialog.flows;
+              req.missingFlows = dialog.flows;
+              return true;
+            }
+            return false;
+          },
           isDialogue: (context, event) => {
             const { req, ctx } = context;
             if (!req.isFlowing) {

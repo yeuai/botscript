@@ -96,6 +96,7 @@ export function callHttpService(command: Struct, req: Request) {
   return fetch(url, { headers, method, body }).then(res => res.json())
     .catch(err => {
       logger.error('Can not send request:', url, method, body, headers, err);
+      // TODO: Promise.resolve(err.message) ?
       return undefined;
     });
 }

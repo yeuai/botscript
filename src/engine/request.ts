@@ -7,8 +7,12 @@ export class Request {
   public sessionId: string;
   public message: string;
   public speechResponse: string;
-  // TODO: Remove
-  public extractedParameters: any;
+
+  /**
+   * This flag indicates the dialogue is forwarding
+   * Bot must reset request and enter the new dialogue
+   */
+  public isForward: boolean;
 
   /**
    * This flag indicates the dialogue is flowing

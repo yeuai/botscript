@@ -108,6 +108,7 @@ export class BotScript {
     const context = ctx || this.context;
     // fires state machine to resolve request
     req.botId = context.id;
+    req.isForward = false;
     this.machine.resolve(req, context);
 
     this.populateReply(req, context);
@@ -124,6 +125,7 @@ export class BotScript {
     const context = ctx || this.context;
     // fires state machine to resolve request
     req.botId = context.id;
+    req.isForward = false;
     this.machine.resolve(req, context);
 
     // Handle conditional commands, conditional event
@@ -183,8 +185,10 @@ export class BotScript {
       } else if (x.type === Types.Forward) {
         // conditional forward
         if (ctx.dialogues.has(x.value)) {
+          req.isForward = true;
           req.isFlowing = false;
           this.logger.info('Redirect dialogue to:', x.value);
+          req.currentDialogue = x.value;
           this.machine.resolve(req, ctx);
         } else {
           this.logger.warn('No forward destination:', x.value);
