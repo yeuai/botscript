@@ -34,6 +34,19 @@ export class Context {
   }
 
   /**
+   * Get dialogue by name
+   * Notice: a flow is a dialogue
+   * @param name
+   */
+  getDialogue(name: string) {
+    if (this.flows.has(name)) {
+      return this.flows.get(name);
+    } else {
+      return this.dialogues.get(name);
+    }
+  }
+
+  /**
    * Get definition interpolation
    * @param text
    */

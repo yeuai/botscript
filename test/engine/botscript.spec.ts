@@ -132,11 +132,19 @@ describe('BotScript', () => {
     + I want to buy *{item}
     + *{item}
 
+    @ geoip https://api.ipify.org/?format=json
+
+    # conditional flows
     + i want to ask
     * $topic == 'buy phone' ~> buy phone
     * $item == 'orange' -> Sorry! We don't have orange.
     ~ ask topic
     - You are done! Item: $item
+
+    # conditional command
+    + what is my ip
+    * true @> geoip
+    - Here is your ip: $ip
     `);
 
     it('should handle conditional flows', async () => {
@@ -161,13 +169,20 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
       assert.equal(req.currentFlow, 'ask topic');
 
-      condFlowBot.handle(req.enter('buy phone'));
+      await condFlowBot.handleAsync(req.enter('buy phone'));
       assert.match(req.speechResponse, /what do you want to buy/i);
       assert.equal(req.currentFlow, 'buy phone');
 
-      condFlowBot.handle(req.enter('orange'));
+      await condFlowBot.handleAsync(req.enter('orange'));
       assert.match(req.speechResponse, /sorry/i);
       assert.equal(req.currentFlow, undefined);
+    });
+
+    it('should handle conditional command', async () => {
+      const req = new Request('what is my ip');
+      await condFlowBot.handleAsync(req);
+      assert.match(req.speechResponse, /here is your ip/i, 'bot reply');
+      assert.match(req.variables.ip, /^(([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])(\.(?!$)|(?=$))){4}$/, 'match ip');
     });
   });
 });

@@ -149,12 +149,12 @@ export class BotMachine {
             },
           },
           output: {
-            entry: [
-              'onCommand',
-              'onRedirect',
-              'onPrompt',
-              'onPopulate',
-            ],
+            // entry: [
+            //   'onCommand',
+            //   'onRedirect',
+            //   'onPrompt',
+            //   'onPopulate',
+            // ],
             type: 'final',
           },
         },
@@ -205,63 +205,70 @@ export class BotMachine {
             this.logger.debug('Enter digest action: ', event.type, req.message);
           },
           onPopulate: (context, event) => {
-            let dialog: Struct;
-            const { req, ctx } = context;
+            // let dialog: Struct;
+            // const { req, ctx } = context;
 
-            this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}`);
+            // this.logger.info(`Current request: isFlowing=${req.isFlowing}, dialogue=${req.currentDialogue}, flow=${req.currentFlow}`);
 
-            if (!req.isFlowing) {
-              dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
-            } else {
-              dialog = ctx.flows.get(req.currentFlow) as Struct;
-            }
+            // if (!req.isFlowing) {
+            //   dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+            // } else {
+            //   dialog = ctx.flows.get(req.currentFlow) as Struct;
+            // }
 
-            // Generate output!
-            if (dialog) {
-              let vResult = false;
-              utils.testConditionalType(Types.Reply, dialog, req, (reply) => {
-                vResult = true;
-                this.logger.info('Populate speech response, with conditional reply:', req.message, reply);
-                req.speechResponse = ctx.interpolate(reply || '[empty]', req);
-              });
+            // // const dialog = ctx.getDialogue(req.currentDialogue) as Struct;
 
-              if (!vResult) {
-                const replyCandidate = utils.random(dialog.replies);
-                this.logger.info('Populate speech response: ', req.message, replyCandidate);
-                req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
-              }
-            } else {
-              this.logger.info('No dialogue population!');
-            }
+            // // Generate output!
+            // if (dialog) {
+            //   let vResult = false;
+            //   utils.testConditionalType(Types.Reply, dialog, req, (reply) => {
+            //     vResult = true;
+            //     this.logger.info('Populate speech response, with conditional reply:', req.message, reply);
+            //     req.speechResponse = ctx.interpolate(reply || '[empty]', req);
+            //   });
+
+            //   if (!vResult) {
+            //     const replyCandidate = utils.random(dialog.replies);
+            //     this.logger.info('Populate speech response: ', req.message, replyCandidate);
+            //     req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
+            //   }
+            // } else {
+            //   this.logger.info('No dialogue population!');
+            // }
           },
           onCommand: (context, event) => {
-            const { req, ctx } = context;
-            const dialog = ctx.dialogues.get(req.currentDialogue) as Struct;
-            this.logger.info('Evaluate conditional command', event.type, req.speechResponse);
-            // check command conditions
-            utils.testConditionalType(Types.Command, dialog, req, (cmd) => {
-              if (ctx.commands.has(cmd)) {
-                const command = ctx.commands.get(cmd) as Struct;
-                // execute commands
-                this.logger.debug('Execute command: ', cmd);
-                const result = utils.callHttpService(command, req);
+            // const { req, ctx } = context;
+            // this.logger.info('Evaluate conditional command for:', req.currentDialogue);
+            // const dialog = ctx.getDialogue(req.currentDialogue) as Struct;
+            // // check command conditions
+            // utils.testConditionalType(Types.Command, dialog, req, (cmd) => {
+            //   if (ctx.commands.has(cmd)) {
+            //     const command = ctx.commands.get(cmd) as Struct;
+            //     // execute commands
+            //     this.logger.debug('Execute command: ', cmd);
+            //     const result = utils.callHttpService(command, req);
 
-                // populate result into variables
-                this.logger.debug('Populate command result into variables:', cmd, result);
-                Object.assign(req.variables, result);
-              } else {
-                this.logger.warn('No command definition: ', cmd);
-              }
-            });
+            //     // populate result into variables
+            //     this.logger.debug('Populate command result into variables:', cmd, result);
+            //     Object.assign(req.variables, result);
+            //     return true;
+            //   } else {
+            //     this.logger.warn('No command definition: ', cmd);
+            //     return false;
+            //   }
+            // });
           },
           onRedirect: (context, event) => {
             // TODO: change conditional redirect
-            this.logger.info('Evaluate conditional redirect', event.type, context.req.speechResponse);
+            const { req, ctx } = context;
+            this.logger.info('Evaluate conditional redirect for:', req.currentDialogue);
+
             // if a condition satisfy then redirect dialogue
           },
           onPrompt: (context, event) => {
             // TODO: get conditional prompt
-            this.logger.info('Evaluate conditional prompt', event.type, context.req.speechResponse);
+            const { req, ctx } = context;
+            this.logger.info('Evaluate conditional prompt for:', req.currentDialogue);
             // send extra definition prompt list
           },
         },
@@ -275,6 +282,8 @@ export class BotMachine {
    * @param ctx - bot context
    */
   resolve(req: Request, ctx: Context) {
+    // reset speech response
+    req.speechResponse = '';
     this.logger.info(`Resolve: ${req.message}, isFlowing: ${req.isFlowing}`);
     const botMachine = this.machine.withContext({ ctx, req });
     const botService = interpret(botMachine)
@@ -283,7 +292,7 @@ export class BotMachine {
       })
       .start();
     botService.send('DIGEST');
-    this.logger.info('speechResponse: ', req.speechResponse);
+    this.logger.info('Get current dialogue response: ', req.currentDialogue);
     return req;
   }
 
@@ -304,7 +313,9 @@ export class BotMachine {
         req.currentDialogue = dialog.name;
         req.currentFlowIsResolved = true;
         // add $ as the first matched variable
-        req.variables.$ = captures.$1;
+        if (captures.$1) {
+          req.variables.$ = captures.$1;
+        }
         // reference to the last input
         req.variables.$input = req.message;
         return true;

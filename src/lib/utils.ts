@@ -42,17 +42,20 @@ export function testConditionalReply(dialogue: Struct, req: Request, callback: T
  */
 export function testConditionalType(type: Types, dialogue: Struct, req: Request, callback: TestConditionalCallback) {
   if (!dialogue) {
-    return;
+    logger.info('No dialogue for test:', type);
+    return false;
   }
 
   const separator = new RegExp(`\\${type}>`);
   const conditions = (dialogue.conditions || []).filter(x => separator.test(x));
-  conditions.some(cond => {
+  return conditions.some(cond => {
     const tokens = cond.split(separator).map(x => x.trim());
     if (tokens.length === 2) {
       const expr = tokens[0];
       const value = tokens[1];
-      if (evaluate(expr, req.variables, req.botId)) {
+      logger.debug(`Test conditional type: ${type}, botid=${req.botId}, expr=${expr}`);
+
+      if (evaluate(expr, req.variables)) {
         return callback(value, req);
       }
     }
@@ -64,17 +67,16 @@ export function testConditionalType(type: Types, dialogue: Struct, req: Request,
  * @param code str
  * @param context variables
  */
-export function evaluate(code: string, context: any, botid = 'BotScript') {
+export function evaluate(code: string, context: any) {
   const keys = Object.keys(context || {});
   const vars = Object.assign({}, ...keys.map(x => ({
     [x.startsWith('$') ? x : `$${x}`]: context[x],
   })));
 
   try {
-    logger.debug(`Bot: ${botid}, Eval: ${code}`);
     return evalSync(code, vars);
   } catch (err) {
-    logger.warn('Error while eval expression', { botid, msg: (err && err.message) });
+    logger.warn('Error while eval expression', { msg: (err && err.message) });
     return undefined;
   }
 
@@ -85,11 +87,11 @@ export function evaluate(code: string, context: any, botid = 'BotScript') {
  * @param command
  * @param req
  */
-export async function callHttpService(command: Struct, req: Request) {
+export function callHttpService(command: Struct, req: Request) {
   const headers = command.body.map(x => x.split(':'));
   const method = command.options[0];
   const url = command.options[1];
-  const body = req.variables;
+  const body = method === 'GET' ? undefined : req.variables;
 
   return fetch(url, { headers, method, body }).then(res => res.json())
     .catch(err => {

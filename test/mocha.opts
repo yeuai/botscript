@@ -1,6 +1,6 @@
 --require ts-node/register
 --reporter spec
 --delay true
---retries 0
+--retries 3
 --exit
 test/**/*.spec.ts

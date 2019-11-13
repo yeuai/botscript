@@ -12,4 +12,5 @@ export enum Types {
   Comment = '#',
   Command = '@',
   Prompt = '?',
+  Forward = '>',
 }
