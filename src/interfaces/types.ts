@@ -13,4 +13,5 @@ export enum Types {
   Command = '@',
   Prompt = '?',
   Forward = '>',
+  Event = '+',
 }

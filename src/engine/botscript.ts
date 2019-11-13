@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { Context } from './context';
 import { Request } from './request';
 import { Struct } from './struct';
@@ -10,7 +11,7 @@ import { Types } from '../interfaces/types';
 /**
  * BotScript dialogue engine
  */
-export class BotScript {
+export class BotScript extends EventEmitter  {
 
   /**
    * Bot data context
@@ -28,9 +29,22 @@ export class BotScript {
   logger: Logger;
 
   constructor() {
+    super();
     this.context = new Context();
     this.logger = new Logger();
     this.machine = new BotMachine();
+  }
+
+  /**
+   * Override emitter
+   * @param event
+   * @param args
+   */
+  emit(event: string | symbol, ...args: any[]) {
+    const vResult = super.emit(event, ...args);
+    this.logger.debug(`Fired event: '${event.toString()}' (${vResult})`);
+    super.emit('*', event, ...args);
+    return vResult;
   }
 
   /**
@@ -155,11 +169,12 @@ export class BotScript {
 
     const dialogConditions = conditions
       .map(x => {
-        const match = /([->@?])>/.exec(x) as RegExpExecArray;
+        const match = /([->@?+])>/.exec(x) as RegExpExecArray;
         if (!match) {
           return false;
         } else {
-          const tokens = x.split(/[->@?]>/);
+          // split exactly supported conditions
+          const tokens = x.split(/[->@?+]>/);
           if (tokens.length === 2) {
             return {
               type: match[1],
@@ -216,6 +231,12 @@ export class BotScript {
         } else {
           this.logger.warn('No command definition:', x.value);
         }
+      } else if (x.type === Types.Event) {
+        // conditional event
+        this.logger.debug('Emit conditional event:', x.value);
+        this.emit(x.value, req, ctx);
+      } else {
+        this.logger.warn('Unknow condition type:', x.type, x.expr, x.value);
       }
 
     }

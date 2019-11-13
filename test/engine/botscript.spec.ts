@@ -133,8 +133,8 @@ describe('BotScript', () => {
   });
 
   describe('conditional dialogues', () => {
-    const condFlowBot = new BotScript();
-    condFlowBot.parse(`
+    const condBot = new BotScript();
+    condBot.parse(`
     ~ ask topic
     - What topic do you want to ask?
     + *{topic}
@@ -167,19 +167,32 @@ describe('BotScript', () => {
     + i dont wanna talk to you
     * true >> cancel
     - Ok!
+
+    # conditional event
+    + turn off the light
+    * true +> notify
+    - Ok!
     `);
+
+    /**
+     * Add bot event listener
+     */
+    condBot.once('notify', (req: Request) => {
+      condBot.logger.info('Got an event:', req.currentDialogue, req.variables);
+      req.variables.notified = true;
+    });
 
     it('should handle conditional flows', async () => {
       const req = new Request('i want to ask');
-      condFlowBot.handle(req);
+      condBot.handle(req);
       assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
       assert.equal(req.currentFlow, 'ask topic');
 
-      condFlowBot.handle(req.enter('buy phone'));
+      condBot.handle(req.enter('buy phone'));
       assert.match(req.speechResponse, /what do you want to buy/i);
       assert.equal(req.currentFlow, 'buy phone');
 
-      condFlowBot.handle(req.enter('apple'));
+      condBot.handle(req.enter('apple'));
       assert.match(req.speechResponse, /you are done/i);
       assert.equal(req.currentFlow, undefined);
 
@@ -187,32 +200,39 @@ describe('BotScript', () => {
 
     it('should handle conditional reply', async () => {
       const req = new Request('i want to ask');
-      condFlowBot.handle(req);
+      condBot.handle(req);
       assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
       assert.equal(req.currentFlow, 'ask topic');
 
-      await condFlowBot.handleAsync(req.enter('buy phone'));
+      await condBot.handleAsync(req.enter('buy phone'));
       assert.match(req.speechResponse, /what do you want to buy/i);
       assert.equal(req.currentFlow, 'buy phone');
 
-      await condFlowBot.handleAsync(req.enter('orange'));
+      await condBot.handleAsync(req.enter('orange'));
       assert.match(req.speechResponse, /sorry/i);
       assert.equal(req.currentFlow, undefined);
     });
 
     it('should handle conditional command', async () => {
       const req = new Request('what is my ip');
-      await condFlowBot.handleAsync(req);
+      await condBot.handleAsync(req);
       assert.match(req.speechResponse, /here is your ip/i, 'bot reply');
       assert.match(req.variables.ip, /^(([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])(\.(?!$)|(?=$))){4}$/, 'match ip');
     });
 
     it('should handle conditional redirect', async () => {
       const req = new Request('i dont wanna talk to you');
-      await condFlowBot.handleAsync(req);
+      await condBot.handleAsync(req);
       assert.isTrue(req.isForward);
       assert.isFalse(req.isFlowing);
       assert.match(req.speechResponse, /you are canceled/i, 'bot reply');
+    });
+
+    it('should handle conditional event', async () => {
+      const req = new Request('turn off the light');
+      await condBot.handleAsync(req);
+      assert.match(req.speechResponse, /ok/i, 'bot reply');
+      assert.equal(req.variables.notified, true, 'add more info');
     });
   });
 });
