@@ -136,4 +136,4 @@ For bugs and feature requests, please [create an issue](https://github.com/yeuai
 License
 =======
 
-BotScript is MIT licensed.
+BotScript is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
