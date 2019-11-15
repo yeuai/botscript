@@ -233,6 +233,7 @@ export class BotScript extends EventEmitter  {
 
           // populate result into variables
           this.logger.debug('Populate command result into variables:', x.value, result);
+          this.emit('command', req, ctx, result);
           Object.assign(req.variables, result);
         } else {
           this.logger.warn('No command definition:', x.value);
@@ -281,6 +282,7 @@ export class BotScript extends EventEmitter  {
     // Generate output!
     req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
     this.logger.info(`Populate speech response: ${req.message} -> ${replyCandidate} -> ${req.speechResponse}`);
+    this.emit('reply', req, ctx);
 
     return req;
   }
