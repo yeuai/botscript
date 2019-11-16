@@ -304,6 +304,9 @@ export class BotMachine {
     req.prompt = [];
     req.speechResponse = '';
     this.logger.info(`Resolve: ${req.message}, isFlowing: ${req.isFlowing}`);
+
+    // TODO: Explore dialogues first to define type which is forward, flow or first-dialogue.
+    // TODO: Explore should support async task
     const botMachine = this.machine.withContext({ ctx, req });
     const botService = interpret(botMachine)
       .onTransition(state => {
