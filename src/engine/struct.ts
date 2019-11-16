@@ -90,7 +90,7 @@ export class Struct {
           struct.name = tokens.pop() || '';
           struct.options = [struct.value];
         } else {
-          struct.options = struct.body.map(x => x.replace(/^\s*-\s*/, ''));
+          struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
           if (struct.options.length > 1) {
             struct.value = struct.options;
           } else {
@@ -100,15 +100,15 @@ export class Struct {
         break;
       case TYPES['+']: // dialogue
         struct.triggers = struct.head;
-        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
-        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
-        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\s*\*\s*/, ''));
+        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^-\s*/, ''));
+        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^~\s*/, ''));
+        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
         break;
       case TYPES['~']: // flows
-        struct.triggers = struct.body.filter(x => x.startsWith('+')).map(x => x.replace(/^\s*\+\s*/, ''));
-        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^\s*-\s*/, ''));
-        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^\s*~\s*/, ''));
-        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\s*\*\s*/, ''));
+        struct.triggers = struct.body.filter(x => x.startsWith('+')).map(x => x.replace(/^\+\s*/, ''));
+        struct.replies = struct.body.filter(x => x.startsWith('-')).map(x => x.replace(/^-\s*/, ''));
+        struct.flows = struct.body.filter(x => x.startsWith('~')).map(x => x.replace(/^~\s*/, ''));
+        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
         break;
       case TYPES['@']:  // command: SERVICE_NAME [GET|POST] ENDPOINT
         const tokens = struct.head[0].split(' ');

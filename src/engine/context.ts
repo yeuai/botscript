@@ -25,13 +25,35 @@ export class Context {
   }
 
   /**
+   * Get bot id from definition
+   */
+  get id(): string {
+    return this.definitions.has('botid')
+      ? (this.definitions.get('botid') as Struct).value
+      : '';
+  }
+
+  /**
+   * Get dialogue by name
+   * Notice: a flow is a dialogue
+   * @param name
+   */
+  getDialogue(name: string) {
+    if (this.flows.has(name)) {
+      return this.flows.get(name);
+    } else {
+      return this.dialogues.get(name);
+    }
+  }
+
+  /**
    * Get definition interpolation
    * @param text
    */
   interpolateDefinition(text: string) {
     return text.replace(/\[([\w-]+)\]/g, (match, defName) => {
       const list = this.definitions.get(defName.toLowerCase());
-      return list ? random(list.value) : defName;
+      return list ? random(list.options) : defName;
     });
   }
 

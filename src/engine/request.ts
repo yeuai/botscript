@@ -3,11 +3,16 @@
  */
 export class Request {
 
-  public agentId: string;
+  public botId: string;
   public sessionId: string;
   public message: string;
   public speechResponse: string;
-  public extractedParameters: any;
+
+  /**
+   * This flag indicates the dialogue is forwarding
+   * Bot must reset request and enter the new dialogue
+   */
+  public isForward: boolean;
 
   /**
    * This flag indicates the dialogue is flowing
