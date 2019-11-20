@@ -1,14 +1,14 @@
 name: Publish to GitHub Package Registry
 
-# on: [push]
+on: [push, release]
 #on:
 #  pull_request:
 #    branches:
 #      - master
-on:
-  push:
-    tags:
-    - '*'
+#on:
+#  push:
+#    tags:
+#    - '*'
 
 jobs:
   build:
@@ -27,6 +27,7 @@ jobs:
         npm run build --if-present
         npm test
     - name: publish
+      if: github.event_name == 'release' && github.event.action == 'published'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
       run: |
