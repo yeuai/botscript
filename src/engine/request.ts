@@ -41,6 +41,11 @@ export class Request {
   public variables: any;
 
   /**
+   * NLP extracted entities (current)
+   */
+  public entities: any;
+
+  /**
    * Current flow to be resolved
    */
   public currentFlow: string;
