@@ -241,7 +241,7 @@ export class BotScript extends EventEmitter  {
           }
         } else {
           this.logger.warn('No command definition:', x.value);
-          this.emit('command', req, ctx, x.value, 'No command definition!');
+          this.emit('command', 'No command definition!', req, ctx, x.value);
         }
       } else if (x.type === Types.Event) {
         // conditional event
