@@ -227,16 +227,21 @@ export class BotScript extends EventEmitter  {
         if (ctx.commands.has(x.value)) {
           const command = ctx.commands.get(x.value) as Struct;
 
-          // execute commands
-          this.logger.debug('Execute command: ', x.value);
-          const result = await utils.callHttpService(command, req);
+          try {
+            // execute commands
+            this.logger.debug('Execute command: ', x.value);
+            const result = await utils.callHttpService(command, req);
 
-          // populate result into variables
-          this.logger.debug('Populate command result into variables:', x.value, result);
-          this.emit('command', req, ctx, result);
-          Object.assign(req.variables, result);
+            // populate result into variables
+            this.logger.debug('Populate command result into variables:', x.value, result);
+            this.emit('command', null, req, ctx, command.name, result);
+            Object.assign(req.variables, result);
+          } catch (err) {
+            this.emit('command', err, req, ctx, command.name);
+          }
         } else {
           this.logger.warn('No command definition:', x.value);
+          this.emit('command', 'No command definition!', req, ctx, x.value);
         }
       } else if (x.type === Types.Event) {
         // conditional event
