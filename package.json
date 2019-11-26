@@ -2,9 +2,11 @@
   "name": "@yeuai/botscript",
   "version": "1.0.0",
   "description": "A text-based scripting language and bot engine for Conversational User Interfaces (CUI)",
-  "main": "dist/botscript",
+  "main": "dist/engine",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build": "rimraf dist && tsc",
+    "deploy": "npm publish"
   },
   "repository": {
     "type": "git",
@@ -31,6 +33,7 @@
     "@types/xregexp": "^3.0.30",
     "chai": "^4.2.0",
     "mocha": "^6.2.2",
+    "rimraf": "^3.0.0",
     "ts-node-dev": "^1.0.0-pre.43",
     "tslint": "^5.20.0",
     "typescript": "^3.6.4"
@@ -41,5 +44,14 @@
     "node-fetch": "^2.6.0",
     "xregexp": "^4.2.4",
     "xstate": "^4.6.7"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@yeuai"
   }
 }
