@@ -79,6 +79,8 @@ A dialogue may contains:
 
 A trigger is a pattern help bot knows what human is saying.
 
+A trigger begins with symbol `+` in the dialogue.
+
 A trigger may contains **wildcards**. With wildcards, you can set a placeholder within trigger that the bot can capture.
 
 ```bash
@@ -102,7 +104,7 @@ A trigger may contains:
 
 ## replies
 
-A reply begin with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply will be selected.
+A reply begins with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply will be selected.
 
 ```bash
 + hello
