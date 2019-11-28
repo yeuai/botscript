@@ -94,7 +94,7 @@ export class BotMachine {
                     const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
 
                     // test conditional flows
-                    utils.testConditionalType(Types.Flow, dialog, req, (flow: string) => {
+                    utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
                       if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
                         this.logger.info('Add conditional flow: ', flow);
                         req.missingFlows.push(flow);

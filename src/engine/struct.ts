@@ -10,6 +10,7 @@ export const TYPES: any = ({
   '~': 'flows',
   '#': 'comment',
   '*': 'condition',
+  '>': 'plugin',
 });
 
 /**

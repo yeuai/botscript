@@ -6,7 +6,7 @@ import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
-import { Types } from '../interfaces/types';
+import { Types, PluginCallback } from '../interfaces/types';
 
 /**
  * BotScript dialogue engine
@@ -28,11 +28,17 @@ export class BotScript extends EventEmitter  {
    */
   logger: Logger;
 
+  /**
+   * plugins system
+   */
+  plugins: Map<string, (req: Request, ctx: Context) => void>;
+
   constructor() {
     super();
     this.context = new Context();
     this.logger = new Logger();
     this.machine = new BotMachine();
+    this.plugins = new Map();
   }
 
   /**
@@ -61,6 +67,8 @@ export class BotScript extends EventEmitter  {
         return this.context.flows;
       case 'command':
         return this.context.commands;
+      case 'plugin':
+        return this.context.plugins;
       default:
         throw new Error('Not found type: ' + type);
     }
@@ -109,6 +117,15 @@ export class BotScript extends EventEmitter  {
   }) {
     this.context.patterns.set(name, { name, match, func });
     return this;
+  }
+
+  /**
+   * Add plugin system
+   * @param name
+   * @param func
+   */
+  plugin(name: string, func: PluginCallback) {
+    this.plugins.set(name, func);
   }
 
   /**
@@ -197,7 +214,7 @@ export class BotScript extends EventEmitter  {
     for (const x of dialogConditions) {
       if (!x) {
         return req;
-      } else if (x.type === Types.Forward) {
+      } else if (x.type === Types.ConditionalForward) {
         // conditional forward
         if (ctx.dialogues.has(x.value)) {
           req.isForward = true;
@@ -208,13 +225,13 @@ export class BotScript extends EventEmitter  {
         } else {
           this.logger.warn('No forward destination:', x.value);
         }
-      } else if (x.type === Types.Reply) {
+      } else if (x.type === Types.ConditionalReply) {
         // conditional reply
         const reply = x.value;
         this.logger.info('Populate speech response, with conditional reply:', req.message, reply);
         // speech response candidate
         req.speechResponse = reply;
-      } else if (x.type === Types.Prompt) {
+      } else if (x.type === Types.ConditionalPrompt) {
         // conditional prompt
         this.logger.debug('Get prompt definition:', x.value);
         if (ctx.definitions.has(x.value)) {
@@ -222,7 +239,7 @@ export class BotScript extends EventEmitter  {
         } else {
           this.logger.warn('No prompt definition:', x.value);
         }
-      } else if (x.type === Types.Command) {
+      } else if (x.type === Types.ConditionalCommand) {
         // conditional command
         if (ctx.commands.has(x.value)) {
           const command = ctx.commands.get(x.value) as Struct;
@@ -243,7 +260,7 @@ export class BotScript extends EventEmitter  {
           this.logger.warn('No command definition:', x.value);
           this.emit('command', 'No command definition!', req, ctx, x.value);
         }
-      } else if (x.type === Types.Event) {
+      } else if (x.type === Types.ConditionalEvent) {
         // conditional event
         this.logger.debug('Emit conditional event:', x.value);
         this.emit(x.value, req, ctx);

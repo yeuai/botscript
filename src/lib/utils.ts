@@ -20,7 +20,7 @@ export function random<T>(candidates: T[]) {
  * @param variables
  */
 export function testConditionalFlow(dialogue: Struct, req: Request, callback: TestConditionalCallback) {
-  return testConditionalType(Types.Flow, dialogue, req, callback);
+  return testConditionalType(Types.ConditionalFlow, dialogue, req, callback);
 }
 
 /**
@@ -30,7 +30,7 @@ export function testConditionalFlow(dialogue: Struct, req: Request, callback: Te
  * @param callback
  */
 export function testConditionalReply(dialogue: Struct, req: Request, callback: TestConditionalCallback) {
-  return testConditionalType(Types.Reply, dialogue, req, callback);
+  return testConditionalType(Types.ConditionalReply, dialogue, req, callback);
 }
 
 /**

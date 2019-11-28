@@ -15,6 +15,13 @@ export class Context {
   flows: Map<string, Struct>;
   // support custom patterns
   patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp | IActivator }>;
+  // plugins system
+  plugins: Map<string, {
+    name: string,
+    conditions: string[],
+    plugins: Map<any, any>, // group of plugins (fired if conditions sastify)
+    func: (req: Request, ctx: Context) => void,
+  }>;
 
   constructor() {
     this.definitions = new Map();
@@ -22,6 +29,7 @@ export class Context {
     this.flows = new Map();
     this.commands = new Map();
     this.patterns = new Map();
+    this.plugins = new Map();
   }
 
   /**
