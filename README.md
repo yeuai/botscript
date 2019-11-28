@@ -192,6 +192,8 @@ There are two categories of conditions in the dialogue:
 
 A conditional activation begins with `%` symbol.
 
+Syntax: `% expression`
+
 For example:
 
 ```bash
@@ -206,6 +208,8 @@ For example:
 ```
 
 A conditional processing begins with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+
+Syntax: `* expression`
 
 There are six subcategories of conditional processing:
 
