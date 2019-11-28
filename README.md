@@ -185,9 +185,29 @@ Example:
 
 ## conditions
 
-A condition begin with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+There are two categories of conditions in the dialogue:
 
-There are three types of condition in botscript dialogues:
+* **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
+* **Conditional processing**: checking the operation process in the dialogue and ability to respond to human
+
+A conditional activation begins with `%` symbol.
+
+For example:
+
+```bash
++ knock knock
+- who is there
+
+# % is shorthand for: $replies[1] == something
++ *
+% who is there
+* $input == its me -> i know you!
+- $1 who?
+```
+
+A conditional processing begins with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+
+There are six subcategories of conditional processing:
 
 * Conditional reply
 * Conditional flow
