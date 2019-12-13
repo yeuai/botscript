@@ -389,6 +389,43 @@ Example:
 ^ But when it gets bad, I take something for it!
 ```
 
+## plugins
+
+BotScript allows to define plugins which will be activated usage if the one added via code implementation
+
+A plugin started with `>` line for pre-processing  
+A plugin started with `<` line for post-processing  
+A plugin runs in pipeline of message request processing  
+A plugin may contain conditional activation  
+A plugin may be grouped in a group  
+
+Syntax:
+
+```bash
+# pre-processing
+> plugin name
+% conditional expression
+
+# post-processing
+< another plugin name
+% conditional expression
+```
+
+Example:
+
+```js
+/**
+> addTimeNow
+
++ what time is it
+- it is $time
+*/
+function addTimeNow(req: Request, ctx: Context) {
+  const now = new Date()
+  req.variables.time= `${now.getHours()} : ${now.getMinutes()}`
+}
+```
+
 # Examples
 
 See the [`examples/`](./examples) directory.
