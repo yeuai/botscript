@@ -5,9 +5,7 @@
   "main": "dist/engine",
   "scripts": {
     "test": "mocha",
-    "build": "rimraf dist && tsc",
-    "deploy": "npm publish",
-    "postpublish": "npm publish pkg --ignore-scripts --@jgierer12:registry='https://registry.npmjs.org'"
+    "build": "rimraf dist && tsc"
   },
   "repository": {
     "type": "git",

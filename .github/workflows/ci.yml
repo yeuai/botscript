@@ -29,9 +29,10 @@ jobs:
     - name: publish
       if: github.event_name == 'release' && github.event.action == 'published'
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
-        NPM_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
+        NPM_TOKEN: ${{ secrets.NPM_PKG_AUTH_TOKEN }}
       run: |
         echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
         echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
-        npm run deploy
+        npm publish --ignore-scripts --@yeuai:registry='https://registry.npmjs.org'
+        npm publish --ignore-scripts --@yeuai:registry=https://npm.pkg.github.com'
