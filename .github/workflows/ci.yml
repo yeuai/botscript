@@ -1,4 +1,4 @@
-name: Publish to GitHub Package Registry
+name: Build, Test and Publish Package on Release
 
 on: [push, release]
 #on:
