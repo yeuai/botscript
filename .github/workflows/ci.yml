@@ -30,5 +30,8 @@ jobs:
       if: github.event_name == 'release' && github.event.action == 'published'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
+        NPM_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
       run: |
+        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
+        echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
         npm run deploy
