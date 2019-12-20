@@ -5,8 +5,7 @@
   "main": "dist/engine",
   "scripts": {
     "test": "mocha",
-    "build": "rimraf dist && tsc",
-    "deploy": "npm publish"
+    "build": "rimraf dist && tsc"
   },
   "repository": {
     "type": "git",
@@ -52,6 +51,6 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@yeuai"
+    "access": "public"
   }
 }
