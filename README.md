@@ -79,6 +79,8 @@ A dialogue may contains:
 
 A trigger is a pattern help bot knows what human is saying.
 
+A trigger begins with symbol `+` in the dialogue.
+
 A trigger may contains **wildcards**. With wildcards, you can set a placeholder within trigger that the bot can capture.
 
 ```bash
@@ -102,7 +104,7 @@ A trigger may contains:
 
 ## replies
 
-A reply begin with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply will be selected.
+A reply begins with `-` symbol in the dialogue and goes with the trigger. If the dialogue has multiple replies then a random reply will be selected.
 
 ```bash
 + hello
@@ -183,9 +185,33 @@ Example:
 
 ## conditions
 
-A condition begin with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+There are two categories of conditions in the dialogue:
 
-There are three types of condition in botscript dialogues:
+* **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
+* **Conditional processing**: checking the operation process in the dialogue and ability to respond to human
+
+A conditional activation begins with `%` symbol.
+
+Syntax: `% expression`
+
+For example:
+
+```bash
++ knock knock
+- who is there
+
+# % is shorthand for: $replies[1] == something
++ *
+% who is there
+* $input == its me -> i know you!
+- $1 who?
+```
+
+A conditional processing begins with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+
+Syntax: `* expression`
+
+There are six subcategories of conditional processing:
 
 * Conditional reply
 * Conditional flow
@@ -361,6 +387,43 @@ Example:
 ^ She seemed surprised.
 - I have kleptomania.
 ^ But when it gets bad, I take something for it!
+```
+
+## plugins
+
+BotScript allows to define plugins which will be activated usage if the one added via code implementation
+
+A plugin started with `>` line for pre-processing  
+A plugin started with `<` line for post-processing  
+A plugin runs in pipeline of message request processing  
+A plugin may contain conditional activation  
+A plugin may be grouped in a group  
+
+Syntax:
+
+```bash
+# pre-processing
+> plugin name
+% conditional expression
+
+# post-processing
+< another plugin name
+% conditional expression
+```
+
+Example:
+
+```js
+/**
+> addTimeNow
+
++ what time is it
+- it is $time
+*/
+function addTimeNow(req: Request, ctx: Context) {
+  const now = new Date()
+  req.variables.time= `${now.getHours()} : ${now.getMinutes()}`
+}
 ```
 
 # Examples
