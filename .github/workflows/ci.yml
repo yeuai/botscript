@@ -32,7 +32,7 @@ jobs:
         NPM_TOKEN: ${{ secrets.NPM_PKG_AUTH_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
       run: |
-        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
+        echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
         npm publish --ignore-scripts --@yeuai:registry='https://registry.npmjs.org'
-        echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" > .npmrc
-        npm publish --ignore-scripts --@yeuai:registry=https://npm.pkg.github.com'
+        npm publish --ignore-scripts --@yeuai:registry='https://npm.pkg.github.com'
