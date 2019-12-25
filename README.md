@@ -393,8 +393,7 @@ Example:
 
 BotScript allows to define plugins which will be activated usage if the one added via code implementation
 
-A plugin started with `>` line for pre-processing  
-A plugin started with `<` line for post-processing  
+A plugin started with `>` line for pre, post-processing  
 A plugin runs in pipeline of message request processing  
 A plugin may contain conditional activation  
 A plugin may be grouped in a group  
@@ -402,12 +401,7 @@ A plugin may be grouped in a group
 Syntax:
 
 ```bash
-# pre-processing
 > plugin name
-% conditional expression
-
-# post-processing
-< another plugin name
 % conditional expression
 ```
 
@@ -416,6 +410,7 @@ Example:
 ```js
 /**
 > addTimeNow
+> noReplyHandle
 
 + what time is it
 - it is $time
@@ -423,6 +418,19 @@ Example:
 function addTimeNow(req: Request, ctx: Context) {
   const now = new Date()
   req.variables.time= `${now.getHours()} : ${now.getMinutes()}`
+}
+
+/**
+ * plugin for post-processing
+ * */
+function noReplyHandle() {
+  const postProcessing = (res: Request) => {
+    if (res.message === 'NO REPLY!') {
+      res.message = `Sorry! I don't understand!`
+    }
+  }
+
+  return postProcessing
 }
 ```
 
