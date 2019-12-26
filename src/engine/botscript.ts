@@ -7,6 +7,7 @@ import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { Types, PluginCallback } from '../interfaces/types';
+import { addTimeNow, noReplyHandle } from '../plugins';
 
 /**
  * BotScript dialogue engine
@@ -39,6 +40,10 @@ export class BotScript extends EventEmitter  {
     this.logger = new Logger();
     this.machine = new BotMachine();
     this.plugins = new Map();
+
+    // add built-in plugins
+    this.plugin('addTimeNow', addTimeNow);
+    this.plugin('noReplyHandle', noReplyHandle);
   }
 
   /**
@@ -140,9 +145,29 @@ export class BotScript extends EventEmitter  {
     // fires state machine to resolve request
     req.botId = context.id;
     req.isForward = false;
+    const postProcessing: PluginCallback[] = [];
+
+    // fire plugin pre-processing
+    context.plugins.forEach(item => {
+      // TODO: check conditional activation
+      if (this.plugins.has(item.name)) {
+        const plugin = this.plugins.get(item.name) as PluginCallback;
+        const vPostProcessing = plugin(req, context);
+        if (typeof vPostProcessing === 'function') {
+          postProcessing.push(vPostProcessing);
+        }
+      }
+    });
+
     this.machine.resolve(req, context);
 
     this.populateReply(req, context);
+
+    // post-processing
+    postProcessing.forEach(item => {
+      item(req, context);
+    });
+
     return req;
   }
 
@@ -157,11 +182,32 @@ export class BotScript extends EventEmitter  {
     // fires state machine to resolve request
     req.botId = context.id;
     req.isForward = false;
+
+    const postProcessing: PluginCallback[] = [];
+
+    // fire plugin pre-processing
+    context.plugins.forEach(item => {
+      // TODO: check conditional activation
+      if (this.plugins.has(item.name)) {
+        const plugin = this.plugins.get(item.name) as PluginCallback;
+        const vPostProcessing = plugin(req, context);
+        if (vPostProcessing instanceof Function) {
+
+          postProcessing.push(vPostProcessing);
+        }
+      }
+    });
+
     this.machine.resolve(req, context);
 
     // Handle conditional commands, conditional event
     await this.applyConditionalDialogues(req, context);
     this.populateReply(req, context);
+
+    // post-processing
+    postProcessing.forEach(item => {
+      item(req, context);
+    });
 
     return req;
   }

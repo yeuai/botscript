@@ -252,4 +252,36 @@ describe('BotScript', () => {
       assert.deepEqual(req.prompt, ['warranty', 'support', 'feedback'], 'get prompts');
     });
   });
+
+  describe('plugin', () => {
+
+    const botPlugin = new BotScript();
+
+    botPlugin.parse(`
+    > addTimeNow
+
+    > noReplyHandle
+
+    + what time is it
+    - it is $time
+    `);
+
+    it('should ask time now', async () => {
+      const now = new Date();
+      const req = new Request('what time is it');
+      const time = `${now.getHours()}:${now.getMinutes()}`;
+
+      await botPlugin.handleAsync(req);
+      assert.equal(req.variables.time, time, 'respond time in format HH:mm');
+    });
+
+    it('should respond not understand', async () => {
+      const req = new Request('how is it today');
+
+      await botPlugin.handleAsync(req);
+      assert.match(req.speechResponse, /I don't understand/i);
+    });
+
+  });
+
 });
