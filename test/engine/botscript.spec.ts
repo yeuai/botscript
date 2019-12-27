@@ -291,8 +291,8 @@ describe('BotScript', () => {
 
     botPlugin.parse(`
     > addTimeNow
-
     > noReplyHandle
+    * true
 
     ~ name
     - what is your name?

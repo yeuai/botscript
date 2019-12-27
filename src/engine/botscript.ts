@@ -207,16 +207,35 @@ export class BotScript extends EventEmitter {
    */
   private preProcessRequest(plugins: string[], req: Request, ctx: Context) {
     const postProcessing: PluginCallback[] = [];
-    const ctxPlugins = plugins
-      .filter(x => {
-        // TODO: check context conditional plugin for activation
-        // TODO: deconstruct group of plugins
-        return this.plugins.has(x);
-      })
-      .map(x => this.plugins.get(x)) as PluginCallback[];
+    const activatedPlugins: PluginCallback[] = [];
+
+    plugins
+      .forEach(x => {
+        if (!ctx.plugins.has(x)) {
+          return false;
+        }
+
+        // check context conditional plugin for activation
+        const info = ctx.plugins.get(x) as Struct;
+        const cond = info.conditions.find(() => true) as string;
+        if (typeof cond === 'string' && !utils.evaluate(cond, req)) {
+          return false;
+        } else {
+          this.logger.debug('context conditional plugin is activated: (%s) %s', x, cond);
+        }
+
+        // deconstruct group of plugins from (struct:head)
+        info.head.forEach(p => {
+          if (this.plugins.has(p)) {
+            this.logger.debug('context plugin is activated:: (%s)', p);
+            const pluginGroup = this.plugins.get(p) as PluginCallback;
+            activatedPlugins.push(pluginGroup);
+          }
+        });
+      });
 
     // fire plugin pre-processing
-    ctxPlugins.forEach(item => {
+    activatedPlugins.forEach(item => {
       if (this.plugins.has(item.name)) {
         const plugin = this.plugins.get(item.name) as PluginCallback;
         const vPostProcessing = plugin(req, ctx);

@@ -16,12 +16,7 @@ export class Context {
   // support custom patterns
   patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp | IActivator }>;
   // plugins system
-  plugins: Map<string, {
-    name: string,
-    conditions: string[],
-    // group of plugins (fired if conditions sastify)
-    plugins: string[],
-  }>;
+  plugins: Map<string, Struct>;
 
   constructor() {
     this.definitions = new Map();
