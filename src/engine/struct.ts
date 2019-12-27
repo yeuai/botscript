@@ -10,6 +10,7 @@ export const TYPES: any = ({
   '~': 'flows',
   '#': 'comment',
   '*': 'condition',
+  '>': 'plugin',
 });
 
 /**
@@ -35,7 +36,11 @@ function getScriptBody(script: string): string[] {
  */
 function getScriptHead(script: string): string[] {
   const type = script.charAt(0);
-  return script.split('\n').map(x => x.trim()).filter(x => x.startsWith(type)).map(x => x.substring(1).trim());
+  return script.split('\n')
+    .map(x => x.trim())
+    // get all types declaration
+    .filter(x => x.startsWith(type))
+    .map(x => x.substring(1).trim());
 }
 
 /**
@@ -122,6 +127,9 @@ export class Struct {
         } else {
           throw new Error('invalid command');
         }
+        break;
+      case TYPES['>']:
+        struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
         break;
 
     }

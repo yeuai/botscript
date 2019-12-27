@@ -6,12 +6,13 @@ import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
-import { Types } from '../interfaces/types';
+import { Types, PluginCallback } from '../interfaces/types';
+import { addTimeNow, noReplyHandle, normalize } from '../plugins';
 
 /**
  * BotScript dialogue engine
  */
-export class BotScript extends EventEmitter  {
+export class BotScript extends EventEmitter {
 
   /**
    * Bot data context
@@ -28,11 +29,22 @@ export class BotScript extends EventEmitter  {
    */
   logger: Logger;
 
+  /**
+   * plugins system
+   */
+  plugins: Map<string, (req: Request, ctx: Context) => void | PluginCallback>;
+
   constructor() {
     super();
     this.context = new Context();
     this.logger = new Logger();
     this.machine = new BotMachine();
+    this.plugins = new Map();
+
+    // add built-in plugins
+    this.plugin('addTimeNow', addTimeNow);
+    this.plugin('noReplyHandle', noReplyHandle);
+    this.plugin('normalize', normalize);
   }
 
   /**
@@ -61,6 +73,8 @@ export class BotScript extends EventEmitter  {
         return this.context.flows;
       case 'command':
         return this.context.commands;
+      case 'plugin':
+        return this.context.plugins;
       default:
         throw new Error('Not found type: ' + type);
     }
@@ -71,7 +85,7 @@ export class BotScript extends EventEmitter  {
    * @param content
    */
   parse(content: string) {
-    const scripts = content
+    content = content
       // convert CRLF into LF
       .replace(/\r\n/g, '\n')
       // remove spacing
@@ -82,7 +96,16 @@ export class BotScript extends EventEmitter  {
       .replace(/^!/gm, '\n!')
       // concat multiple lines (normalize)
       .replace(/\n\^/gm, ' ')
-      // split structure by linebreaks
+      // remove spaces
+      .trim();
+
+    if (!content) {
+      // do nothing
+      return this;
+    }
+
+    const scripts =  content
+    // split structure by linebreaks
       .split(/\n{2,}/)
       // remove empty lines
       .filter(script => script)
@@ -112,8 +135,18 @@ export class BotScript extends EventEmitter  {
   }
 
   /**
+   * Add plugin system
+   * @param name
+   * @param func
+   */
+  plugin(name: string, func: PluginCallback) {
+    this.plugins.set(name, func);
+  }
+
+  /**
    * Handle message request then create response back
    * Notice: use handleAsync with supported conditional dialogues
+   * TODO: Remove this version (only use hanldeAsync)?
    * @param req human request context
    * @param ctx bot data context
    */
@@ -123,9 +156,18 @@ export class BotScript extends EventEmitter  {
     // fires state machine to resolve request
     req.botId = context.id;
     req.isForward = false;
+
+    // fire plugin for pre-processing
+    const plugins = [...context.plugins.keys()];
+    const postProcessing = this.preProcessRequest(plugins, req, context);
+
     this.machine.resolve(req, context);
 
     this.populateReply(req, context);
+
+    // post-processing
+    this.postProcessRequest(postProcessing, req, context);
+
     return req;
   }
 
@@ -137,16 +179,85 @@ export class BotScript extends EventEmitter  {
   async handleAsync(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
-    // fires state machine to resolve request
     req.botId = context.id;
     req.isForward = false;
+
+    // fire plugin for pre-processing
+    const plugins = [...context.plugins.keys()];
+    const postProcessing = this.preProcessRequest(plugins, req, context);
+
+    // fires state machine to resolve request
     this.machine.resolve(req, context);
 
     // Handle conditional commands, conditional event
     await this.applyConditionalDialogues(req, context);
     this.populateReply(req, context);
 
+    // post-processing
+    this.postProcessRequest(postProcessing, req, context);
+
     return req;
+  }
+
+  /**
+   * Run pre-process request
+   * @param plugins Context plugin
+   * @param req
+   * @param ctx
+   */
+  private preProcessRequest(plugins: string[], req: Request, ctx: Context) {
+    const postProcessing: PluginCallback[] = [];
+    const activatedPlugins: PluginCallback[] = [];
+
+    plugins
+      .forEach(x => {
+        if (!ctx.plugins.has(x)) {
+          return false;
+        }
+
+        // check context conditional plugin for activation
+        const info = ctx.plugins.get(x) as Struct;
+        const cond = info.conditions.find(() => true) as string;
+        if (typeof cond === 'string' && !utils.evaluate(cond, req)) {
+          return false;
+        } else {
+          this.logger.debug('context conditional plugin is activated: (%s) %s', x, cond);
+        }
+
+        // deconstruct group of plugins from (struct:head)
+        info.head.forEach(p => {
+          if (this.plugins.has(p)) {
+            this.logger.debug('context plugin is activated:: (%s)', p);
+            const pluginGroup = this.plugins.get(p) as PluginCallback;
+            activatedPlugins.push(pluginGroup);
+          }
+        });
+      });
+
+    // fire plugin pre-processing
+    activatedPlugins.forEach(item => {
+      if (this.plugins.has(item.name)) {
+        const plugin = this.plugins.get(item.name) as PluginCallback;
+        const vPostProcessing = plugin(req, ctx);
+        if (typeof vPostProcessing === 'function') {
+          postProcessing.push(vPostProcessing);
+        }
+      }
+    });
+    return postProcessing;
+  }
+
+  /**
+   * Run post-process request
+   * @param plugins context plugin
+   * @param req
+   * @param ctx
+   */
+  private postProcessRequest(plugins: PluginCallback[], req: Request, ctx: Context) {
+    // post-processing
+    plugins.forEach(item => {
+      item(req, ctx);
+    });
   }
 
   /**
@@ -197,7 +308,7 @@ export class BotScript extends EventEmitter  {
     for (const x of dialogConditions) {
       if (!x) {
         return req;
-      } else if (x.type === Types.Forward) {
+      } else if (x.type === Types.ConditionalForward) {
         // conditional forward
         if (ctx.dialogues.has(x.value)) {
           req.isForward = true;
@@ -208,13 +319,13 @@ export class BotScript extends EventEmitter  {
         } else {
           this.logger.warn('No forward destination:', x.value);
         }
-      } else if (x.type === Types.Reply) {
+      } else if (x.type === Types.ConditionalReply) {
         // conditional reply
         const reply = x.value;
         this.logger.info('Populate speech response, with conditional reply:', req.message, reply);
         // speech response candidate
         req.speechResponse = reply;
-      } else if (x.type === Types.Prompt) {
+      } else if (x.type === Types.ConditionalPrompt) {
         // conditional prompt
         this.logger.debug('Get prompt definition:', x.value);
         if (ctx.definitions.has(x.value)) {
@@ -222,7 +333,7 @@ export class BotScript extends EventEmitter  {
         } else {
           this.logger.warn('No prompt definition:', x.value);
         }
-      } else if (x.type === Types.Command) {
+      } else if (x.type === Types.ConditionalCommand) {
         // conditional command
         if (ctx.commands.has(x.value)) {
           const command = ctx.commands.get(x.value) as Struct;
@@ -243,7 +354,7 @@ export class BotScript extends EventEmitter  {
           this.logger.warn('No command definition:', x.value);
           this.emit('command', 'No command definition!', req, ctx, x.value);
         }
-      } else if (x.type === Types.Event) {
+      } else if (x.type === Types.ConditionalEvent) {
         // conditional event
         this.logger.debug('Emit conditional event:', x.value);
         this.emit(x.value, req, ctx);
