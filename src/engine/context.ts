@@ -19,8 +19,8 @@ export class Context {
   plugins: Map<string, {
     name: string,
     conditions: string[],
-    plugins: Map<any, any>, // group of plugins (fired if conditions sastify)
-    func: (req: Request, ctx: Context) => void,
+    // group of plugins (fired if conditions sastify)
+    plugins: string[],
   }>;
 
   constructor() {
