@@ -216,6 +216,7 @@ export class BotScript extends EventEmitter {
         }
 
         // check context conditional plugin for activation
+        // TODO: Support multiple (AND) conditions
         const info = ctx.plugins.get(x) as Struct;
         const cond = info.conditions.find(() => true) as string;
         if (typeof cond === 'string' && !utils.evaluate(cond, req)) {
@@ -279,6 +280,8 @@ export class BotScript extends EventEmitter {
     }
 
     const dialogConditions = conditions
+      // remove conditional activation
+      .filter(x => !/^%/.test(x))
       .map(x => {
         const match = /([->@?+])>/.exec(x) as RegExpExecArray;
         if (!match) {

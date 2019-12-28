@@ -192,6 +192,10 @@ describe('BotScript', () => {
       req.variables.notified = true;
     });
 
+    it('should handle conditional activation', async () => {
+      assert.isTrue(false, 'Not implement!');
+    });
+
     it('should handle conditional flows', async () => {
       const req = new Request('i want to ask');
       condBot.handle(req);

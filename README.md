@@ -188,11 +188,12 @@ Example:
 There are two categories of conditions in the dialogue:
 
 * **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
-* **Conditional processing**: checking the operation process in the dialogue and ability to respond to human
+* **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
 
-A conditional activation begins with `%` symbol.
+A conditions begins with star symbol: `*`  
+A conditional activation has a symbol `%` followed then  
 
-Syntax: `% expression`
+Syntax: `* %expression`
 
 For example:
 
@@ -200,14 +201,13 @@ For example:
 + knock knock
 - who is there
 
-# % is shorthand for: $replies[1] == something
 + *
-% who is there
+* % who is there
 * $input == its me -> i know you!
 - $1 who?
 ```
 
-A conditional processing begins with `*` symbol. Before bot replies to human, the conditions will be checked and do some logics.
+A conditional reply allows bot test the conditions and do some logics before replies to human.
 
 Syntax: `* expression`
 
@@ -402,7 +402,7 @@ Syntax:
 
 ```bash
 > plugin name
-% conditional expression
+* conditional expression
 ```
 
 Example:
