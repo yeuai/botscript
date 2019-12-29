@@ -417,7 +417,7 @@ Example:
 */
 function addTimeNow(req: Request, ctx: Context) {
   const now = new Date()
-  req.variables.time= `${now.getHours()} : ${now.getMinutes()}`
+  req.variables.time = `${now.getHours()} : ${now.getMinutes()}`
 }
 
 /**
