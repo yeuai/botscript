@@ -320,7 +320,7 @@ export class BotMachine {
 
   /**
    * Explore dialogue triggers
-   * @param context, ctx, req
+   * @param obj dialog, ctx, req
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
     const result = getActivators(dialog, ctx)
@@ -342,6 +342,20 @@ export class BotMachine {
         req.variables.$input = req.message;
         return true;
       });
+
+    // test conditional activation
+    const vActiveConditions = dialog.conditions.filter(x => /^%/.test(x)).map(x => x.replace(/^%/, ''));
+    if (
+      // pass
+      result === true
+      // contains conditional activation
+      && vActiveConditions.length > 0
+      // all pre-active conditions is pass
+      && !vActiveConditions.every(x => utils.evaluate(x, Object.assign({}, req, req.variables)))
+    ) {
+      this.logger.debug('Conditional activation is not sastify!');
+      return false;
+    }
     return result;
   }
 

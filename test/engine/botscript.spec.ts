@@ -182,6 +182,14 @@ describe('BotScript', () => {
     + help me
     * true ?> topics
     - Please choose a topic!
+
+    + knock knock
+    - who is there
+
+    + *
+    * % $previous[0] == 'who is there'
+    * $input == 'its me' -> i know you!
+    - $1 who?
     `);
 
     /**
@@ -190,6 +198,24 @@ describe('BotScript', () => {
     condBot.once('notify', (req: Request) => {
       condBot.logger.info('Got an event:', req.currentDialogue, req.variables);
       req.variables.notified = true;
+    });
+
+    it('should handle conditional activation', async () => {
+      const req = new Request();
+
+      await condBot.handleAsync(req.enter('knock knock'));
+      assert.match(req.speechResponse, /who is there/i);
+
+      await condBot.handleAsync(req.enter('vunb'));
+      assert.match(req.speechResponse, /vunb who/i);
+
+      const req2 = new Request();
+
+      await condBot.handleAsync(req2.enter('knock knock'));
+      assert.match(req2.speechResponse, /who is there/i);
+
+      await condBot.handleAsync(req2.enter('its me'));
+      assert.match(req2.speechResponse, /i know you/i);
     });
 
     it('should handle conditional flows', async () => {

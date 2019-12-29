@@ -74,6 +74,7 @@ export function evaluate(code: string, context: any) {
   })));
 
   try {
+    logger.debug('Evaluate: %s', code);
     return evalSync(code, vars);
   } catch (err) {
     logger.warn('Error while eval expression', { msg: (err && err.message) });
