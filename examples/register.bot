@@ -23,6 +23,6 @@
 ~ reg_email
 ~ reg_password
 ~ reg_confirm
-* $reg_confirm @> register_account
+* $reg_confirm == 'yes' @> register_account
 * $reg_confirm == 'no' -> Bạn đã hủy đăng ký!
 - Bạn đã đăng ký tài khoản $reg_username: $reg_result_message!
