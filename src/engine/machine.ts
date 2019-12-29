@@ -351,8 +351,9 @@ export class BotMachine {
       // contains conditional activation
       && vActiveConditions.length > 0
       // all pre-active conditions is pass
-      && !dialog.conditions.every(x => utils.evaluate(x, Object.assign({}, req, req.variables)))
+      && !vActiveConditions.every(x => utils.evaluate(x, Object.assign({}, req, req.variables)))
     ) {
+      this.logger.debug('Conditional activation is not sastify!');
       return false;
     }
     return result;

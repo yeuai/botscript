@@ -71,6 +71,11 @@ export class Request {
   public prompt: string[];
 
   /**
+   * Bot previous speech responses
+   */
+  public previous: string[];
+
+  /**
    * Initialize a new message request
    * @param message text input
    */
@@ -80,6 +85,7 @@ export class Request {
     this.isFlowing = false;
     this.resolvedFlows = [];
     this.missingFlows = [];
+    this.previous = [];
 
     if (message) {
       this.message = message.toLowerCase();
