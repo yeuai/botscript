@@ -337,6 +337,10 @@ export class BotMachine {
         // add $ as the first matched variable
         if (captures.$1) {
           req.variables.$ = captures.$1;
+          // dialogue is in the flow
+          if (req.isFlowing) {
+            req.variables[req.currentFlow] = captures.$1;
+          }
         }
         // reference to the last input
         req.variables.$input = req.message;
