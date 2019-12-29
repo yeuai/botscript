@@ -90,9 +90,9 @@ export function evaluate(code: string, context: any) {
  */
 export function callHttpService(command: Struct, req: Request) {
   const headers = command.body.map(x => x.split(':'));
-  const method = command.options[0];
+  const method = command.options[0].toLowerCase();
   const url = command.options[1];
-  const body = method === 'GET' ? undefined : req.variables;
+  const body = /^get$/.test(method) ? undefined : req.variables;
 
   return fetch(url, { headers, method, body }).then(res => res.json())
     .catch(err => {
