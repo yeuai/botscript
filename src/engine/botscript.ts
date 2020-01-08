@@ -402,6 +402,7 @@ export class BotScript extends EventEmitter {
     req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
     this.logger.info(`Populate speech response: ${req.message} -> ${replyCandidate} -> ${req.speechResponse}`);
     // Add previous speech history
+    // TODO: make sure previous has initialized!
     req.previous.splice(0, 0, req.speechResponse);
     if (req.previous.length > 100) {
       req.previous.pop();

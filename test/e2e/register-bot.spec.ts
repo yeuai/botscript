@@ -6,7 +6,7 @@ import { fail } from 'assert';
 /**
  * Register a new account
  */
-describe('register.bot (e2e)', async () => {
+describe('Register.bot (e2e)', async () => {
   const bot = new BotScript();
   const req = new Request();
 
