@@ -4,10 +4,16 @@ A text-based scripting language, dialog system and bot engine for Conversational
 
 [![Join the chat at https://gitter.im/yeuai/rivebot-ce](https://badges.gitter.im/yeuai/rivebot-ce.svg)](https://gitter.im/yeuai/rivebot-ce)
 [![Git tag](https://img.shields.io/github/tag/yeuai/botscript.svg)](https://github.com/yeuai/botscript)
+[![npm version](https://img.shields.io/npm/v/@yeuai/botscript.svg?style=flat)](https://www.npmjs.com/package/@yeuai/botscript)
+[![npm downloads](https://img.shields.io/npm/dm/@yeuai/botscript.svg)](https://www.npmjs.com/package/@yeuai/botscript)
 [![Travis](https://travis-ci.org/yeuai/botscript.svg)](https://travis-ci.org/yeuai/botscript)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > This is a part of project [yeu.ai](https://github.com/yeuai). An open platform for experiment and training Vietnamese chatbot!
+
+# Documentation
+
+[Read the wiki](https://github.com/yeuai/botscript/wiki) for all the details on how to get started playing with BotScript
 
 # Specification
 
@@ -41,6 +47,24 @@ Comments make your code clearer, you can add a comment in BotScript document by 
 ```bash
 # here is a comment
 # here is an other
+```
+
+## continuation
+
+The continuation allows the code to break to span multiple of lines. In the case, you can write a really long reply or prompt.
+
+A continuation must start with symbol `^` at the beginning of the line.
+
+Example:
+
+```bash
++ tell me a joke
+- As a scarecrow, people say I'm outstanding in my field.
+^ But hay - it's in my jeans.
+- I told my girlfriend she drew her eyebrows too high.
+^ She seemed surprised.
+- I have kleptomania.
+^ But when it gets bad, I take something for it!
 ```
 
 ## dialogue
@@ -370,24 +394,6 @@ Example:
 ```
 
 By combining `NLP`, `Command Service`, `Events` you can teach the bot to be smarter.
-
-## continuation
-
-The continuation allows the code to break to span multiple of lines. In the case, you can write a really long reply or prompt.
-
-A continuation must start with symbol `^` at the beginning of the line.
-
-Example:
-
-```bash
-+ tell me a joke
-- As a scarecrow, people say I'm outstanding in my field.
-^ But hay - it's in my jeans.
-- I told my girlfriend she drew her eyebrows too high.
-^ She seemed surprised.
-- I have kleptomania.
-^ But when it gets bad, I take something for it!
-```
 
 ## plugins
 
