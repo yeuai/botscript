@@ -303,6 +303,10 @@ export class BotMachine {
     // reset speech response
     req.prompt = [];
     req.speechResponse = '';
+    if (!req.isForward) {
+      // clear first-state conditions
+      req.currentDialogue = '';
+    }
     this.logger.info(`Resolve: ${req.message}, isFlowing: ${req.isFlowing}`);
 
     // TODO: Explore dialogues first to define type which is forward, flow or first-dialogue.
