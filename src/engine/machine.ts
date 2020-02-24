@@ -302,8 +302,10 @@ export class BotMachine {
    */
   resolve(req: Request, ctx: Context) {
     // reset speech response
+    // & interpret new state machine
     req.prompt = [];
     req.speechResponse = '';
+    req.isNotResponse = false;
     if (!req.isForward) {
       // clear first-state conditions
       req.currentDialogue = '';
