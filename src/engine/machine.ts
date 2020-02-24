@@ -145,6 +145,7 @@ export class BotMachine {
                   target: 'output',
                   cond: (context, event) => {
                     context.req.speechResponse = 'NO REPLY!';
+                    context.req.isNotResponse = true;
                     return true;
                   },
                 },
