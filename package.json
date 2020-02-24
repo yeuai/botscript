@@ -1,6 +1,6 @@
 {
   "name": "@yeuai/botscript",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A text-based scripting language and bot engine for Conversational User Interfaces (CUI)",
   "main": "dist/engine",
   "scripts": {
@@ -23,25 +23,25 @@
   },
   "homepage": "https://github.com/yeuai/botscript#readme",
   "devDependencies": {
-    "@types/chai": "^4.2.4",
+    "@types/chai": "^4.2.9",
     "@types/debug": "^4.1.5",
-    "@types/jexl": "^2.1.0",
+    "@types/jexl": "^2.2.0",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.12.7",
-    "@types/node-fetch": "^2.5.3",
+    "@types/node": "^12.12.28",
+    "@types/node-fetch": "^2.5.4",
     "@types/xregexp": "^3.0.30",
     "chai": "^4.2.0",
     "mocha": "^6.2.2",
-    "rimraf": "^3.0.0",
-    "ts-node-dev": "^1.0.0-pre.43",
-    "tslint": "^5.20.0",
-    "typescript": "^3.6.4"
+    "rimraf": "^3.0.2",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "tslint": "^5.20.1",
+    "typescript": "^3.8.2"
   },
   "dependencies": {
     "debug": "^4.1.1",
     "jexl": "^2.2.2",
     "node-fetch": "^2.6.0",
-    "xregexp": "^4.2.4",
+    "xregexp": "^4.3.0",
     "xstate": "^4.6.7"
   },
   "files": [

@@ -267,6 +267,10 @@ export class BotScript extends EventEmitter {
    * @param ctx
    */
   private async applyConditionalDialogues(req: Request, ctx: Context): Promise<Request> {
+    if (req.isNotResponse) {
+      this.logger.info('Bot has no response! Conditions will not be applied.');
+      return req;
+    }
     this.logger.info('Evaluate conditional command for:', req.currentDialogue);
     let conditions: string[] = [];
     const dialog = ctx.getDialogue(req.currentDialogue) as Struct;
