@@ -47,7 +47,7 @@ const PATTERN_INTERPOLATIONS = [
     search: /!*\[(\w+)\]/g,
     replaceWith: (sub: string, name: string, def: Map<string, Struct>) => {
       const struct = def.get(name.toLowerCase()) as Struct;
-      return struct === null ? name : `(${struct.options.join('|')})`;
+      return !struct ? name : `(${struct.options.join('|')})`;
     },
   },
 ];
