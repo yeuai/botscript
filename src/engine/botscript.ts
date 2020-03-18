@@ -104,8 +104,8 @@ export class BotScript extends EventEmitter {
       return this;
     }
 
-    const scripts =  content
-    // split structure by linebreaks
+    const scripts = content
+      // split structure by linebreaks
       .split(/\n{2,}/)
       // remove empty lines
       .filter(script => script)
@@ -154,7 +154,7 @@ export class BotScript extends EventEmitter {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
     // fires state machine to resolve request
-    req.botId = context.id;
+    // req.botId = context.id;
     req.isForward = false;
 
     // fire plugin for pre-processing
@@ -179,7 +179,7 @@ export class BotScript extends EventEmitter {
   async handleAsync(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
-    req.botId = context.id;
+    // req.botId = context.id;
     req.isForward = false;
 
     // fire plugin for pre-processing
@@ -236,13 +236,10 @@ export class BotScript extends EventEmitter {
       });
 
     // fire plugin pre-processing
-    activatedPlugins.forEach(item => {
-      if (this.plugins.has(item.name)) {
-        const plugin = this.plugins.get(item.name) as PluginCallback;
-        const vPostProcessing = plugin(req, ctx);
-        if (typeof vPostProcessing === 'function') {
-          postProcessing.push(vPostProcessing);
-        }
+    activatedPlugins.forEach(plugin => {
+      const vPostProcessing = plugin(req, ctx);
+      if (typeof vPostProcessing === 'function') {
+        postProcessing.push(vPostProcessing);
       }
     });
     return postProcessing;
