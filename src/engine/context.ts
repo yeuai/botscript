@@ -14,7 +14,7 @@ export class Context {
   commands: Map<string, Struct>;
   flows: Map<string, Struct>;
   // support custom patterns
-  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string) => RegExp | IActivator }>;
+  patterns: Map<string, { name: string, match: RegExp, func: (pattern: string, req: Request) => RegExp | IActivator }>;
   // plugins system
   plugins: Map<string, Struct>;
 

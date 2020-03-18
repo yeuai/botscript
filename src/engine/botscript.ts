@@ -128,7 +128,7 @@ export class BotScript extends EventEmitter {
   addPatternCapability({ name, match, func }: {
     name: string,
     match: RegExp,
-    func: (pattern: string) => RegExp | IActivator,
+    func: (pattern: string, req: Request) => RegExp | IActivator,
   }) {
     this.context.patterns.set(name, { name, match, func });
     return this;

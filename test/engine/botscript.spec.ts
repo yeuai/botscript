@@ -1,5 +1,5 @@
-import { BotScript, Request } from '../../src/engine';
 import { assert } from 'chai';
+import { BotScript, Request } from '../../src/engine';
 
 describe('BotScript', () => {
 
@@ -92,12 +92,23 @@ describe('BotScript', () => {
   describe('add custom pattern', () => {
     // tslint:disable-next-line: no-shadowed-variable
     const bot = new BotScript();
+    bot.plugin('nlp', (req) => {
+      if (req.message === 'tôi là ai') {
+        req.intent = 'whoami';
+        req.entities = [{
+          name: 'PER',
+          value: 'Genius',
+        }];
+      }
+    });
     bot.parse(`
     + ([{ tag:VB }]) [{ word:you }]
     - So you want to $1 me, huh?
 
-    + %[intent]
+    + intent: whoami
     - You are genius!
+
+    > nlp
     `);
     bot
       .addPatternCapability({
@@ -112,11 +123,17 @@ describe('BotScript', () => {
       })
       .addPatternCapability({
         name: 'Intent detection',
-        match: /^\%\[\s*(?:intent|ner)\s*\]$/i,
-        func: (pattern) => ({
+        match: /^intent:/i,
+        func: (pattern, req) => ({
           source: pattern,
-          test: (input) => /buy/i.test(input),
-          exec: (input) => [input, 'something'],
+          test: (input) => {
+            const vIntentName = pattern.replace(/^intent:/i, '').trim();
+            return req.intent === vIntentName;
+          },
+          exec: (input) => {
+            // entities list
+            return req.entities.map((x: any) => x.value);
+          },
           toString: () => pattern,
         }),
       });
@@ -126,8 +143,9 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /you want to love/i, 'bot reply');
     });
 
-    it('should support custom pattern', async () => {
-      const req = await bot.handleAsync(new Request('buy something'));
+    it('should detect intent', async () => {
+      const req = await bot.handleAsync(new Request('tôi là ai'));
+      assert.match(req.intent, /whoami/i, 'intent');
       assert.match(req.speechResponse, /you are genius/i, 'bot reply');
     });
   });

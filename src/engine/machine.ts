@@ -330,7 +330,7 @@ export class BotMachine {
    * @param obj dialog, ctx, req
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
-    const result = getActivators(dialog, ctx)
+    const result = getActivators(dialog, ctx, req)
       .filter((x) => x.test(req.message))
       .some(pattern => {
         this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);

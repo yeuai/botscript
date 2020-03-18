@@ -51,6 +51,11 @@ export class Request {
   public entities: any;
 
   /**
+   * NLP intent detection
+   */
+  public intent: string;
+
+  /**
    * Current flow to be resolved
    */
   public currentFlow: string;
