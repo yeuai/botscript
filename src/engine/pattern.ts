@@ -1,5 +1,6 @@
 import XRegExp from 'xregexp';
 import { Struct } from './struct';
+import { Request } from './request';
 import { Context } from './context';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
@@ -80,13 +81,13 @@ const findDefinitionReplacer = (
  * @param context bot data context
  * @param notEqual negative flag
  */
-export function transform(pattern: string, context: Context, notEqual: boolean) {
+export function transform(pattern: string, request: Request, context: Context, notEqual: boolean) {
 
   // test custom patterns in triggers
   for (const [name, value] of context.patterns) {
     if (value.match.test(pattern)) {
       logger.debug('Pattern match: ', name, pattern, value.match.source);
-      return value.func(pattern);
+      return value.func(pattern, request);
     }
   }
 
@@ -135,6 +136,6 @@ export function execPattern(input: string, pattern: RegExp | IActivator) {
  * @param dialog random or dialogue flow
  * @param notEqual negative flag
  */
-export function getActivators(dialog: Struct, context: Context, notEqual = false) {
-  return dialog.triggers.map(x => transform(x, context, notEqual));
+export function getActivators(dialog: Struct, ctx: Context, req: Request, notEqual = false) {
+  return dialog.triggers.map(x => transform(x, req, ctx, notEqual));
 }
