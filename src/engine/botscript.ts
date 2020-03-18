@@ -32,7 +32,7 @@ export class BotScript extends EventEmitter {
   /**
    * plugins system
    */
-  plugins: Map<string, (req: Request, ctx: Context) => void | PluginCallback>;
+  plugins: Map<string, (req: Request, ctx: Context) => void | Promise<any> | PluginCallback>;
 
   constructor() {
     super();
@@ -144,35 +144,7 @@ export class BotScript extends EventEmitter {
   }
 
   /**
-   * Handle message request then create response back
-   * Notice: use handleAsync with supported conditional dialogues
-   * TODO: Remove this version (only use hanldeAsync)?
-   * @param req human request context
-   * @param ctx bot data context
-   */
-  handle(req: Request, ctx?: Context) {
-    this.logger.debug('New request: ', req.message);
-    const context = ctx || this.context;
-    // fires state machine to resolve request
-    // req.botId = context.id;
-    req.isForward = false;
-
-    // fire plugin for pre-processing
-    const plugins = [...context.plugins.keys()];
-    const postProcessing = this.preProcessRequest(plugins, req, context);
-
-    this.machine.resolve(req, context);
-
-    this.populateReply(req, context);
-
-    // post-processing
-    this.postProcessRequest(postProcessing, req, context);
-
-    return req;
-  }
-
-  /**
-   * Async handle request
+   * Async handle message request then create response back
    * @param req
    * @param ctx
    */
@@ -184,7 +156,7 @@ export class BotScript extends EventEmitter {
 
     // fire plugin for pre-processing
     const plugins = [...context.plugins.keys()];
-    const postProcessing = this.preProcessRequest(plugins, req, context);
+    const postProcessing = await this.preProcessRequest(plugins, req, context);
 
     // fires state machine to resolve request
     this.machine.resolve(req, context);
@@ -194,7 +166,7 @@ export class BotScript extends EventEmitter {
     this.populateReply(req, context);
 
     // post-processing
-    this.postProcessRequest(postProcessing, req, context);
+    await this.postProcessRequest(postProcessing, req, context);
 
     return req;
   }
@@ -205,7 +177,7 @@ export class BotScript extends EventEmitter {
    * @param req
    * @param ctx
    */
-  private preProcessRequest(plugins: string[], req: Request, ctx: Context) {
+  private async preProcessRequest(plugins: string[], req: Request, ctx: Context) {
     const postProcessing: PluginCallback[] = [];
     const activatedPlugins: PluginCallback[] = [];
 
@@ -236,12 +208,13 @@ export class BotScript extends EventEmitter {
       });
 
     // fire plugin pre-processing
-    activatedPlugins.forEach(plugin => {
-      const vPostProcessing = plugin(req, ctx);
+    for (const plugin of activatedPlugins) {
+      const vPostProcessing = await plugin(req, ctx);
       if (typeof vPostProcessing === 'function') {
         postProcessing.push(vPostProcessing);
       }
-    });
+    }
+
     return postProcessing;
   }
 
@@ -251,11 +224,11 @@ export class BotScript extends EventEmitter {
    * @param req
    * @param ctx
    */
-  private postProcessRequest(plugins: PluginCallback[], req: Request, ctx: Context) {
+  private async postProcessRequest(plugins: PluginCallback[], req: Request, ctx: Context) {
     // post-processing
-    plugins.forEach(item => {
-      item(req, ctx);
-    });
+    for (const plugin of plugins) {
+      await plugin(req, ctx);
+    }
   }
 
   /**

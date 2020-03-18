@@ -35,13 +35,13 @@ describe('BotScript', () => {
   describe('basic reply', () => {
     it('respond a message to human', async () => {
       const req = new Request('hello bot');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.match(req.speechResponse, /hello human/i, 'bot reply human');
     });
 
     it('should reply with definition', async () => {
       const req = new Request('what is your name');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.match(req.speechResponse, /my name is botscript/i, 'bot shows his name');
     });
   });
@@ -49,21 +49,21 @@ describe('BotScript', () => {
   describe('basic dialogue flows', () => {
     it('bot should ask human age', async () => {
       const req = flowsRequest.enter('My name is Vu');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.isTrue(req.isFlowing, 'enter dialogue flows!');
       assert.match(req.speechResponse, /how old are you/i, 'bot ask human\'s age');
     });
 
     it('bot should prompt again', async () => {
       const req = flowsRequest.enter('something');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
       assert.match(req.speechResponse, /how old are you/i, 'prompt one again');
     });
 
     it('bot should ask human email', async () => {
       const req = flowsRequest.enter('20');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.isTrue(req.isFlowing, 'still in dialogue flows!');
       assert.equal(req.variables.name, 'Vu', 'human name');
       assert.equal(req.variables.age, '20', 'human age');
@@ -72,7 +72,7 @@ describe('BotScript', () => {
 
     it('bot should respond a greet with human name, age and email', async () => {
       const req = flowsRequest.enter('my email is vunb@example.com');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.isFalse(req.isFlowing, 'exit dialogue flows!');
       assert.equal(req.variables.name, 'Vu', 'human name');
       assert.equal(req.variables.age, '20', 'human age');
@@ -84,7 +84,7 @@ describe('BotScript', () => {
   describe('no reply', () => {
     it('should respond no reply!', async () => {
       const req = new Request('sfdsfi!');
-      bot.handle(req);
+      await bot.handleAsync(req);
       assert.match(req.speechResponse, /no reply/i, 'bot no reply');
     });
   });
@@ -122,12 +122,12 @@ describe('BotScript', () => {
       });
 
     it('should support TokensRegex', async () => {
-      const req = bot.handle(new Request('love you'));
+      const req = await bot.handleAsync(new Request('love you'));
       assert.match(req.speechResponse, /you want to love/i, 'bot reply');
     });
 
     it('should support custom pattern', async () => {
-      const req = bot.handle(new Request('buy something'));
+      const req = await bot.handleAsync(new Request('buy something'));
       assert.match(req.speechResponse, /you are genius/i, 'bot reply');
     });
   });
@@ -220,15 +220,15 @@ describe('BotScript', () => {
 
     it('should handle conditional flows', async () => {
       const req = new Request('i want to ask');
-      condBot.handle(req);
+      await condBot.handleAsync(req);
       assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
       assert.equal(req.currentFlow, 'ask topic');
 
-      condBot.handle(req.enter('buy phone'));
+      await condBot.handleAsync(req.enter('buy phone'));
       assert.match(req.speechResponse, /what do you want to buy/i);
       assert.equal(req.currentFlow, 'buy phone');
 
-      condBot.handle(req.enter('apple'));
+      await condBot.handleAsync(req.enter('apple'));
       assert.match(req.speechResponse, /you are done/i);
       assert.equal(req.currentFlow, undefined);
 
@@ -236,7 +236,7 @@ describe('BotScript', () => {
 
     it('should handle conditional reply', async () => {
       const req = new Request('i want to ask');
-      condBot.handle(req);
+      await condBot.handleAsync(req);
       assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
       assert.equal(req.currentFlow, 'ask topic');
 
@@ -277,88 +277,6 @@ describe('BotScript', () => {
       assert.match(req.speechResponse, /choose a topic/i, 'bot reply');
       assert.deepEqual(req.prompt, ['warranty', 'support', 'feedback'], 'get prompts');
     });
-  });
-
-  describe('plugin (extend)', () => {
-
-    const botPlugin = new BotScript();
-    botPlugin
-      .parse(`
-      ! name Alice
-
-      > human name
-
-      > preprocess
-
-      > unknow plugin
-
-      + what is your name
-      - my name is [name]
-
-      + what is my name
-      - my name is $name
-      `)
-      .plugin('human name', (req, ctx) => {
-        req.variables.name = 'Bob';
-      });
-
-    it('should know human name', async () => {
-      const req = new Request('what is your name?');
-
-      await botPlugin.handleAsync(req);
-      assert.match(req.speechResponse, /my name is alice/i, 'ask bot name');
-    });
-
-  });
-
-  describe('plugin (built-in)', () => {
-
-    const botPlugin = new BotScript();
-
-    botPlugin.parse(`
-    > addTimeNow
-    > noReplyHandle
-    * true
-
-    ~ name
-    - what is your name?
-    + my name is *{name}
-
-    + what is my name
-    ~ name
-    - your name is $name
-
-    + what time is it
-    - it is $time
-    `);
-
-    it('should ask time now', async () => {
-      const now = new Date();
-      const req = new Request('what time is it');
-      const time = `${now.getHours()}:${now.getMinutes()}`;
-
-      await botPlugin.handleAsync(req);
-      assert.equal(req.variables.time, time, 'respond time in format HH:mm');
-    });
-
-    it('should respond not understand', async () => {
-      const req = new Request('how is it today');
-
-      await botPlugin.handleAsync(req);
-      assert.match(req.speechResponse, /i don't understand/i);
-    });
-
-    it('should ask human again if dialog is in the flow', async () => {
-      const flowsReq = new Request();
-
-      await botPlugin.handleAsync(flowsReq.enter('what is my name'));
-      assert.match(flowsReq.speechResponse, /what is your name/i);
-
-      await botPlugin.handleAsync(flowsReq.enter('what?'));
-      assert.match(flowsReq.speechResponse, /what is your name/i);
-
-    });
-
   });
 
 });
