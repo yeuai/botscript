@@ -23,26 +23,26 @@
   },
   "homepage": "https://github.com/yeuai/botscript#readme",
   "devDependencies": {
-    "@types/chai": "^4.2.9",
+    "@types/chai": "^4.2.12",
     "@types/debug": "^4.1.5",
     "@types/jexl": "^2.2.0",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.12.28",
-    "@types/node-fetch": "^2.5.4",
-    "@types/xregexp": "^3.0.30",
+    "@types/node": "^12.12.57",
+    "@types/node-fetch": "^2.5.7",
+    "@types/xregexp": "^4.3.0",
     "chai": "^4.2.0",
-    "mocha": "^6.2.2",
+    "mocha": "^6.2.3",
     "rimraf": "^3.0.2",
-    "ts-node-dev": "^1.0.0-pre.44",
+    "ts-node-dev": "^1.0.0-pre.62",
     "tslint": "^5.20.1",
-    "typescript": "^3.8.2"
+    "typescript": "^3.9.7"
   },
   "dependencies": {
     "debug": "^4.1.1",
     "jexl": "^2.2.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "xregexp": "^4.3.0",
-    "xstate": "^4.6.7"
+    "xstate": "^4.13.0"
   },
   "files": [
     "dist",
