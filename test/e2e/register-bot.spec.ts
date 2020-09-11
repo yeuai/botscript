@@ -16,8 +16,17 @@ describe('Register.bot (e2e)', async () => {
   it('should register account successfully', async () => {
 
     await bot.handleAsync(req.enter('đăng ký'));
-    expect(req.speechResponse).match(/nhập tài khoản/i);
 
-    fail('Not implemented!');
+    expect(req.speechResponse).match(/nhập tài khoản/i);
+    await bot.handleAsync(req.enter('vunb'));
+
+    expect(req.speechResponse).match(/nhập password/i);
+    await bot.handleAsync(req.enter('123456'));
+
+    expect(req.speechResponse).match(/xác nhận thông tin/i);
+    await bot.handleAsync(req.enter('yes'));
+
+    expect(req.speechResponse).match(/đăng ký thành công/i);
+    bot.logger.info('Chi tiết tài khoản: ', req.variables);
   });
 });

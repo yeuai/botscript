@@ -242,13 +242,13 @@ export class BotMachine {
             //   utils.testConditionalType(Types.Reply, dialog, req, (reply) => {
             //     vResult = true;
             //     this.logger.info('Populate speech response, with conditional reply:', req.message, reply);
-            //     req.speechResponse = ctx.interpolate(reply || '[empty]', req);
+            //     req.speechResponse = ctx.interpolate(reply || '[noReply]', req);
             //   });
 
             //   if (!vResult) {
             //     const replyCandidate = utils.random(dialog.replies);
             //     this.logger.info('Populate speech response: ', req.message, replyCandidate);
-            //     req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
+            //     req.speechResponse = ctx.interpolate(replyCandidate || '[noReply]', req);
             //   }
             // } else {
             //   this.logger.info('No dialogue population!');
@@ -323,44 +323,49 @@ export class BotMachine {
    * @param obj dialog, ctx, req
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
-    const result = getActivators(dialog, ctx)
-      .filter((x) => x.test(req.message))
-      .some(pattern => {
-        this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
+    try {
+      const result = getActivators(dialog, ctx)
+        .filter((x) => x.test(req.message))
+        .some(pattern => {
+          this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
 
-        const captures = execPattern(req.message, pattern);
-        Object.keys(captures).forEach(name => {
-          req.variables[name] = captures[name];
-        });
-        req.currentDialogue = dialog.name;
-        req.currentFlowIsResolved = true;
-        // add $ as the first matched variable
-        if (captures.$1) {
-          req.variables.$ = captures.$1;
-          // dialogue is in the flow
-          if (req.isFlowing) {
-            req.variables[req.currentFlow] = captures.$1;
+          const captures = execPattern(req.message, pattern);
+          Object.keys(captures).forEach(name => {
+            req.variables[name] = captures[name];
+          });
+          req.currentDialogue = dialog.name;
+          req.currentFlowIsResolved = true;
+          // add $ as the first matched variable
+          if (captures.$1) {
+            req.variables.$ = captures.$1;
+            // dialogue is in the flow
+            if (req.isFlowing) {
+              req.variables[req.currentFlow] = captures.$1;
+            }
           }
-        }
-        // reference to the last input
-        req.variables.$input = req.message;
-        return true;
-      });
+          // reference to the last input
+          req.variables.$input = req.message;
+          return true;
+        });
 
-    // test conditional activation
-    const vActiveConditions = dialog.conditions.filter(x => /^%/.test(x)).map(x => x.replace(/^%/, ''));
-    if (
-      // pass
-      result === true
-      // contains conditional activation
-      && vActiveConditions.length > 0
-      // all pre-active conditions is pass
-      && !vActiveConditions.every(x => utils.evaluate(x, Object.assign({}, req, req.variables)))
-    ) {
-      this.logger.debug('Conditional activation is not sastify!');
-      return false;
+      // test conditional activation
+      const vActiveConditions = dialog.conditions.filter(x => /^%/.test(x)).map(x => x.replace(/^%/, ''));
+      if (
+        // pass
+        result === true
+        // contains conditional activation
+        && vActiveConditions.length > 0
+        // all pre-active conditions is pass
+        && !vActiveConditions.every(x => utils.evaluate(x, Object.assign({}, req, req.variables)))
+      ) {
+        this.logger.debug('Conditional activation is not sastify!');
+        return false;
+      }
+      return result;
+    } catch (error) {
+      this.logger.error('Cannot explore Dialogue!', error);
+      throw error;
     }
-    return result;
   }
 
 }

@@ -45,7 +45,16 @@ const PATTERN_INTERPOLATIONS = [
   {
     // '[definition_name]' => '(?:item_1|item_2)'
     search: /!*\[(\w+)\]/g,
-    replaceWith: (sub: string, name: string, def: Map<string, Struct>) => `(${(def.get(name.toLowerCase()) as Struct).options.join('|')})`,
+    replaceWith: (sub: string, name: string, def: Map<string, Struct>) => {
+      const defName = name.toLowerCase();
+      logger.info('Get definition replacement: ' + name);
+      if (def.has(defName)) {
+        return `(${(def.get(defName) as Struct).options.join('|')})`;
+      } else {
+        logger.info('No definition: ' + defName);
+        return name;
+      }
+    },
   },
 ];
 
