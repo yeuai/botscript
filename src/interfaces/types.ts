@@ -1,7 +1,7 @@
 import { Request, Context } from '../engine';
 
 export type TestConditionalCallback = (data: string, ...args: any[]) => boolean | void;
-export type PluginCallback = (req: Request, ctx: Context) => void | PluginCallback;
+export type PluginCallback = (req: Request, ctx: Context) => void | Promise<any> | PluginCallback;
 
 /**
  * Dialogue struct types

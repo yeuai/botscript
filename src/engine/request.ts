@@ -21,6 +21,11 @@ export class Request {
   public isFlowing: boolean;
 
   /**
+   * This flag indicates the dialogue is resolved
+   */
+  public isNotResponse: boolean;
+
+  /**
    * Dialogue flows in queue
    */
   public flows: string[];
@@ -44,6 +49,11 @@ export class Request {
    * NLP extracted entities (current)
    */
   public entities: any;
+
+  /**
+   * NLP intent detection
+   */
+  public intent: string;
 
   /**
    * Current flow to be resolved

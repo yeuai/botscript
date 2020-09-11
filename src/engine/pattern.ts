@@ -1,5 +1,6 @@
 import XRegExp from 'xregexp';
 import { Struct } from './struct';
+import { Request } from './request';
 import { Context } from './context';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
@@ -46,17 +47,33 @@ const PATTERN_INTERPOLATIONS = [
     // '[definition_name]' => '(?:item_1|item_2)'
     search: /!*\[(\w+)\]/g,
     replaceWith: (sub: string, name: string, def: Map<string, Struct>) => {
-      const defName = name.toLowerCase();
-      logger.info('Get definition replacement: ' + name);
-      if (def.has(defName)) {
-        return `(${(def.get(defName) as Struct).options.join('|')})`;
-      } else {
-        logger.info('No definition: ' + defName);
-        return name;
-      }
+      const struct = def.get(name.toLowerCase()) as Struct;
+      return !struct ? name : `(${struct.options.join('|')})`;
     },
   },
 ];
+
+/**
+ * Find & replace options pattern
+ */
+const findDefinitionReplacer = (
+  replacement: string,
+  search: RegExp,
+  replaceWith: (sub: string, name: string, def: Map<string, Struct>) => string,
+  definitions: Map<string, Struct>,
+): string => {
+  // Check if the list contains reference to another list
+  while (replacement.match(search) !== null) {
+    (replacement.match(search) as RegExpMatchArray).map(rl => {
+      const referencingListName = rl.slice(1, rl.length - 1);
+      const referencingListPattern = replaceWith(rl, referencingListName, definitions);
+      const referencingListReg = new RegExp(`\\[${referencingListName}\\]`, 'g');
+      replacement = replacement.replace(referencingListReg, referencingListPattern.slice(1, referencingListPattern.length - 1));
+    });
+  }
+
+  return replacement;
+};
 
 /**
  * Transform & interpolate pattern
@@ -64,13 +81,13 @@ const PATTERN_INTERPOLATIONS = [
  * @param context bot data context
  * @param notEqual negative flag
  */
-export function transform(pattern: string, context: Context, notEqual: boolean) {
+export function transform(pattern: string, request: Request, context: Context, notEqual: boolean) {
 
   // test custom patterns in triggers
   for (const [name, value] of context.patterns) {
     if (value.match.test(pattern)) {
       logger.debug('Pattern match: ', name, pattern, value.match.source);
-      return value.func(pattern);
+      return value.func(pattern, request);
     }
   }
 
@@ -89,19 +106,10 @@ export function transform(pattern: string, context: Context, notEqual: boolean) 
       pattern = pattern.replace(search, replaceWith);
     } else {
       pattern = pattern.replace(search,
-        (substr, name) => ((replacement): string => {
-          // Check if the list contains reference to another list
-          while (replacement.match(search) !== null) {
-            (replacement.match(search) as RegExpMatchArray).map(rl => {
-              const referencingListName = rl.slice(1, rl.length - 1);
-              const referencingListPattern = replaceWith(rl, referencingListName, definitions);
-              const referencingListReg = new RegExp(`\\[${referencingListName}\\]`, 'g');
-              replacement = replacement.replace(referencingListReg, referencingListPattern.slice(1, referencingListPattern.length - 1));
-            });
-          }
-
-          return replacement;
-        })(replaceWith(substr, name, definitions)),
+        (substr, name) => {
+          const replacement = replaceWith(substr, name, definitions);
+          return findDefinitionReplacer(replacement, search, replaceWith, definitions);
+        },
       );
     }
   });
@@ -128,6 +136,6 @@ export function execPattern(input: string, pattern: RegExp | IActivator) {
  * @param dialog random or dialogue flow
  * @param notEqual negative flag
  */
-export function getActivators(dialog: Struct, context: Context, notEqual = false) {
-  return dialog.triggers.map(x => transform(x, context, notEqual));
+export function getActivators(dialog: Struct, ctx: Context, req: Request, notEqual = false) {
+  return dialog.triggers.map(x => transform(x, req, ctx, notEqual));
 }

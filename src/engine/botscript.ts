@@ -32,7 +32,7 @@ export class BotScript extends EventEmitter {
   /**
    * plugins system
    */
-  plugins: Map<string, (req: Request, ctx: Context) => void | PluginCallback>;
+  plugins: Map<string, (req: Request, ctx: Context) => void | Promise<any> | PluginCallback>;
 
   constructor() {
     super();
@@ -104,8 +104,8 @@ export class BotScript extends EventEmitter {
       return this;
     }
 
-    const scripts =  content
-    // split structure by linebreaks
+    const scripts = content
+      // split structure by linebreaks
       .split(/\n{2,}/)
       // remove empty lines
       .filter(script => script)
@@ -128,7 +128,7 @@ export class BotScript extends EventEmitter {
   addPatternCapability({ name, match, func }: {
     name: string,
     match: RegExp,
-    func: (pattern: string) => RegExp | IActivator,
+    func: (pattern: string, req: Request) => RegExp | IActivator,
   }) {
     this.context.patterns.set(name, { name, match, func });
     return this;
@@ -144,47 +144,19 @@ export class BotScript extends EventEmitter {
   }
 
   /**
-   * Handle message request then create response back
-   * Notice: use handleAsync with supported conditional dialogues
-   * TODO: Remove this version (only use hanldeAsync)?
-   * @param req human request context
-   * @param ctx bot data context
-   */
-  handle(req: Request, ctx?: Context) {
-    this.logger.debug('New request: ', req.message);
-    const context = ctx || this.context;
-    // fires state machine to resolve request
-    req.botId = context.id;
-    req.isForward = false;
-
-    // fire plugin for pre-processing
-    const plugins = [...context.plugins.keys()];
-    const postProcessing = this.preProcessRequest(plugins, req, context);
-
-    this.machine.resolve(req, context);
-
-    this.populateReply(req, context);
-
-    // post-processing
-    this.postProcessRequest(postProcessing, req, context);
-
-    return req;
-  }
-
-  /**
-   * Async handle request
+   * Async handle message request then create response back
    * @param req
    * @param ctx
    */
   async handleAsync(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
-    req.botId = context.id;
+    // req.botId = context.id;
     req.isForward = false;
 
     // fire plugin for pre-processing
     const plugins = [...context.plugins.keys()];
-    const postProcessing = this.preProcessRequest(plugins, req, context);
+    const postProcessing = await this.preProcessRequest(plugins, req, context);
 
     // fires state machine to resolve request
     this.machine.resolve(req, context);
@@ -194,7 +166,7 @@ export class BotScript extends EventEmitter {
     this.populateReply(req, context);
 
     // post-processing
-    this.postProcessRequest(postProcessing, req, context);
+    await this.postProcessRequest(postProcessing, req, context);
 
     return req;
   }
@@ -205,7 +177,7 @@ export class BotScript extends EventEmitter {
    * @param req
    * @param ctx
    */
-  private preProcessRequest(plugins: string[], req: Request, ctx: Context) {
+  private async preProcessRequest(plugins: string[], req: Request, ctx: Context) {
     const postProcessing: PluginCallback[] = [];
     const activatedPlugins: PluginCallback[] = [];
 
@@ -236,15 +208,13 @@ export class BotScript extends EventEmitter {
       });
 
     // fire plugin pre-processing
-    activatedPlugins.forEach(item => {
-      if (this.plugins.has(item.name)) {
-        const plugin = this.plugins.get(item.name) as PluginCallback;
-        const vPostProcessing = plugin(req, ctx);
-        if (typeof vPostProcessing === 'function') {
-          postProcessing.push(vPostProcessing);
-        }
+    for (const plugin of activatedPlugins) {
+      const vPostProcessing = await plugin(req, ctx);
+      if (typeof vPostProcessing === 'function') {
+        postProcessing.push(vPostProcessing);
       }
-    });
+    }
+
     return postProcessing;
   }
 
@@ -254,11 +224,11 @@ export class BotScript extends EventEmitter {
    * @param req
    * @param ctx
    */
-  private postProcessRequest(plugins: PluginCallback[], req: Request, ctx: Context) {
+  private async postProcessRequest(plugins: PluginCallback[], req: Request, ctx: Context) {
     // post-processing
-    plugins.forEach(item => {
-      item(req, ctx);
-    });
+    for (const plugin of plugins) {
+      await plugin(req, ctx);
+    }
   }
 
   /**
@@ -267,6 +237,10 @@ export class BotScript extends EventEmitter {
    * @param ctx
    */
   private async applyConditionalDialogues(req: Request, ctx: Context): Promise<Request> {
+    if (req.isNotResponse) {
+      this.logger.info('Bot has no response! Conditions will not be applied.');
+      return req;
+    }
     this.logger.info('Evaluate conditional command for:', req.currentDialogue);
     let conditions: string[] = [];
     const dialog = ctx.getDialogue(req.currentDialogue) as Struct;

@@ -145,6 +145,7 @@ export class BotMachine {
                   target: 'output',
                   cond: (context, event) => {
                     context.req.speechResponse = 'NO REPLY!';
+                    context.req.isNotResponse = true;
                     return true;
                   },
                 },
@@ -301,8 +302,14 @@ export class BotMachine {
    */
   resolve(req: Request, ctx: Context) {
     // reset speech response
+    // & interpret new state machine
     req.prompt = [];
     req.speechResponse = '';
+    req.isNotResponse = false;
+    if (!req.isForward) {
+      // clear first-state conditions
+      req.currentDialogue = '';
+    }
     this.logger.info(`Resolve: ${req.message}, isFlowing: ${req.isFlowing}`);
 
     // TODO: Explore dialogues first to define type which is forward, flow or first-dialogue.
@@ -324,7 +331,7 @@ export class BotMachine {
    */
   private explore({ dialog, ctx, req }: { dialog: Struct, ctx: Context, req: Request }) {
     try {
-      const result = getActivators(dialog, ctx)
+      const result = getActivators(dialog, ctx, req)
         .filter((x) => x.test(req.message))
         .some(pattern => {
           this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
