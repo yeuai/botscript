@@ -28,129 +28,126 @@ export class BotMachine {
             },
           },
           digest: {
-            on: {
-              '': [
-                {
-                  target: 'dialogue',
-                  cond: 'isForward',
-                },
-                {
-                  target: 'dialogue',
-                  cond: 'isDialogue',
-                },
-                {
-                  target: 'flow',
-                  cond: 'isFlow',
-                },
-                {
-                  target: 'nomatch',
-                  cond: (ctx, event) => true,
-                },
-              ],
-              // 'DIALOG': 'dialogue',
-              // 'FLOW': 'flow',
-              // 'DEFECT': 'nomatch',
-            },
+            always: [
+              {
+                target: 'dialogue',
+                cond: 'isForward',
+              },
+              {
+                target: 'dialogue',
+                cond: 'isDialogue',
+              },
+              {
+                target: 'flow',
+                cond: 'isFlow',
+              },
+              {
+                target: 'nomatch',
+                cond: (ctx, event) => true,
+              },
+            ],
           },
           dialogue: {
-            on: {
-              '': [
-                {
-                  target: 'output',
-                  cond: (context, event) => {
-                    const { req } = context;
-                    if (req.missingFlows.length === 0) {
-                      req.isFlowing = false;
-                      this.logger.debug('Dialogue state is resolved then now forward to output!');
-                      return true;
-                    } else {
-                      this.logger.debug('Dialogue flows remaining: ', req.missingFlows.length);
-                      return false;
-                    }
-                  },
-                },
-                {
-                  target: 'flow',
-                  cond: (context, event) => {
-                    const { req } = context;
-                    req.isFlowing = true; // init status
-
+            always: [
+              {
+                target: 'output',
+                cond: (context, event) => {
+                  const { req } = context;
+                  if (req.missingFlows.length === 0) {
+                    req.isFlowing = false;
+                    this.logger.debug('Dialogue state is resolved then now forward to output!');
                     return true;
-                  },
+                  } else {
+                    this.logger.debug('Dialogue flows remaining: ', req.missingFlows.length);
+                    return false;
+                  }
                 },
-              ],
-              // FLOW: 'flow',
-              // RESOLVE: 'output',
-            },
+              },
+              {
+                target: 'flow',
+                cond: (context, event) => {
+                  const { req } = context;
+                  req.isFlowing = true; // init status
+
+                  return true;
+                },
+              },
+
+            ],
           },
           flow: {
-            on: {
-              '': [
-                {
-                  target: 'output',
-                  cond: (context, event) => {
-                    // popolate flows from currentFlow and assign to request
-                    const { req, ctx } = context;
-                    const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+            always: [
+              {
+                target: 'output',
+                cond: (context, event) => {
+                  // popolate flows from currentFlow and assign to request
+                  const { req, ctx } = context;
+                  const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
 
-                    // test conditional flows
-                    utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
-                      if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
-                        this.logger.info('Add conditional flow: ', flow);
-                        req.missingFlows.push(flow);
-                      }
-                    });
-
-                    if (req.currentFlowIsResolved) {
-                      // remove current flow & get next
-                      this.logger.debug('Remove current flow: ', req.currentFlow);
-                      req.resolvedFlows.push(req.currentFlow);
-                      req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
-                      req.currentFlow = req.missingFlows.find(() => true) as string;
-                      req.isFlowing = req.missingFlows.some(() => true);
-                      req.currentFlowIsResolved = false;  // reset state
-                      this.logger.debug('Next flow: ', req.currentFlow);
-                    } else if (!req.currentFlow) {
-                      // get next flow
-                      req.currentFlow = req.missingFlows.find(() => true) as string;
-                      req.currentFlowIsResolved = false;
-                      this.logger.debug('Start new dialogue flow: ', req.currentFlow);
-                    } else {
-                      this.logger.info('Prompt or send reply again!');
+                  // test conditional flows
+                  utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
+                    if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
+                      this.logger.info('Add conditional flow: ', flow);
+                      req.missingFlows.push(flow);
                     }
+                  });
 
-                    this.logger.info('Check & Update nested flows!');
-                    if (ctx.flows.has(req.currentFlow)) {
-                      const currentFlow = ctx.flows.get(req.currentFlow) as Struct;
-                      const setFlows = new Set(req.flows);
-                      // update nested flows
-                      currentFlow.flows.forEach(x => setFlows.add(x));
-                      req.flows = Array.from(setFlows);
-                    }
+                  if (req.currentFlowIsResolved) {
+                    // remove current flow & get next
+                    this.logger.debug('Remove current flow: ', req.currentFlow);
+                    req.resolvedFlows.push(req.currentFlow);
+                    req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
+                    req.currentFlow = req.missingFlows.find(() => true) as string;
+                    req.isFlowing = req.missingFlows.some(() => true);
+                    req.currentFlowIsResolved = false;  // reset state
+                    this.logger.debug('Next flow: ', req.currentFlow);
+                  } else if (!req.currentFlow) {
+                    // get next flow
+                    req.currentFlow = req.missingFlows.find(() => true) as string;
+                    req.currentFlowIsResolved = false;
+                    this.logger.debug('Start new dialogue flow: ', req.currentFlow);
+                  } else {
+                    this.logger.info('Prompt or send reply again!');
+                  }
 
-                    this.logger.info(`Dialogue is flowing: ${req.isFlowing}, current: ${req.currentFlow || '[none]'}`);
-                    return true;
-                  },
+                  this.logger.info('Check & Update nested flows!');
+                  if (ctx.flows.has(req.currentFlow)) {
+                    const currentFlow = ctx.flows.get(req.currentFlow) as Struct;
+                    const setFlows = new Set(req.flows);
+                    // update nested flows
+                    currentFlow.flows.forEach(x => setFlows.add(x));
+                    req.flows = Array.from(setFlows);
+                  }
+
+                  this.logger.info(`Dialogue is flowing: ${req.isFlowing}, current: ${req.currentFlow || '[none]'}`);
+                  return true;
                 },
-              ],
-              // 'NEXT': 'flow',
-              // 'RESOLVE': 'dialogue',
-              // REPLY: 'output' (cannot go straight to output, must resolve and back to the dialogue)
-            },
+              },
+            ],
           },
           nomatch: {
-            on: {
-              '': [
-                {
-                  target: 'output',
-                  cond: (context, event) => {
-                    context.req.speechResponse = 'NO REPLY!';
-                    context.req.isNotResponse = true;
-                    return true;
-                  },
+            always: [
+              {
+                target: 'output',
+                cond: (context, event) => {
+                  context.req.speechResponse = 'NO REPLY!';
+                  context.req.isNotResponse = true;
+                  return true;
                 },
-              ],
-            },
+              },
+            ],
+            // on: {
+            //   '': [
+            //     {
+            //       target: 'output',
+            //       cond: (context, event) => {
+            //         context.req.speechResponse = 'NO REPLY!';
+            //         context.req.isNotResponse = true;
+            //         return true;
+            //       },
+            //     },
+            //   ],
+            // },
           },
           output: {
             // entry: [
