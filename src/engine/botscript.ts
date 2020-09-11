@@ -325,6 +325,7 @@ export class BotScript extends EventEmitter {
             this.emit('command', null, req, ctx, command.name, result);
             Object.assign(req.variables, result);
           } catch (err) {
+            this.logger.info('Cannot call http service: ', command);
             this.emit('command', err, req, ctx, command.name);
           }
         } else {
@@ -373,9 +374,10 @@ export class BotScript extends EventEmitter {
     }
 
     // Generate output!
-    req.speechResponse = ctx.interpolate(replyCandidate || '[empty]', req);
+    req.speechResponse = ctx.interpolate(replyCandidate || '[noReply]', req);
     this.logger.info(`Populate speech response: ${req.message} -> ${replyCandidate} -> ${req.speechResponse}`);
     // Add previous speech history
+    // TODO: make sure previous has initialized!
     req.previous.splice(0, 0, req.speechResponse);
     if (req.previous.length > 100) {
       req.previous.pop();

@@ -121,7 +121,7 @@ export class Struct {
           struct.name = tokens[0];
           struct.options = ['GET', tokens[1]];
         } else if (tokens.length === 3) {
-          const action = tokens[1] === 'POST' ? 'POST' : 'GET';
+          const action = /post/i.test(tokens[1]) ? 'post' : 'get';
           struct.name = tokens[0];
           struct.options = [action, tokens[2]];
         } else {

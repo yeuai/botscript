@@ -233,7 +233,7 @@ For example:
 
 A conditional reply allows bot test the conditions and do some logics before replies to human.
 
-Syntax: `* expression`
+Syntax: `* expression [type] [action]`
 
 There are six subcategories of conditional processing:
 

@@ -1,0 +1,28 @@
+@ register_account post https://botscript.ai/api/account/register
+
+! yesno
+- yes
+- no
+
+~ reg_username
+- Nhập tài khoản bạn muốn đăng ký?
+^ Vui lòng sử dụng chữ cái, số và dấu chấm.
++ /^[a-z0-9](\.?[a-z0-9]){3,}/
+
+# No prompt response!
+~ reg_password
+- Hãy nhập password:
++ *{password}
+
+~ reg_confirm
+- Xác nhận thông tin:
+^ Tài khoản ${reg_username}, ${email}
++ [yesno]
+
++ *đăng ký*
+~ reg_username
+~ reg_password
+~ reg_confirm
+* $reg_confirm == 'yes' @> register_account
+* $reg_confirm == 'no' -> Bạn đã hủy đăng ký!
+- Bạn đã đăng ký thành công, tài khoản $reg_username: $reg_result_message!

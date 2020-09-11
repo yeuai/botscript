@@ -268,6 +268,7 @@ describe('BotScript', () => {
     });
 
     it('should handle conditional command', async () => {
+      // ensure the internet is connected for this test case
       const req = new Request('what is my ip');
       await condBot.handleAsync(req);
       assert.match(req.speechResponse, /here is your ip/i, 'bot reply');
