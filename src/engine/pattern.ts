@@ -126,6 +126,9 @@ export function transform(pattern: string, request: Request, context: Context, n
  */
 export function execPattern(input: string, pattern: RegExp | IActivator) {
   const result = pattern instanceof RegExp ? XRegExp.exec(input, pattern) : pattern.exec(input);
+
+  // no captures!
+  if (!result) { return {}; }
   const keys = Object.keys(result).filter(key => !['index', 'input', 'groups'].includes(key));
   const captures = keys.map(key => ({ [key.match(/^\d+$/) ? `$${parseInt(key)}` : key]: result[key as any] })).splice(1);
   return captures.reduce((a, b) => Object.assign(a, b), {});
