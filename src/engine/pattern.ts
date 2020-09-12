@@ -142,3 +142,12 @@ export function execPattern(input: string, pattern: RegExp | IActivator) {
 export function getActivators(dialog: Struct, ctx: Context, req: Request, notEqual = false) {
   return dialog.triggers.map(x => transform(x, req, ctx, notEqual));
 }
+
+/**
+ * Get conditional activation
+ * @param dialog a dialogue
+ */
+export function getActivationConditions(dialog: Struct) {
+  // exclude conditional reply
+  return dialog.conditions.filter(x => !/>/.test(x));
+}

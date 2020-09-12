@@ -3,7 +3,7 @@ import { Context } from './context';
 import { Logger } from '../lib/logger';
 import * as utils from '../lib/utils';
 import { Request } from './request';
-import { getActivators, execPattern } from './pattern';
+import { getActivators, execPattern, getActivationConditions } from './pattern';
 import { Struct } from './struct';
 import { Types } from '../interfaces/types';
 
@@ -331,18 +331,31 @@ export class BotMachine {
       const result = getActivators(dialog, ctx, req)
         .filter((x) => x.test(req.message))
         .some(pattern => {
-          // Test conditional activation
-
-          // TODO: Test conditional previous reply (%)
-
           this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
 
           const captures = execPattern(req.message, pattern);
-          Object.keys(captures).forEach(name => {
-            req.variables[name] = captures[name];
-          });
+          const knowledges = {...req.variables, ...captures, $previous: req.previous};
+
+          // Test conditional activation
+          // - A conditions begins with star symbol: *
+          // - A conditional activation has a symbol % followed then
+          // - Syntax: * %expression
+          const conditions = getActivationConditions(dialog);
+          if (conditions.length > 0) {
+            for (const cond of conditions) {
+              // TODO: Test conditional previous reply (%)
+              const expr = cond.replace(/^[*]/, '');
+              const vTestResult = utils.evaluate(expr, knowledges);
+              if (!vTestResult) {
+                return false;
+              }
+            }
+          }
+
+          // update dialogue response
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
+          req.variables = knowledges;
           // add $ as the first matched variable
           if (captures.$1) {
             req.variables.$ = captures.$1;
@@ -356,19 +369,9 @@ export class BotMachine {
           return true;
         });
 
-      // test conditional activation
-      const vActiveConditions = dialog.conditions.filter(x => /^%/.test(x)).map(x => x.replace(/^%/, ''));
-      if (
-        // pass
-        result === true
-        // contains conditional activation
-        && vActiveConditions.length > 0
-        // all pre-active conditions is pass
-        && !vActiveConditions.every(x => utils.evaluate(x, Object.assign({}, req, req.variables)))
-      ) {
-        this.logger.debug('Conditional activation is not sastify!');
-        return false;
-      }
+      // log result
+      this.logger.info('Found dialogue:', result);
+
       return result;
     } catch (error) {
       this.logger.error('Cannot explore Dialogue!', error);

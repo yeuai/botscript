@@ -254,8 +254,8 @@ export class BotScript extends EventEmitter {
     }
 
     const dialogConditions = conditions
-      // remove conditional activation
-      .filter(x => !/^%/.test(x))
+      // filter only conditional activation
+      .filter(x => !/^%/.test(x)) // TODO: Remove deprecated previous conditions
       .map(x => {
         const REGEX_COND_REPLY_TESTER = /([->@?+=])>/;
         const REGEX_COND_REPLY_TOKEN = /[->@?+=]>/;

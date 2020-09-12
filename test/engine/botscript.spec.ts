@@ -205,7 +205,7 @@ describe('BotScript', () => {
     - who is there
 
     + *
-    * % $previous[0] == 'who is there'
+    * $previous[0] == 'who is there'
     * $input == 'its me' -> i know you!
     - $1 who?
     `);

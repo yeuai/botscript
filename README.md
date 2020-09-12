@@ -26,10 +26,10 @@ A `definition` is an identifier of an entity, a list or a variable.
 The syntax start with symbol `!`:
 
 ```bash
-! name Rivebot
+! name CuteBot
 ```
 
-The `Rivebot` is value of the variable `name`.
+The `CuteBot` is value of the variable `name`.
 
 To define a list of items, just enter item in a new line which started with symbol `-`:
 
@@ -211,8 +211,8 @@ Example:
 
 There are two categories of conditions in the dialogue:
 
-* **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
-* **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
+* [x] **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
+* [x] **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
 
 A conditions begins with star symbol: `*`  
 A conditional activation has a symbol `%` followed then  
