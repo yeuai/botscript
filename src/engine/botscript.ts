@@ -37,7 +37,7 @@ export class BotScript extends EventEmitter {
   constructor() {
     super();
     this.context = new Context();
-    this.logger = new Logger();
+    this.logger = new Logger('Engine');
     this.machine = new BotMachine();
     this.plugins = new Map();
 
@@ -161,7 +161,7 @@ export class BotScript extends EventEmitter {
     // fires state machine to resolve request
     this.machine.resolve(req, context);
 
-    // Handle conditional commands, conditional event
+    // Handle conditional commands, conditional reply
     await this.applyConditionalDialogues(req, context);
     this.populateReply(req, context);
 
@@ -232,7 +232,7 @@ export class BotScript extends EventEmitter {
   }
 
   /**
-   * test & apply conditions
+   * Test & apply conditional dialogue
    * @param req
    * @param ctx
    */
@@ -254,21 +254,42 @@ export class BotScript extends EventEmitter {
     }
 
     const dialogConditions = conditions
-      // remove conditional activation
-      .filter(x => !/^%/.test(x))
+      // filter only conditional reply dialogue
+      // .filter(x => !/^%/.test(x)) // TODO: Remove deprecated previous conditions
       .map(x => {
-        const match = /([->@?+])>/.exec(x) as RegExpExecArray;
+        const REGEX_COND_REPLY_TESTER = /([->@?+=])>/;
+        const REGEX_COND_REPLY_TOKEN = /[->@?+=]>/;
+        const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
+
         if (!match) {
+          this.logger.debug('Not a conditional reply:', x);
           return false;
         } else {
           // split exactly supported conditions
-          const tokens = x.split(/[->@?+]>/);
+          const tokens = x.split(REGEX_COND_REPLY_TOKEN);
           if (tokens.length === 2) {
-            return {
-              type: match[1],
-              expr: tokens[0].trim(),
-              value: tokens[1].trim(),
-            };
+            let type = match[1];
+            const expr = tokens[0].trim();
+            let value = tokens[1].trim();
+            // New syntax support
+            // https://github.com/yeuai/botscript/issues/20
+            if (type === '=') {
+              this.logger.info('New syntax support: ' + x);
+              const explicitedType = value[0];
+              if (/^[->@?+]>/.test(explicitedType)) {
+                type = explicitedType;
+                value = value.slice(1);
+              } else {
+                // default type (a reply)
+                // ex: * expression => a reply
+                // or: * expression => - a reply
+                type = Types.ConditionalReply;
+              }
+            }
+            // Ex: Conditional reply to call http service
+            // * $reg_confirm == 'yes' @> register_account
+            // * $name == undefined -> You never told me your name
+            return {type, expr, value};
           } else {
             return false;
           }
@@ -281,6 +302,8 @@ export class BotScript extends EventEmitter {
         this.logger.info('Evaluate test: ', x.type, x.expr, x.value);
         return utils.evaluate(x.expr, req.variables);
       });
+
+    this.logger.info('Conditions test: ', dialogConditions);
 
     for (const x of dialogConditions) {
       if (!x) {
