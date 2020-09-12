@@ -161,7 +161,7 @@ export class BotScript extends EventEmitter {
     // fires state machine to resolve request
     this.machine.resolve(req, context);
 
-    // Handle conditional commands, conditional event
+    // Handle conditional commands, conditional reply
     await this.applyConditionalDialogues(req, context);
     this.populateReply(req, context);
 
@@ -232,7 +232,7 @@ export class BotScript extends EventEmitter {
   }
 
   /**
-   * test & apply conditions
+   * Test & apply conditional dialogue
    * @param req
    * @param ctx
    */
@@ -254,8 +254,8 @@ export class BotScript extends EventEmitter {
     }
 
     const dialogConditions = conditions
-      // filter only conditional activation
-      .filter(x => !/^%/.test(x)) // TODO: Remove deprecated previous conditions
+      // filter only conditional reply dialogue
+      // .filter(x => !/^%/.test(x)) // TODO: Remove deprecated previous conditions
       .map(x => {
         const REGEX_COND_REPLY_TESTER = /([->@?+=])>/;
         const REGEX_COND_REPLY_TOKEN = /[->@?+=]>/;

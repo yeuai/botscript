@@ -215,9 +215,8 @@ There are two categories of conditions in the dialogue:
 * [x] **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
 
 A conditions begins with star symbol: `*`  
-A conditional activation has a symbol `%` followed then  
 
-Syntax: `* %expression`
+Syntax: `* expression`
 
 For example:
 
@@ -226,7 +225,7 @@ For example:
 - who is there
 
 + *
-* % $previous[0] == 'who is there'
+* $previous[0] == 'who is there'  # must have happened
 * $input == 'its me' -> i know you!
 - $1 who?
 ```

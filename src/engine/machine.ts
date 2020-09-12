@@ -333,17 +333,16 @@ export class BotMachine {
         .some(pattern => {
           this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
 
+          // extract message information
           const captures = execPattern(req.message, pattern);
-          const knowledges = {...req.variables, ...captures, $previous: req.previous};
+          const knowledges = {...req.variables, ...captures, $previous: req.previous, $input: req.message};
 
           // Test conditional activation
           // - A conditions begins with star symbol: *
-          // - A conditional activation has a symbol % followed then
-          // - Syntax: * %expression
+          // - Syntax: * expression
           const conditions = getActivationConditions(dialog);
           if (conditions.length > 0) {
             for (const cond of conditions) {
-              // TODO: Test conditional previous reply (%)
               const expr = cond.replace(/^[*]/, '');
               const vTestResult = utils.evaluate(expr, knowledges);
               if (!vTestResult) {
@@ -356,7 +355,8 @@ export class BotMachine {
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
           req.variables = knowledges;
-          // add $ as the first matched variable
+
+          // add $ as the first matched variable for reply population
           if (captures.$1) {
             req.variables.$ = captures.$1;
             // dialogue is in the flow
@@ -364,8 +364,6 @@ export class BotMachine {
               req.variables[req.currentFlow] = captures.$1;
             }
           }
-          // reference to the last input
-          req.variables.$input = req.message;
           return true;
         });
 
