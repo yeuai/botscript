@@ -12,6 +12,8 @@ describe('BotScript: Conditional dialogue', () => {
   - hi
 
   + my name is *{name}
+  * $name == 'vunb' => Hello my boss!
+  * $name == 'boss' => - I know you!
   - hello $name
   `);
 
@@ -26,6 +28,17 @@ describe('BotScript: Conditional dialogue', () => {
 
       await bot.handleAsync(req.enter('something'));
       assert.match(req.speechResponse, /NO REPLY/i);
+    });
+  });
+
+  describe('Syntax: * expresssion => action', () => {
+    it('a reply', async () => {
+      const req = new Request();
+      await bot.handleAsync(req.enter('my name is vunb'));
+      assert.match(req.speechResponse, /hello my boss/i);
+
+      await bot.handleAsync(req.enter('my name is boss'));
+      assert.match(req.speechResponse, /i know you/i);
     });
   });
 

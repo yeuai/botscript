@@ -331,6 +331,10 @@ export class BotMachine {
       const result = getActivators(dialog, ctx, req)
         .filter((x) => x.test(req.message))
         .some(pattern => {
+          // Test conditional activation
+
+          // TODO: Test conditional previous reply (%)
+
           this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
 
           const captures = execPattern(req.message, pattern);

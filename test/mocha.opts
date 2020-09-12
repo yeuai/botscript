@@ -4,3 +4,7 @@
 --retries 0
 --exit
 test/**/*.spec.ts
+
+# test 1 spec
+# test/e2e/delay.spec.ts
+# test/engine/conditions.spec.ts
