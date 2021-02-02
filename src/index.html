@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hello BotScript! - @Yeu.AI</title>
+</head>
+
+<body>
+  <p id="greeting">BotScript demo!</p>
+  <script src="botscript.bundle.js"></script>
+  <script>
+    const {BotScript, Request, TYPES} = BotScriptAI;
+    const bot = new BotScript();
+    bot.parse('+ * \n - yes?\n');
+
+    /**
+     * Send bot message and wait response.
+     * */
+    async function sendBot(message) {
+      const reply = await bot.handleAsync(new Request(message));
+      document.write('Human say: ' + message);
+      document.write('Bot say: ' + reply.speechResponse);
+    }
+
+    sendBot('Hello!');
+
+  </script>
+</body>
+
+</html>

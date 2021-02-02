@@ -209,14 +209,14 @@ Example:
 
 ## conditions
 
+A conditions begins with star symbol: `*`  
+
+Syntax: `* expression`
+
 There are two categories of conditions in the dialogue:
 
 * [x] **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
 * [x] **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
-
-A conditions begins with star symbol: `*`  
-
-Syntax: `* expression`
 
 For example:
 
@@ -242,6 +242,17 @@ There are six subcategories of conditional processing:
 * Conditional command
 * Conditional prompt
 * Conditional event
+
+Example:
+
+```bash
+* expression => - a reply
+* expression => @ a command
+* expression => ~ a flow
+* expression => + a redirect
+* expression => * an event
+* expression => ? a prompt
+```
 
 A conditional reply let bot replies smarter base on the condition or pick random replies from a list definition. That means before reply bot will check its memory and create reponse if the bot knows.
 

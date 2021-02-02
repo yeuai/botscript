@@ -5,7 +5,8 @@
   "main": "dist/engine",
   "scripts": {
     "test": "mocha",
-    "build": "rimraf dist && tsc"
+    "build": "rimraf dist && tsc",
+    "build:web": "npx gulp"
   },
   "repository": {
     "type": "git",
@@ -30,12 +31,21 @@
     "@types/node": "^12.12.57",
     "@types/node-fetch": "^2.5.7",
     "@types/xregexp": "^4.3.0",
+    "browserify": "^17.0.0",
     "chai": "^4.2.0",
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-terser": "^2.0.1",
+    "gulp-typescript": "^6.0.0-alpha.1",
     "mocha": "^6.2.3",
     "rimraf": "^3.0.2",
     "ts-node-dev": "^1.0.0-pre.62",
+    "tsify": "^5.0.2",
     "tslint": "^5.20.1",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
     "debug": "^4.1.1",
