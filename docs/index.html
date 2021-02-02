@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Hello BotScript! - @Yeu.AI</title>
+  <link rel="icon" href="data:,">
 </head>
 
 <body>
@@ -19,8 +20,8 @@
      * */
     async function sendBot(message) {
       const reply = await bot.handleAsync(new Request(message));
-      document.write(`Human say: ${message}<br/>`);
-      document.write('Bot say: ' + reply.speechResponse);
+      document.write(`<br/>Human say: ${message}`);
+      document.write('<br/>Bot say: ' + reply.speechResponse);
     }
 
     sendBot('Hello!');
