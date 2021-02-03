@@ -109,7 +109,7 @@ export function callHttpService(command: Struct, req: Request) {
  * Download botscript data.
  * @param url
  */
-export async function downloadBotScripts(url: string): Promise<string[]> {
+export async function downloadScripts(url: string): Promise<string[]> {
   logger.info('Starting download', url);
   // download data file.
   const vResult = await axios.get(url);
