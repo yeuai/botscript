@@ -9,6 +9,7 @@
 
 <body>
   <h1 id="greeting">BotScript: Hello World!</h1>
+  <p id="messages"></p>
   <script src="botscript.ai.js"></script>
   <script src="botscript.plugins.js"></script>
   <script>
@@ -44,10 +45,16 @@
     /**
      * Send bot message and wait response.
      * */
-    async function sendBot(message) {
+    async function sendBot(message, id = 'messages') {
+      const de = document.getElementById(id);
       const reply = await bot.handleAsync(new Request(message));
-      document.write(`<br/>Human say: ${message}`);
-      document.write('<br/>Bot say: ' + reply.speechResponse);
+
+      let humReq = document.createElement("div");
+      let botRes = document.createElement("div");
+      humReq.append(`Human say: ${message}`);
+      botRes.append(`Bot say: ${reply.speechResponse}`);
+      de.append(humReq);
+      de.append(botRes);
     }
 
     sendBot('Hello!');
