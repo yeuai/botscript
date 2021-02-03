@@ -1,5 +1,5 @@
+import axios from 'axios';
 import { evalSync } from 'jexl';
-import fetch from 'node-fetch';
 import { Struct, Request } from '../engine';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
@@ -96,9 +96,32 @@ export function callHttpService(command: Struct, req: Request) {
 
   logger.info('Send request:', method, url, body);
 
-  return fetch(url, { headers, method, body }).then(res => res.json())
+  return axios
+    .request({ url, headers, method: /^get$/i.test(method) ? 'GET' : 'POST', data: body })
+    .then(res => res.data)
     .catch(err => {
       logger.error('Can not send request:', url, method, body, headers, err);
       return Promise.reject(err);
     });
+}
+
+/**
+ * Download botscript data.
+ * @param url
+ */
+export async function downloadBotScripts(url: string): Promise<string[]> {
+  logger.info('Starting download', url);
+  // download data file.
+  const vResult = await axios.get(url);
+  // test data content type.
+  const vContentType = vResult.headers['content-type'];
+  if (/^text\/plain/.test(vContentType as string)) {
+    const vTextData = await vResult.data;
+    return [vTextData];
+  } else if (/^application\/json/.test(vContentType as string)) {
+    const vListData = await vResult.data; // require array response.
+    return vListData;
+  } else {
+    throw new Error('Data format unsupported!');
+  }
 }

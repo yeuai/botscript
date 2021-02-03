@@ -122,6 +122,17 @@ export class BotScript extends EventEmitter {
   }
 
   /**
+   * Script data parse from Url.
+   * @param url
+   */
+  async parseUrl(url: string) {
+    const vListData = await utils.downloadBotScripts(url);
+    for (const vItem of vListData) {
+      this.parse(vItem);
+    }
+  }
+
+  /**
    * Add trigger pattern capability
    * @param options name, match, func
    */
