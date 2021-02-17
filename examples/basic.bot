@@ -2,27 +2,11 @@
 ! dob 2019
 ! name Rivebot
 
-! hello
-- hello
-- hi
-- hey
-- hola
-- howdy
-- hai
-- yo
-
-! yes
-- yes
-- yeah
-- yep
-- yup
-^ af
-
 ## dialogue
-+ [hello]
++ hello
+- Hello
 - What is your name?
 - Hi. Could you tell me your name?
-- [yes]. What's your name?
 
 + I'm *{name}
 + My name is *{name}
