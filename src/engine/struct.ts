@@ -11,6 +11,7 @@ export const TYPES: any = ({
   '#': 'comment',
   '*': 'condition',
   '>': 'plugin',
+  '/': 'directive',
 });
 
 /**
@@ -128,8 +129,23 @@ export class Struct {
           throw new Error('invalid command');
         }
         break;
-      case TYPES['>']:
+      case TYPES['>']:  // plugins
         struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
+        break;
+      case TYPES['/']:  // directives
+        if (struct.body.length === 0) {
+          const tokens = struct.head[0].split(' ');
+          struct.value = tokens.pop() || '';
+          struct.name = tokens.pop() || '';
+          struct.options = [struct.value];
+        } else {
+          struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
+          if (struct.options.length > 1) {
+            struct.value = struct.options;
+          } else {
+            struct.value = struct.options.find(x => true);
+          }
+        }
         break;
 
     }

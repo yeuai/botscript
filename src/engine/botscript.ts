@@ -75,6 +75,8 @@ export class BotScript extends EventEmitter {
         return this.context.commands;
       case 'plugin':
         return this.context.plugins;
+      case 'directive':
+        return this.context.directives;
       default:
         throw new Error('Not found type: ' + type);
     }
