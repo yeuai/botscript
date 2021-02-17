@@ -7,7 +7,7 @@ import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { Types, PluginCallback } from '../interfaces/types';
-import { addTimeNow, noReplyHandle, normalize } from '../plugins';
+import { addTimeNow, noReplyHandle, normalize, DefaultNLU } from '../plugins';
 
 /**
  * BotScript dialogue engine
@@ -45,6 +45,34 @@ export class BotScript extends EventEmitter {
     this.plugin('addTimeNow', addTimeNow);
     this.plugin('noReplyHandle', noReplyHandle);
     this.plugin('normalize', normalize);
+    this.plugin('nlu', DefaultNLU);
+
+    // add built-in patterns (NLU)
+    this.addPatternCapability({
+      name: 'nlu test',
+      match: /^intent/,
+      func: (pattern: string, req: Request) => {
+        this.logger.info('NLU Preprocess: ', pattern);
+        // return custom pattern
+        return ({
+          source: pattern,
+          test: (input) => {
+            const vIntentName = pattern.replace(/^intent:/i, '').trim();
+            this.logger.info(`NLU test: ${input}, intent: ${req.intent}`);
+            return req.intent === vIntentName;
+          },
+          exec: (input) => {
+            // entities list
+            this.logger.info('NLU extract entities: ', input);
+            if (!Array.isArray(req.entities)) {
+              return [];
+            }
+            return req.entities.map((x: any) => x.value);
+          },
+          toString: () => pattern,
+        });
+      }
+    })
   }
 
   /**
