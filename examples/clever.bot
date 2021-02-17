@@ -1,0 +1,20 @@
+# Vietnamese clever bot!
+
+> addTimeNow
+
++ [hello]
+* $name != null => Are you $name?
+- [hello], human!
+
+// comment
++ tên tôi là gì
+* $name != null => Chào $name!
+- Tôi không biết. Tên bạn là gì?
+- Tôi chưa biết tên bạn?
+
++ my name is *{name}
++ tên * là *{name}
+- hello $name
+
++ what time is it
+- it is $time
