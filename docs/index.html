@@ -28,7 +28,7 @@
     - Here is your ip: $ip
 
     + what time is it
-    - it is $time
+    - It is $time
 
     `);
 
@@ -37,24 +37,27 @@
      * */
     (async function () {
       await bot.parseUrl('https://raw.githubusercontent.com/yeuai/botscript/master/examples/basic.bot');
-      await sendBot('what time is it');
-      await sendBot('what is my ip');
+      await sendBot('What time is it?');
+      await sendBot('What is my ip?');
       await sendBot(`I'm vunb`);
     })();
 
     /**
      * Send bot message and wait response.
      * */
-    async function sendBot(message, id = 'messages') {
-      const de = document.getElementById(id);
+    async function sendBot(message) {
+      // human ask
+      appendChatbox(`Human ask: <strong>${message}</strong>`);
       const reply = await bot.handleAsync(new Request(message));
+      // bot reply
+      appendChatbox(`Bot reply: <em>${reply.speechResponse}</em>`);
+    }fddrg
 
-      let humReq = document.createElement("div");
-      let botRes = document.createElement("div");
-      humReq.append(`Human say: ${message}`);
-      botRes.append(`Bot say: ${reply.speechResponse}`);
-      de.append(humReq);
-      de.append(botRes);
+    function appendChatbox(message, id = 'messages') {
+      const chatbox = document.getElementById(id);
+      const elem = document.createElement("div");
+      elem.innerHTML = message;
+      chatbox.append(elem);
     }
 
     sendBot('Hello!');
