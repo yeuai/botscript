@@ -36,6 +36,7 @@
      * parse data from URL.
      * */
     (async function () {
+      await bot.parseUrl('https://raw.githubusercontent.com/yeuai/botscript/master/examples/definition.bot');
       await bot.parseUrl('https://raw.githubusercontent.com/yeuai/botscript/master/examples/basic.bot');
       await sendBot('What time is it?');
       await sendBot('What is my ip?');
