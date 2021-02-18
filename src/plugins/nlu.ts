@@ -4,7 +4,8 @@ import { callHttpService } from '../lib/utils';
 import { Logger } from '../lib/logger';
 
 const logger = new Logger('NLU');
-const defaultNLU = Struct.parse(`@ nlu https://botscript.ai/api/nlu`);
+const defaultCommandNlu = Struct.parse(`@ nlu https://botscript.ai/api/nlu`);
+const defaultDirectiveNlu = Struct.parse(`/nlu: nlu`);
 
 /**
 > nlu
@@ -13,10 +14,10 @@ const defaultNLU = Struct.parse(`@ nlu https://botscript.ai/api/nlu`);
 - Hallo!
 */
 export async function nlu(req: Request, ctx: Context) {
-  // const vDirectiveNlu = ctx.directives.get('nlu') as Struct;
-  // TODO: get nlu command from directive
-  const vCommandNlu = (ctx.commands.get('nlu') as Struct) || defaultNLU;
-  logger.info('Send nlu request:', vCommandNlu.value, req.message);
+  // Get nlu command from directive
+  const vDirectiveNlu = ctx.directives.get('nlu') as Struct || defaultDirectiveNlu;
+  const vCommandNlu = (ctx.commands.get(vDirectiveNlu.value) as Struct) || defaultCommandNlu;
+  logger.info(`Send nlu request: (${vDirectiveNlu.value})`, req.message);
 
   try {
 

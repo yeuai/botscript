@@ -135,8 +135,8 @@ export class Struct {
       case TYPES['/']:  // directives
         if (struct.body.length === 0) {
           const sepIndex = struct.head[0].indexOf(':');
-          struct.name = struct.head[0].substr(0, sepIndex);
-          struct.value = struct.head[0].substr(sepIndex + 1);
+          struct.name = struct.head[0].substr(0, sepIndex).trim();
+          struct.value = struct.head[0].substr(sepIndex + 1).trim();
           struct.options = [struct.value];
         } else {
           struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));

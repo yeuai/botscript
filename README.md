@@ -457,7 +457,7 @@ function noReplyHandle() {
 Syntax:
 
 ```bash
-/directive: text or [definition]
+/directive: text, command or [definition]
 - option 1
 - option 2
 ```
@@ -474,7 +474,7 @@ Example:
 /include: text or [definition]
 
 # use your custom nlu server
-/nlu: command or [definition]
+/nlu: command service
 ```
 
 # Examples
