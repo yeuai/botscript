@@ -17,6 +17,8 @@ export class Context {
   patterns: Map<string, { name: string, match: RegExp, func: (pattern: string, req: Request) => RegExp | IActivator }>;
   // plugins system
   plugins: Map<string, Struct>;
+  // directives system
+  directives: Map<string, Struct>;
 
   constructor() {
     this.definitions = new Map();
@@ -25,6 +27,7 @@ export class Context {
     this.commands = new Map();
     this.patterns = new Map();
     this.plugins = new Map();
+    this.directives = new Map();
   }
 
   /**

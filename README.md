@@ -450,6 +450,33 @@ function noReplyHandle() {
 }
 ```
 
+## directives
+
+**Directive** is an instruction that helps Engine understand enhanced implementation. Imagine the directive as a switch to direct action.
+
+Syntax:
+
+```bash
+/directive: text, command or [definition]
+- option 1
+- option 2
+```
+
+Available built-in supported directives:
+
+* include
+* nlu
+
+Example:
+
+```bash
+# import bot scripts from url
+/include: text or [definition]
+
+# use your custom nlu server
+/nlu: command service
+```
+
 # Examples
 
 See the [`examples/`](./examples) directory.

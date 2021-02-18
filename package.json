@@ -30,6 +30,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.57",
     "@types/xregexp": "^4.3.0",
+    "axios-mock-adapter": "^1.19.0",
     "browserify": "^17.0.0",
     "chai": "^4.2.0",
     "gulp": "^4.0.2",
