@@ -89,15 +89,16 @@ export function evaluate(code: string, context: any) {
  * @param req
  */
 export function callHttpService(command: Struct, req: Request) {
+  const vIsGetMethod = /^get$/i.test(command.options[0]);
   const headers = command.body.map(x => x.split(':'));
-  const method = command.options[0];
+  const method = vIsGetMethod ? 'GET' : 'POST';
   const url = command.options[1];
-  const body = /^get$/i.test(method) ? undefined : req.variables;
+  const body = vIsGetMethod ? undefined : req.variables;
 
   logger.info('Send request:', method, url, body);
 
   return axios
-    .request({ url, headers, method: /^get$/i.test(method) ? 'GET' : 'POST', data: body })
+    .request({ url, headers, method, data: body })
     .then(res => res.data)
     .catch(err => {
       logger.error('Can not send request:', url, method, body, headers, err);
