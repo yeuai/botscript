@@ -7,7 +7,7 @@ import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { Types, PluginCallback } from '../interfaces/types';
-import { addTimeNow, noReplyHandle, normalize, DefaultNLU } from '../plugins';
+import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 
 /**
  * BotScript dialogue engine
@@ -45,7 +45,7 @@ export class BotScript extends EventEmitter {
     this.plugin('addTimeNow', addTimeNow);
     this.plugin('noReplyHandle', noReplyHandle);
     this.plugin('normalize', normalize);
-    this.plugin('nlu', DefaultNLU);
+    this.plugin('nlu', nlu);
 
     // add built-in patterns (NLU)
     this.addPatternCapability({
@@ -71,8 +71,8 @@ export class BotScript extends EventEmitter {
           },
           toString: () => pattern,
         });
-      }
-    })
+      },
+    });
   }
 
   /**
@@ -82,7 +82,7 @@ export class BotScript extends EventEmitter {
    */
   emit(event: string | symbol, ...args: any[]) {
     const vResult = super.emit(event, ...args);
-    this.logger.debug(`Fired event: '${event.toString()}' (${vResult})`);
+    this.logger.debug(`Fired event: '${event.toString()}', hasListener: (${vResult})`);
     super.emit('*', event, ...args);
     return vResult;
   }
@@ -115,7 +115,7 @@ export class BotScript extends EventEmitter {
    * @param content
    */
   parse(content: string) {
-    content = content
+    const vContent = content
       // convert CRLF into LF
       .replace(/\r\n/g, '\n')
       // remove spacing
@@ -129,12 +129,15 @@ export class BotScript extends EventEmitter {
       // remove spaces
       .trim();
 
-    if (!content) {
+    if (!vContent) {
       // do nothing
       return this;
     }
 
-    const scripts = content
+    // notify event parse botscript data content
+    this.emit('parse', vContent);
+
+    const scripts = vContent
       // split structure by linebreaks
       .split(/\n{2,}/)
       // remove empty lines
@@ -156,10 +159,34 @@ export class BotScript extends EventEmitter {
    * @param url
    */
   async parseUrl(url: string) {
-    const vListData = await utils.downloadScripts(url);
-    for (const vItem of vListData) {
-      this.parse(vItem);
+    try {
+      const vListData = await utils.downloadScripts(url);
+      for (const vItem of vListData) {
+        this.parse(vItem);
+      }
+    } catch (error) {
+      const { message } = error;
+      this.logger.error(`Cannot download script:
+      - Url: ${url}
+      - Msg: ${message || error}`);
     }
+  }
+
+  async init() {
+    // parse include directive
+    for (const item of this.context.directives.keys()) {
+      this.logger.info('Preprocess directive:', item);
+      if (/^include/.test(item)) {
+        const vInclude = this.context.directives.get(item) as Struct;
+        for (const vLink of vInclude.options) {
+          this.logger.info('Parse url from:', vLink);
+          await this.parseUrl(vLink);
+        }
+      }
+    }
+    this.logger.info('Ready!');
+    this.emit('ready');
+    return this;
   }
 
   /**
@@ -330,7 +357,7 @@ export class BotScript extends EventEmitter {
             // Ex: Conditional reply to call http service
             // * $reg_confirm == 'yes' @> register_account
             // * $name == undefined -> You never told me your name
-            return {type, expr, value};
+            return { type, expr, value };
           } else {
             return false;
           }

@@ -452,14 +452,14 @@ function noReplyHandle() {
 
 ## directives
 
-**Directive** is an instruction that helps Engine understand enhanced implementation
+**Directive** is an instruction that helps Engine understand enhanced implementation. Imagine the directive as a switch to direct action.
 
 Syntax:
 
 ```bash
 /directive: text or [definition]
-- item 1
-- item 2
+- option 1
+- option 2
 ```
 
 Available built-in supported directives:
@@ -470,15 +470,11 @@ Available built-in supported directives:
 Example:
 
 ```bash
-# include bot scripts from url
+# import bot scripts from url
 /include: text or [definition]
-- url 1
-- url 2
 
 # use your custom nlu server
-/nlu: text or [definition]
-- server 1
-- server 2
+/nlu: command or [definition]
 ```
 
 # Examples

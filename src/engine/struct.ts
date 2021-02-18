@@ -134,9 +134,9 @@ export class Struct {
         break;
       case TYPES['/']:  // directives
         if (struct.body.length === 0) {
-          const tokens = struct.head[0].split(' ');
-          struct.value = tokens.pop() || '';
-          struct.name = tokens.pop() || '';
+          const sepIndex = struct.head[0].indexOf(':');
+          struct.name = struct.head[0].substr(0, sepIndex);
+          struct.value = struct.head[0].substr(sepIndex + 1);
           struct.options = [struct.value];
         } else {
           struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
