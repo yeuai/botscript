@@ -5,3 +5,4 @@ export * from './context';
 export * from './pattern';
 export * from './machine';
 export * from './botscript';
+export * from '../version';

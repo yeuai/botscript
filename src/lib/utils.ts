@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { evalSync } from 'jexl';
-import { Struct, Request } from '../engine';
+import { Struct, Request } from '../common';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
 

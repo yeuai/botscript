@@ -1,5 +1,5 @@
 // tslint:disable: jsdoc-format
-import { Request } from '../engine';
+import { Request } from '../common';
 import clean from './utils/clean';
 
 /**

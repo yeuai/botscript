@@ -1,5 +1,5 @@
 // tslint:disable: jsdoc-format
-import { Request, Context, Struct } from '../engine';
+import { Request, Context, Struct } from '../common';
 import * as utils from '../lib/utils';
 
 /**
