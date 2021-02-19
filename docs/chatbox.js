@@ -17,9 +17,11 @@ $(function () {
         value: 'new'
       }
     ];
-    setTimeout(function () {
-      generate_message(msg, 'user');
-    }, 1000)
+    setTimeout(async function () {
+      // generate_message(msg, 'user');
+      const reply = await bot.handleAsync(new Request(msg));
+      generate_message(reply.speechResponse, 'user');
+    }, 300)
 
   })
 
