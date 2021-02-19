@@ -5,9 +5,4 @@ export * from './context';
 export * from './pattern';
 export * from './machine';
 export * from './botscript';
-
-import {version} from '../../package.json';
-
-export {
-  version,
-};
+export * from '../version';
