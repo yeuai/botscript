@@ -11,9 +11,12 @@ A text-based scripting language, dialog system and bot engine for Conversational
 
 > This is a part of project [yeu.ai](https://github.com/yeuai). An open platform for experiment and training Vietnamese chatbot!
 
-# Documentation
+# Documentation 👋
 
-[Read the wiki](https://github.com/yeuai/botscript/wiki) for all the details on how to get started playing with BotScript
+Here is a list of resources to get you started
+
+- 👯 [Read the wiki](https://github.com/yeuai/botscript/wiki) for all the details on how to get started playing with BotScript
+- 🤔 [Read API References](https://github.com/yeuai/botscript/wiki/API-References) to start coding
 
 # Specification
 
@@ -448,6 +451,33 @@ function noReplyHandle() {
 
   return postProcessing
 }
+```
+
+## directives
+
+**Directive** is an instruction that helps Engine understand enhanced implementation. Imagine the directive as a switch to direct action.
+
+Syntax:
+
+```bash
+/directive: text, command or [definition]
+- option 1
+- option 2
+```
+
+Available built-in supported directives:
+
+* include
+* nlu
+
+Example:
+
+```bash
+# import bot scripts from url
+/include: text or [definition]
+
+# use your custom nlu server
+/nlu: command service
 ```
 
 # Examples
