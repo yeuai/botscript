@@ -1,5 +1,5 @@
 // tslint:disable: jsdoc-format
-import { Request, Context } from '../engine';
+import { Request, Context } from '../common';
 
 /**
 > addTimeNow
