@@ -5,15 +5,37 @@
   <meta charset="UTF-8" />
   <title>Hello BotScript! - @Yeu.AI</title>
   <link rel="icon" href="data:,">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css">
+  <link rel="stylesheet" href="chatbox.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 
 <body>
-  <h1 id="greeting">BotScript: Hello World!</h1>
-  <p id="messages"></p>
+  <!-- Main jumbotron for a primary marketing message or call to action -->
+  <div class="jumbotron">
+    <div class="container">
+      <h1 class="display-3">Hello, BotScript!</h1>
+      <p>A text-based scripting language, dialog system and bot engine for Conversational User Interfaces</p>
+      <p><a class="btn btn-primary btn-lg chat-box-toggle" href="#" style="float: none;" role="button">Chat Now &raquo;</a></p>
+    </div>
+  </div>
+  <div class="container">
+    <h2 id="greeting">Do you have any questions to ask BotScript?</h2>
+    <p id="messages"></p>
+  </div>
+
   <script src="botscript.ai.js"></script>
   <script src="botscript.plugins.js"></script>
+  <script src="chatbox.js"></script>
+
   <script>
-    const {BotScript, Request, TYPES} = BotScriptAI;
+    const { BotScript, Request, TYPES } = BotScriptAI;
     const bot = new BotScript();
     // bot.parse('+ * \n - Hello World!\n - Yes?\n - How are you?');
     bot.parse('> addTimeNow');
@@ -64,6 +86,34 @@
     sendBot('Hello!');
 
   </script>
+
+  <div id="chatbox">
+    <div id="chat-circle" class="btn btn-raised">
+      <div id="chat-overlay"></div>
+      <i class="material-icons">speaker_phone</i>
+    </div>
+
+    <div class="chat-box">
+      <div class="chat-box-header">
+        ChatBox
+        <span class="chat-box-toggle"><i class="material-icons">close</i></span>
+      </div>
+      <div class="chat-box-body">
+        <div class="chat-box-overlay">
+        </div>
+        <div class="chat-logs">
+
+        </div>
+        <!--chat-log -->
+      </div>
+      <div class="chat-input">
+        <form>
+          <input type="text" id="chat-input" placeholder="Send a message..." />
+          <button type="submit" class="chat-submit" id="chat-submit"><i class="material-icons">send</i></button>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
