@@ -135,16 +135,14 @@ export class Struct {
       case TYPES['/']:  // directives
         if (struct.body.length === 0) {
           const sepIndex = struct.head[0].indexOf(':');
-          struct.name = struct.head[0].substr(0, sepIndex).trim();
+          struct.name = sepIndex < 0 ? struct.head[0] : struct.head[0].substr(0, sepIndex).trim();
           struct.value = struct.head[0].substr(sepIndex + 1).trim();
           struct.options = [struct.value];
         } else {
+          const sepIndex = struct.head[0].indexOf(':');
+          struct.name = sepIndex < 0 ? struct.head[0] : struct.head[0].substr(0, sepIndex).trim();
           struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
-          if (struct.options.length > 1) {
-            struct.value = struct.options;
-          } else {
-            struct.value = struct.options.find(x => true);
-          }
+          struct.value = struct.body.join(' ');
         }
         break;
 

@@ -47,6 +47,10 @@
     // bot.parse('+ * \n - Hello World!\n - Yes?\n - How are you?');
     bot.parse('> addTimeNow');
     bot.parse(`
+    /include:
+    - https://raw.githubusercontent.com/yeuai/botscript/master/examples/definition.bot
+    - https://raw.githubusercontent.com/yeuai/botscript/master/examples/basic.bot
+
     @ geoip https://api.ipify.org/?format=json
     #- header: value
     #- header: value (2)
@@ -61,24 +65,22 @@
 
     `);
 
-    /**
-     * parse data from URL.
-     * */
-    (async function () {
-      await bot.parseUrl('https://raw.githubusercontent.com/yeuai/botscript/master/examples/definition.bot');
-      await bot.parseUrl('https://raw.githubusercontent.com/yeuai/botscript/master/examples/basic.bot');
-      await sendBot('What time is it?');
-      await sendBot('What is my ip?');
-      await sendBot(`I'm vunb`);
-    })();
+    bot.init()
+      .then(async () => {
+        const request = new Request();
+        await sendBot(request.enter('Hello!'));
+        await sendBot(request.enter(`I'm vunb`));
+        await sendBot(request.enter('What time is it?'));
+        await sendBot(request.enter('What is my ip?'));
+      });
 
     /**
      * Send bot message and wait response.
      * */
-    async function sendBot(message) {
+    async function sendBot(req) {
       // human ask
-      appendChatbox(`Human ask: <strong>${message}</strong>`);
-      const reply = await bot.handleAsync(new Request(message));
+      appendChatbox(`Human ask: <strong>${req.message}</strong>`);
+      const reply = await bot.handleAsync(req);
       // bot reply
       appendChatbox(`Bot reply: <em>${reply.speechResponse}</em>`);
     }
@@ -89,9 +91,6 @@
       elem.innerHTML = message;
       chatbox.append(elem);
     }
-
-    sendBot('Hello!');
-
   </script>
 
   <div id="chatbox">

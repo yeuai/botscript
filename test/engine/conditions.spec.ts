@@ -121,6 +121,10 @@ describe('BotScript: Conditional dialogue', () => {
       await condBot.handleAsync(req.enter('vunb'));
       assert.match(req.speechResponse, /vunb who/i);
 
+      // lost context previous reply.
+      await condBot.handleAsync(req.enter('vunb'));
+      assert.match(req.speechResponse, /NO REPLY!/i);
+
       const req2 = new Request();
 
       await condBot.handleAsync(req2.enter('knock knock'));
