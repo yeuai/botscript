@@ -79,8 +79,14 @@ export class Context {
         return value || '';
       })
       // matching & replacing: ${var}, $var, #{var}, #var
-      .replace(/[#$]\{?([a-z][\w_-]*)\}?/g, (match, variable) => {
+      // support directive /format: $var /format:list
+      .replace(/[#$]\{?([a-z][\w_-]*)\}?\s*(\/[a-z:_-]+)?/g, (match, variable: string, format: string) => {
         const value = req.variables[variable];
+        if (format && format.charAt(0) === '/') {
+          const vDirectiveName = format.substring(1);
+          const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
+          return vFormatTemplate;
+        }
         return value || '';
       })
       // matching & replacing: $123, $456

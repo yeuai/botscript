@@ -77,7 +77,7 @@ describe('Feature: Directive', () => {
       /format: list
       <ul>
       {{#each data}}
-        <li>{{name}} / {{age}}<li>,
+        <li>{{name}} / {{age}}</li>,
       {{/each}}
       </ul>
 
@@ -94,7 +94,12 @@ describe('Feature: Directive', () => {
 
       // ask bot with data output format
       const req = await bot.handleAsync(new Request('show my list'));
+      // response with formmated data
       assert.match(req.speechResponse, /^<ul>.*<\/ul>$/i, 'show formatted response');
+      // response with template engine (current support handlebars)
+      const vOccurs = req.speechResponse.split('<li>').length;
+      assert.equal(vOccurs, 3, 'generated data with template');
+
     });
   });
 
