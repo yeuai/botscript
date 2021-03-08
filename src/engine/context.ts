@@ -1,4 +1,4 @@
-import { compile } from "handlebars";
+import { compile } from 'handlebars';
 import { random } from '../lib/utils';
 import { Request } from './request';
 import { Struct } from './struct';
@@ -89,7 +89,7 @@ export class Context {
             const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
             const vTemplate = compile(vFormatTemplate);
             const vResult = vTemplate({
-              [variable]: value
+              [variable]: value,
             });
             return vResult;
           }
