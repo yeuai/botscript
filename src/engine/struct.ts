@@ -139,8 +139,8 @@ export class Struct {
           struct.value = struct.head[0].substr(sepIndex + 1).trim();
           struct.options = [struct.value];
         } else {
-          const sepIndex = struct.head[0].indexOf(':');
-          struct.name = sepIndex < 0 ? struct.head[0] : struct.head[0].substr(0, sepIndex).trim();
+          // directive name without spaces
+          struct.name = struct.head.join(' ').replace(/\s+/, '');
           struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
           struct.value = struct.body.join(' ');
         }

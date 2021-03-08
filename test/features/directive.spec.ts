@@ -56,8 +56,8 @@ describe('Feature: Directive', () => {
     });
   });
 
-  describe('should include scripts from url', async () => {
-    it('should reply a greeting', async () => {
+  describe('Directive: include', async () => {
+    it('should include scripts from url', async () => {
       const bot = new BotScript();
       bot.parse(`
       /include: https://raw.githubusercontent.com/yeuai/botscript/master/examples/hello.bot
@@ -67,5 +67,36 @@ describe('Feature: Directive', () => {
       assert.match(req.speechResponse, /Hello, human!/i, 'bot reply');
     });
   });
+
+  describe('Directive: format', () => {
+    it('should format response with data', async () => {
+      const bot = new BotScript();
+      bot.parse(`
+      @ list_patient https://raw.githubusercontent.com/yeuai/botscript/master/examples/data/list.json
+
+      /format: list
+      <ul>
+      {{#each data}}
+        <li>{{name}} / {{age}}<li>,
+      {{/each}}
+      </ul>
+
+      + show my list
+      * true @> list_patient
+      - $data /format:list
+      `);
+      await bot.init();
+
+      const vFormatDirective = bot.context.directives.get('format:list');
+      const vNonExistsDirective = bot.context.directives.get('format: list');
+      assert.isNotNull(vFormatDirective, 'Parsed directive format');
+      assert.isUndefined(vNonExistsDirective, 'Get directive without name normalization');
+
+      // ask bot with data output format
+      const req = await bot.handleAsync(new Request('show my list'));
+      assert.match(req.speechResponse, /^<ul>.*<\/ul>$/i, 'show formatted response');
+    });
+  });
+
 
 });

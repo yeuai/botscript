@@ -55,6 +55,13 @@
     #- header: value
     #- header: value (2)
 
+    @ list_patient https://raw.githubusercontent.com/yeuai/botscript/master/examples/data/list.json
+
+    /format:list
+    {{#each data}}
+      {{name}} / {{age}},
+    {{/each}}
+
     # conditional command
     + what is my ip
     * true @> geoip
@@ -62,6 +69,10 @@
 
     + what time is it
     - It is $time
+
+    + show my list
+    * true @> list_patient
+    - Here is your list: $data /format:list
 
     `);
 

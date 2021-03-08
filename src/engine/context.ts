@@ -69,17 +69,25 @@ export class Context {
    * @param req message request
    */
   interpolateVariables(text: string, req: Request) {
-    return text.replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, output) => {
-      const result = req.variables[variable];
-      const value = result && result[output];
-      return value || '';
-    }).replace(/[#$]\{?([a-z][\w_-]*)\}?/g, (match, variable) => {
-      const value = req.variables[variable];
-      return value || '';
-    }).replace(/(\$\d*(?![\w\d]))/g, (match, variable) => {
-      const value = req.variables[variable];
-      return value || '';
-    });
+    return text
+      // matching & replacing: $var.a.b.c (child properties)
+      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, output) => {
+        // TODO: using Proxy
+        const result = req.variables[variable];
+        // tslint:disable-next-line: no-eval
+        const value = eval(`result${output}`);
+        return value || '';
+      })
+      // matching & replacing: ${var}, $var, #{var}, #var
+      .replace(/[#$]\{?([a-z][\w_-]*)\}?/g, (match, variable) => {
+        const value = req.variables[variable];
+        return value || '';
+      })
+      // matching & replacing: $123, $456
+      .replace(/(\$\d*(?![\w\d]))/g, (match, variable) => {
+        const value = req.variables[variable];
+        return value || '';
+      });
   }
 
   /**
