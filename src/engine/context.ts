@@ -1,3 +1,4 @@
+import { compile } from "handlebars";
 import { random } from '../lib/utils';
 import { Request } from './request';
 import { Struct } from './struct';
@@ -84,8 +85,14 @@ export class Context {
         const value = req.variables[variable];
         if (format && format.charAt(0) === '/') {
           const vDirectiveName = format.substring(1);
-          const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
-          return vFormatTemplate;
+          if (this.directives.has(vDirectiveName)) {
+            const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
+            const vTemplate = compile(vFormatTemplate);
+            const vResult = vTemplate({
+              [variable]: value
+            });
+            return vResult;
+          }
         }
         return value || '';
       })

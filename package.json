@@ -50,6 +50,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "debug": "^4.1.1",
+    "handlebars": "^4.7.7",
     "jexl": "^2.2.2",
     "xregexp": "^4.3.0",
     "xstate": "^4.13.0"

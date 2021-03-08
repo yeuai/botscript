@@ -58,7 +58,7 @@
     @ list_patient https://raw.githubusercontent.com/yeuai/botscript/master/examples/data/list.json
 
     /format:list
-    {{#each data}}
+    {{#each people}}
       {{name}} / {{age}},
     {{/each}}
 
@@ -72,7 +72,7 @@
 
     + show my list
     * true @> list_patient
-    - Here is your list: $data /format:list
+    - Here is your list: $people /format:list
 
     `);
 
@@ -83,6 +83,7 @@
         await sendBot(request.enter(`I'm vunb`));
         await sendBot(request.enter('What time is it?'));
         await sendBot(request.enter('What is my ip?'));
+        await sendBot(request.enter('show my list'));
       });
 
     /**

@@ -14,6 +14,19 @@ mock
     intent: 'react_positive',
     entities: [{ id: 1, name: 'John Smith' }],
   })
+  .onGet('/api/data/list').reply(200, {
+    people: [{
+        "name": "Vũ",
+        "age": 30,
+      }, {
+        "name": "Toàn",
+        "age": 20,
+      }, {
+        "name": "Cường",
+        "age": 25,
+      }
+    ],
+  })
   .onAny()
   .passThrough();
 
@@ -72,18 +85,18 @@ describe('Feature: Directive', () => {
     it('should format response with data', async () => {
       const bot = new BotScript();
       bot.parse(`
-      @ list_patient https://raw.githubusercontent.com/yeuai/botscript/master/examples/data/list.json
+      @ list_patient /api/data/list
 
       /format: list
       <ul>
-      {{#each data}}
+      {{#each people}}
         <li>{{name}} / {{age}}</li>,
       {{/each}}
       </ul>
 
       + show my list
       * true @> list_patient
-      - $data /format:list
+      - $people /format:list
       `);
       await bot.init();
 
@@ -96,9 +109,10 @@ describe('Feature: Directive', () => {
       const req = await bot.handleAsync(new Request('show my list'));
       // response with formmated data
       assert.match(req.speechResponse, /^<ul>.*<\/ul>$/i, 'show formatted response');
+      // console.log('Speech response: ', req.speechResponse);
       // response with template engine (current support handlebars)
       const vOccurs = req.speechResponse.split('<li>').length;
-      assert.equal(vOccurs, 3, 'generated data with template');
+      assert.equal(vOccurs - 1, 3, 'generated data with template');
 
     });
   });
