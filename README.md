@@ -470,6 +470,7 @@ Available built-in supported directives:
 
 * include
 * nlu
+* format
 
 Example:
 
@@ -479,6 +480,16 @@ Example:
 
 # use your custom nlu server
 /nlu: command service
+
+# format variable in population
+/format:list
+{{#each people}}
+  {{name}} / {{age}},
+{{/each}}
+
++ show my list
+* true @> list_patient
+- Here is your list: $people /format:list
 ```
 
 # Examples
