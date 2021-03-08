@@ -17,6 +17,7 @@ Here is a list of resources to get you started
 
 - 👯 [Read the wiki](https://github.com/yeuai/botscript/wiki) for all the details on how to get started playing with BotScript
 - 🤔 [Read API References](https://github.com/yeuai/botscript/wiki/API-References) to start coding
+- 💬 [Playground](https://play.botscript.ai/) to say hello?
 
 # Specification
 
