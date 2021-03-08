@@ -14,6 +14,19 @@ mock
     intent: 'react_positive',
     entities: [{ id: 1, name: 'John Smith' }],
   })
+  .onGet('/api/data/list').reply(200, {
+    people: [{
+        "name": "Vũ",
+        "age": 30,
+      }, {
+        "name": "Toàn",
+        "age": 20,
+      }, {
+        "name": "Cường",
+        "age": 25,
+      }
+    ],
+  })
   .onAny()
   .passThrough();
 
@@ -56,8 +69,8 @@ describe('Feature: Directive', () => {
     });
   });
 
-  describe('should include scripts from url', async () => {
-    it('should reply a greeting', async () => {
+  describe('Directive: include', async () => {
+    it('should include scripts from url', async () => {
       const bot = new BotScript();
       bot.parse(`
       /include: https://raw.githubusercontent.com/yeuai/botscript/master/examples/hello.bot
@@ -67,5 +80,42 @@ describe('Feature: Directive', () => {
       assert.match(req.speechResponse, /Hello, human!/i, 'bot reply');
     });
   });
+
+  describe('Directive: format', () => {
+    it('should format response with data', async () => {
+      const bot = new BotScript();
+      bot.parse(`
+      @ list_patient /api/data/list
+
+      /format: list
+      <ul>
+      {{#each people}}
+        <li>{{name}} / {{age}}</li>,
+      {{/each}}
+      </ul>
+
+      + show my list
+      * true @> list_patient
+      - $people /format:list
+      `);
+      await bot.init();
+
+      const vFormatDirective = bot.context.directives.get('format:list');
+      const vNonExistsDirective = bot.context.directives.get('format: list');
+      assert.isNotNull(vFormatDirective, 'Parsed directive format');
+      assert.isUndefined(vNonExistsDirective, 'Get directive without name normalization');
+
+      // ask bot with data output format
+      const req = await bot.handleAsync(new Request('show my list'));
+      // response with formmated data
+      assert.match(req.speechResponse, /^<ul>.*<\/ul>$/i, 'show formatted response');
+      // console.log('Speech response: ', req.speechResponse);
+      // response with template engine (current support handlebars)
+      const vOccurs = req.speechResponse.split('<li>').length;
+      assert.equal(vOccurs - 1, 3, 'generated data with template');
+
+    });
+  });
+
 
 });

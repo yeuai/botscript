@@ -236,6 +236,8 @@ export class BotScript extends EventEmitter {
     // post-processing
     await this.postProcessRequest(postProcessing, req, context);
 
+    // emit reply done.
+    this.emit('reply', req, ctx);
     return req;
   }
 
@@ -473,7 +475,6 @@ export class BotScript extends EventEmitter {
     if (req.previous.length > 100) {
       req.previous.pop();
     }
-    this.emit('reply', req, ctx);
 
     return req;
   }

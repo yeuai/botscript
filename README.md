@@ -17,6 +17,7 @@ Here is a list of resources to get you started
 
 - 👯 [Read the wiki](https://github.com/yeuai/botscript/wiki) for all the details on how to get started playing with BotScript
 - 🤔 [Read API References](https://github.com/yeuai/botscript/wiki/API-References) to start coding
+- 💬 [Playground](https://play.botscript.ai/) to say hello?
 
 # Specification
 
@@ -469,6 +470,7 @@ Available built-in supported directives:
 
 * include
 * nlu
+* format
 
 Example:
 
@@ -478,6 +480,16 @@ Example:
 
 # use your custom nlu server
 /nlu: command service
+
+# format variable in population
+/format:list
+{{#each people}}
+  {{name}} / {{age}},
+{{/each}}
+
++ show my list
+* true @> list_patient
+- Here is your list: $people /format:list
 ```
 
 # Examples
