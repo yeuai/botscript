@@ -487,10 +487,16 @@ Example:
   {{name}} / {{age}},
 {{/each}}
 
+/format: bold
+<strong>{{value}}</strong>
+
 + show my list
 * true @> list_patient
 - Here is your list: $people /format:list
 - Here is your list: $people :list (shorthand)
+
++ bold *{me}
+- $me :bold
 ```
 
 # Examples
