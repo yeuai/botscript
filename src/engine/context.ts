@@ -98,7 +98,8 @@ export class Context {
             const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
             const vTemplate = compile(vFormatTemplate);
             const vResult = vTemplate({
-              [variable]: value,
+              [variable]: value,  // access via name of user variable, ex: $people
+              value, // access via name: value
             });
             return vResult;
           }
