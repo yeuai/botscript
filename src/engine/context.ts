@@ -71,20 +71,29 @@ export class Context {
    */
   interpolateVariables(text: string, req: Request) {
     return text
-      // matching & replacing: $var.a.b.c (child properties)
-      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, output) => {
-        // TODO: using Proxy
+      // matching & replacing: $var.a.b[0].c (note: a.b[0].c is a path of property)
+      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, propPath) => {
+        // TODO: using Proxy or npm:path-value
         const result = req.variables[variable];
         // tslint:disable-next-line: no-eval
-        const value = eval(`result${output}`);
+        const value = eval(`result${propPath}`);
         return value || '';
       })
       // matching & replacing: ${var}, $var, #{var}, #var
-      // support directive /format: $var /format:list
-      .replace(/[#$]\{?([a-z][\w_-]*)\}?\s*(\/[a-z:_-]+)?/g, (match, variable: string, format: string) => {
+      // syntax: $var /format:list
+      // shorthand: $var :list
+      .replace(/[#$]\{?([a-z][\w_-]*)\}?\s*([\/:][a-z:_-]+)?/g, (match, variable: string, format: string) => {
         const value = req.variables[variable];
-        if (format && format.charAt(0) === '/') {
-          const vDirectiveName = format.substring(1);
+        if (format && /[/:]/.test(format.charAt(0))) {
+          let vDirectiveName = format.substring(1);
+          if (!/^format/.test(vDirectiveName)) {
+            if (vDirectiveName.charAt(0) !== ':') {
+              vDirectiveName = ':' + vDirectiveName;
+            }
+            // support shorthand $var /:list or $var :list
+            vDirectiveName = 'format' + vDirectiveName;
+          }
+          // console.log('Directive format: ' + vDirectiveName);
           if (this.directives.has(vDirectiveName)) {
             const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
             const vTemplate = compile(vFormatTemplate);
