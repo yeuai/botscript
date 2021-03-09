@@ -100,7 +100,7 @@ describe('Feature: Directive', () => {
 
       + shorthand format
       * true @> list_patient
-      - $people : list
+      - $people :list
       `);
       await bot.init();
 
@@ -120,7 +120,7 @@ describe('Feature: Directive', () => {
 
       // ask bot with data output format
       const res2 = await bot.handleAsync(new Request('shorthand format'));
-      console.log('Output: ', res2.speechResponse);
+      // console.log('Output: ', res2.speechResponse);
       assert.equal(res2.speechResponse.split('<li>').length - 1, 3, 'shorthand format');
     });
   });
