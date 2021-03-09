@@ -16,15 +16,15 @@ mock
   })
   .onGet('/api/data/list').reply(200, {
     people: [{
-        "name": "Vũ",
-        "age": 30,
+        name: 'Vũ',
+        age: 30,
       }, {
-        "name": "Toàn",
-        "age": 20,
+        name: 'Toàn',
+        age: 20,
       }, {
-        "name": "Cường",
-        "age": 25,
-      }
+        name: 'Cường',
+        age: 25,
+      },
     ],
   })
   .onAny()
@@ -97,6 +97,10 @@ describe('Feature: Directive', () => {
       + show my list
       * true @> list_patient
       - $people /format:list
+
+      + shorthand format
+      * true @> list_patient
+      - $people :list
       `);
       await bot.init();
 
@@ -114,8 +118,27 @@ describe('Feature: Directive', () => {
       const vOccurs = req.speechResponse.split('<li>').length;
       assert.equal(vOccurs - 1, 3, 'generated data with template');
 
+      // ask bot with data output format
+      const res2 = await bot.handleAsync(new Request('shorthand format'));
+      // console.log('Output: ', res2.speechResponse);
+      assert.equal(res2.speechResponse.split('<li>').length - 1, 3, 'shorthand format');
+    });
+
+    it('should format variable via common name: value or $var', async () => {
+      const bot = new BotScript();
+      bot.parse(`
+      /format: bold
+      <strong>{{value}}</strong><em>{{me}}</em>
+
+      + bold *{me}
+      - $me :bold
+      `);
+      await bot.init();
+
+      // ask bot with data output format
+      const res2 = await bot.handleAsync(new Request('bold vunb'));
+      assert.equal(res2.speechResponse, '<strong>vunb</strong><em>vunb</em>', 'format bold');
     });
   });
-
 
 });
