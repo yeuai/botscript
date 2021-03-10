@@ -414,10 +414,11 @@ export class BotScript extends EventEmitter {
             this.logger.debug('Execute command: ', x.value);
             const result = await utils.callHttpService(command, req);
 
-            // populate result into variables
-            this.logger.debug('Populate command result into variables:', x.value, JSON.stringify(result));
+            // append result into variables
+            this.logger.debug('Append command result into variables:', x.value);
+            // TODO: Refactor this.emit('command', {error: false, req, ctx, result, command_name})
             this.emit('command', null, req, ctx, command.name, result);
-            Object.assign(req.variables, result);
+            Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
             this.emit('command', err, req, ctx, command.name);
