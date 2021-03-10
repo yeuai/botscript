@@ -47,6 +47,7 @@
   <script>
     const { BotScript, Request, TYPES } = BotScriptAI;
     const bot = new BotScript();
+    const request = new Request();
     const urlParams = new URLSearchParams(window.location.search);
     const botId = urlParams.get('bot');
 
@@ -88,7 +89,6 @@
 
     bot.init()
       .then(async () => {
-        const request = new Request();
         await sendBot(request.enter('Hello!'));
         await sendBot(request.enter(`I'm vunb`));
         await sendBot(request.enter('What time is it?'));
