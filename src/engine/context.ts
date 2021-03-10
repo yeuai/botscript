@@ -3,6 +3,9 @@ import { random } from '../lib/utils';
 import { Request } from './request';
 import { Struct } from './struct';
 import { IActivator } from '../interfaces/activator';
+import { Logger } from '../lib/logger';
+
+const logger = new Logger('Context');
 
 /**
  * Bot context
@@ -73,11 +76,16 @@ export class Context {
     return text
       // matching & replacing: $var.a.b[0].c (note: a.b[0].c is a path of property)
       .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, propPath) => {
-        // TODO: using Proxy or npm:path-value
-        const result = req.variables[variable];
-        // tslint:disable-next-line: no-eval
-        const value = eval(`result${propPath}`);
-        return value || '';
+        try {
+          // TODO: using Proxy or npm:path-value
+          const result = req.variables[variable];
+          // tslint:disable-next-line: no-eval
+          const value = eval(`result${propPath}`);
+          return value || '';
+        } catch (error) {
+          logger.error(`Cannot interpolate variable: ${variable} ${propPath}`, error);
+          return 'undefined';
+        }
       })
       // matching & replacing: ${var}, $var, #{var}, #var
       // syntax: $var /format:list
