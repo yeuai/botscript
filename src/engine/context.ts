@@ -1,8 +1,11 @@
-import { compile } from 'handlebars';
 import { random } from '../lib/utils';
+import { interpolate } from '../lib/template';
 import { Request } from './request';
 import { Struct } from './struct';
 import { IActivator } from '../interfaces/activator';
+import { Logger } from '../lib/logger';
+
+const logger = new Logger('Context');
 
 /**
  * Bot context
@@ -58,9 +61,15 @@ export class Context {
    * @param text
    */
   interpolateDefinition(text: string) {
+    logger.debug('interpolateDefinition:', text);
     return text.replace(/\[([\w-]+)\]/g, (match, defName) => {
-      const list = this.definitions.get(defName.toLowerCase());
-      return list ? random(list.options) : defName;
+      const definition = defName.toLowerCase();
+      if (!this.definitions.has(definition)) {
+        // return original
+        return match;
+      }
+      const list = this.definitions.get(definition) as Struct;
+      return random(list.options);
     });
   }
 
@@ -70,14 +79,26 @@ export class Context {
    * @param req message request
    */
   interpolateVariables(text: string, req: Request) {
+    logger.debug('interpolateVariables:', text);
     return text
-      // matching & replacing: $var.a.b[0].c (note: a.b[0].c is a path of property)
+      // matching & replacing: $var.[0].a.b (note: .[0].a.b is a path of property of an array)
       .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, propPath) => {
-        // TODO: using Proxy or npm:path-value
-        const result = req.variables[variable];
-        // tslint:disable-next-line: no-eval
-        const value = eval(`result${propPath}`);
-        return value || '';
+        try {
+          const vValue = req.variables[variable];
+          if (!vValue) {
+            logger.info(`Not found: ${variable}, ${propPath}`);
+            return '';
+          }
+          // interpolate value from variables
+          const template = `{{${variable + propPath}}}`;
+          const data = { [variable]: vValue };
+          logger.info(`interpolate: ${template}, ${JSON.stringify(data)}`);
+          const vResult = interpolate(template, data);
+          return vResult;
+        } catch (error) {
+          logger.error(`Cannot interpolate variable: ${variable} ${propPath}`, error);
+          return 'undefined';
+        }
       })
       // matching & replacing: ${var}, $var, #{var}, #var
       // syntax: $var /format:list
@@ -96,8 +117,7 @@ export class Context {
           // console.log('Directive format: ' + vDirectiveName);
           if (this.directives.has(vDirectiveName)) {
             const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
-            const vTemplate = compile(vFormatTemplate);
-            const vResult = vTemplate({
+            const vResult = interpolate(vFormatTemplate, {
               [variable]: value,  // access via name of user variable, ex: $people
               value, // access via name: value
             });
@@ -119,6 +139,7 @@ export class Context {
    * @param req
    */
   interpolate(text: string, req: Request) {
+    logger.debug('interpolate:', text);
     let output = this.interpolateDefinition(text);
     output = this.interpolateVariables(output, req);
     return output;

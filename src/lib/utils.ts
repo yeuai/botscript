@@ -3,6 +3,7 @@ import { evalSync } from 'jexl';
 import { Struct, Request } from '../common';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
+import { interpolate } from './template';
 
 const logger = new Logger('Utils');
 
@@ -92,14 +93,17 @@ export function callHttpService(command: Struct, req: Request) {
   const vIsGetMethod = /^get$/i.test(command.options[0]);
   const headers = command.body.map(x => x.split(':'));
   const method = vIsGetMethod ? 'GET' : 'POST';
-  const url = command.options[1];
+  const url = interpolate(command.options[1], req.variables);
   const body = vIsGetMethod ? undefined : req.variables;
 
-  logger.info('Send request:', method, url, body);
+  logger.info(`Send command request @${command.name}: ${method} ${url}${(method === 'POST' && body) ? ', body=' + JSON.stringify(body) : ''}`);
 
   return axios
     .request({ url, headers, method, data: body })
-    .then(res => res.data)
+    .then(res => {
+      logger.debug(`Send command request @${command.name}: Done, Response=`, JSON.stringify(res.data));
+      return res.data;
+    })
     .catch(err => {
       logger.error('Can not send request:', url, method, body, headers, err);
       return Promise.reject(err);

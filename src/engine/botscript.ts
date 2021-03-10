@@ -369,8 +369,9 @@ export class BotScript extends EventEmitter {
         if (x === false) {
           return false;
         }
-        this.logger.info('Evaluate test: ', x.type, x.expr, x.value);
-        return utils.evaluate(x.expr, req.variables);
+        const vTestResult = utils.evaluate(x.expr, req.variables);
+        this.logger.info(`Evaluate test: ${vTestResult}|`, x.type, x.expr, x.value);
+        return vTestResult;
       });
 
     this.logger.info('Conditions test: ', dialogConditions);
@@ -413,10 +414,15 @@ export class BotScript extends EventEmitter {
             this.logger.debug('Execute command: ', x.value);
             const result = await utils.callHttpService(command, req);
 
-            // populate result into variables
-            this.logger.debug('Populate command result into variables:', x.value, result);
+            // append result into variables
+            this.logger.debug('Append command result into variables:', x.value);
+            // TODO: Refactor this.emit('command', {error: false, req, ctx, result, command_name})
             this.emit('command', null, req, ctx, command.name, result);
-            Object.assign(req.variables, result);
+            if (!Array.isArray(result)) {
+              // backwards compatibility.
+              Object.assign(req.variables, result);
+            }
+            Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
             this.emit('command', err, req, ctx, command.name);
