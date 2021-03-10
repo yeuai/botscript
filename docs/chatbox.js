@@ -19,7 +19,7 @@ $(function () {
     ];
     setTimeout(async function () {
       // generate_message(msg, 'user');
-      const reply = await bot.handleAsync(new Request(msg));
+      const reply = await bot.handleAsync(request.enter(msg));
       generate_message(reply.speechResponse, 'user');
     }, 300)
 
