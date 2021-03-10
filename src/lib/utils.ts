@@ -96,11 +96,14 @@ export function callHttpService(command: Struct, req: Request) {
   const url = interpolate(command.options[1], req.variables);
   const body = vIsGetMethod ? undefined : req.variables;
 
-  logger.info('Send request:', method, url, body);
+  logger.info(`Send command request @${command.name}: ${method} ${url}${(method === 'POST' && body) ? ', body=' + JSON.stringify(body) : ''}`);
 
   return axios
     .request({ url, headers, method, data: body })
-    .then(res => res.data)
+    .then(res => {
+      logger.debug(`Send command request @${command.name}: Done, Response=`, JSON.stringify(res.data));
+      return res.data;
+    })
     .catch(err => {
       logger.error('Can not send request:', url, method, body, headers, err);
       return Promise.reject(err);
