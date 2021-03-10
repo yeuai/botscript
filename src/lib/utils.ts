@@ -3,6 +3,7 @@ import { evalSync } from 'jexl';
 import { Struct, Request } from '../common';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
+import { interpolate } from './template';
 
 const logger = new Logger('Utils');
 
@@ -92,7 +93,7 @@ export function callHttpService(command: Struct, req: Request) {
   const vIsGetMethod = /^get$/i.test(command.options[0]);
   const headers = command.body.map(x => x.split(':'));
   const method = vIsGetMethod ? 'GET' : 'POST';
-  const url = command.options[1];
+  const url = interpolate(command.options[1], req.variables);
   const body = vIsGetMethod ? undefined : req.variables;
 
   logger.info('Send request:', method, url, body);

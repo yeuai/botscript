@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { evaluate } from '../../src/lib/utils';
 
-describe('Utils', () => {
+describe('Lib: Utils', () => {
 
   describe('safeEvalCode', () => {
     it('should return true when given boolean value', async () => {
