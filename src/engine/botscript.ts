@@ -418,6 +418,10 @@ export class BotScript extends EventEmitter {
             this.logger.debug('Append command result into variables:', x.value);
             // TODO: Refactor this.emit('command', {error: false, req, ctx, result, command_name})
             this.emit('command', null, req, ctx, command.name, result);
+            if (!Array.isArray(result)) {
+              // backwards compatibility.
+              Object.assign(req.variables, result);
+            }
             Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
