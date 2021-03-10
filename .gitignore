@@ -63,4 +63,5 @@ typings/
 # Output
 dist
 test.ts
+*.test.ts
 *.js
