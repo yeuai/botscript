@@ -1,4 +1,4 @@
-@ register_account post https://botscript.ai/api/account/register
+@ register_account post /api/account/register
 
 ! yesno
 - yes

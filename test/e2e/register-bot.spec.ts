@@ -25,7 +25,11 @@ describe('Register.bot (e2e)', async () => {
     expect(req.speechResponse).match(/xác nhận thông tin/i);
     await bot.handleAsync(req.enter('yes'));
 
-    expect(req.speechResponse).match(/đăng ký thành công/i);
+    const {reg_username, reg_result_message} = req.variables;
+    const vResult = `Bạn đã đăng ký thành công, tài khoản ${reg_username}: ok!`;
+
+    expect(reg_result_message).match(/ok/);
+    expect(req.speechResponse).eq(vResult);
     bot.logger.info('Chi tiết tài khoản: ', req.variables);
   });
 
