@@ -50,9 +50,7 @@ Comments make your code clearer, you can add a comment in BotScript document by 
 
 ```bash
 # here is a comment
-
 # here is an other
-! domain shopping # and an inline comment
 ```
 
 ## continuation
