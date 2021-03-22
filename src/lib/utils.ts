@@ -4,6 +4,7 @@ import { Struct, Request } from '../common';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
 import { interpolate } from './template';
+import { REGEX_HEADER_SEPARATOR } from './regex';
 
 const logger = new Logger('Utils');
 
@@ -91,7 +92,9 @@ export function evaluate(code: string, context: any) {
  */
 export function callHttpService(command: Struct, req: Request) {
   const vIsGetMethod = /^get$/i.test(command.options[0]);
-  const headers = command.body.map(x => x.split(':'));
+  const headers = command.body
+    .filter(x => x.split(REGEX_HEADER_SEPARATOR).length === 2)
+    .map(x => x.split(REGEX_HEADER_SEPARATOR).map(kv => kv.trim()));
   const method = vIsGetMethod ? 'GET' : 'POST';
   const url = interpolate(command.options[1], req.variables);
   const body = vIsGetMethod ? undefined : req.variables;

@@ -1,4 +1,5 @@
 import { BotScript, Request } from '../../src/engine';
+import { REGEX_IP } from '../../src/lib/regex';
 import { assert } from 'chai';
 
 describe('BotScript: Conditional dialogue', () => {
@@ -170,7 +171,7 @@ describe('BotScript: Conditional dialogue', () => {
       const req = new Request('what is my ip');
       await condBot.handleAsync(req);
       assert.match(req.speechResponse, /here is your ip/i, 'bot reply');
-      assert.match(req.variables.ip, /^(([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])(\.(?!$)|(?=$))){4}$/, 'match ip');
+      assert.match(req.variables.ip, REGEX_IP, 'match ip');
     });
 
     it('should handle conditional redirect', async () => {
