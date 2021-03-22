@@ -46,11 +46,13 @@ To define a list of items, just enter item in a new line which started with symb
 
 ## comment
 
-Comments make your code clearer, you can add a comment in BotScript document by add symbol `#` at the begining of a line:
+Comments make your code clearer, you can add a comment in BotScript document by starting the symbol `#` at the begining of a line or followed by a space:
 
 ```bash
 # here is a comment
+
 # here is an other
+! domain shopping # and an inline comment
 ```
 
 ## continuation

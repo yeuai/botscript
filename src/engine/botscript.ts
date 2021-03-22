@@ -122,6 +122,8 @@ export class BotScript extends EventEmitter {
       .replace(/\n +/g, '\n')
       // remove comments
       .replace(/^#.*$\n/igm, '')
+      // remove inline comment
+      .replace(/# .*$\n/igm, '')
       // separate definition struct (normalize)
       .replace(/^!/gm, '\n!')
       // concat multiple lines (normalize)
