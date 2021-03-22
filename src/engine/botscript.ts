@@ -370,7 +370,7 @@ export class BotScript extends EventEmitter {
           return false;
         }
         const vTestResult = utils.evaluate(x.expr, req.variables);
-        this.logger.info(`Evaluate test: ${vTestResult}|`, x.type, x.expr, x.value);
+        this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult}|`, x.type, x.expr, x.value);
         return vTestResult;
       });
 
