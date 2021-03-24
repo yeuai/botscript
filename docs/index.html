@@ -85,6 +85,19 @@
     * true @> list_patient
     - Here is your list: $people /format:list
 
+    /plugin: test
+    \`\`\`js
+    req.variables.today = new Date().getDate();
+    req.variables.day = new Date().getDay();
+
+    # test 2
+    req.variables.year = new Date().getFullYear();
+    \`\`\`
+
+    > test
+
+    + howdy
+    - Today is $today
     `);
 
     bot.init()
