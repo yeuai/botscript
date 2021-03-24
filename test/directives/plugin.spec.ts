@@ -3,7 +3,7 @@ import { BotScript, Request } from '../../src/engine';
 
 describe('Directive: /plugin', () => {
 
-  describe('Default NLU', async () => {
+  describe('A simple plugin', async () => {
     const bot = new BotScript();
 
     bot.parse(`
