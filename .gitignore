@@ -62,7 +62,7 @@ typings/
 
 # Output
 dist
-docs
+#docs
 test.ts
 *.test.ts
 *.js
