@@ -128,6 +128,11 @@ export class BotScript extends EventEmitter {
       .replace(/^!/gm, '\n!')
       // concat multiple lines (normalize)
       .replace(/\n\^/gm, ' ')
+      // normalize javascript code block
+      .replace(/```js([\s\S]*)```/, (match, code) => {
+        this.logger.debug('javascript code:', code);
+        return match.replace(/\n+/, '\n');
+      })
       // remove spaces
       .trim();
 
