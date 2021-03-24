@@ -3,22 +3,18 @@ const browserify = require("browserify");
 const tsify = require("tsify");
 const ts = require("gulp-typescript");
 const terser = require('gulp-terser');
+const rename = require('gulp-rename');
 const sourcemaps = require("gulp-sourcemaps");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
 
 /**
- * Web app static files.
- */
-const paths = {
-  pages: ["src/*.html"],
-};
-
-/**
  * Copy static file for github-pages.
  */
 gulp.task("copy-html", function () {
-  return gulp.src(paths.pages).pipe(gulp.dest("docs"));
+  return gulp.src("./demo.html")
+    .pipe(rename("index.html"))
+    .pipe(gulp.dest("docs"));
 });
 
 gulp.task(

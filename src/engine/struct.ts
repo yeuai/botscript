@@ -133,16 +133,15 @@ export class Struct {
         struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
         break;
       case TYPES['/']:  // directives
+        const sepIndex = struct.head[0].indexOf(':');
+        const name = struct.head[0].replace(/\s+/g, '');
+        struct.name = name;
+        struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
+        struct.value = struct.body.join(' ');
+        // support directive /nlu: custom_command
         if (struct.body.length === 0) {
-          const sepIndex = struct.head[0].indexOf(':');
-          struct.name = sepIndex < 0 ? struct.head[0] : struct.head[0].substr(0, sepIndex).trim();
           struct.value = struct.head[0].substr(sepIndex + 1).trim();
           struct.options = [struct.value];
-        } else {
-          // directive name without spaces
-          struct.name = struct.head.join(' ').replace(/\s+/, '');
-          struct.options = struct.body.map(x => x.replace(/^-\s*/, ''));
-          struct.value = struct.body.join(' ');
         }
         break;
 

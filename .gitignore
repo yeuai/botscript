@@ -62,6 +62,7 @@ typings/
 
 # Output
 dist
+#docs
 test.ts
 *.test.ts
 *.js

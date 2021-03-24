@@ -66,18 +66,19 @@ export function testConditionalType(type: Types, dialogue: Struct, req: Request,
 
 /**
  * Safe eval expression
- * @param code str
+ * @param expr str
  * @param context variables
  */
-export function evaluate(code: string, context: any) {
+export function evaluate(expr: string, context: any) {
   const keys = Object.keys(context || {});
   const vars = Object.assign({}, ...keys.map(x => ({
     [x.startsWith('$') ? x : `$${x}`]: context[x],
   })));
 
   try {
-    logger.debug('Evaluate:', code);
-    return evalSync(code, vars);
+    const vTestResult = evalSync(expr, vars);
+    logger.debug(`Evaluate: expr=${expr}, test=${vTestResult}`);
+    return vTestResult;
   } catch (err) {
     logger.warn('Error while eval expression', { msg: (err && err.message) });
     return undefined;

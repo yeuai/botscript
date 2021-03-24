@@ -3,26 +3,19 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Hello BotScript!</title>
+  <title>Hello BotScript! - @Yeu.AI</title>
   <link rel="icon" href="data:,">
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://widget.botscript.ai/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css">
+  <link rel="stylesheet" href="chatbox.css">
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <!-- Place this tag in your head or just before your close body tag. -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <script src="https://play.botscript.ai/botscript.ai.js"></script>
-  <script src="https://play.botscript.ai/botscript.plugins.js"></script>
-  <script src="https://widget.botscript.ai/botscript-widget.js"></script>
-
-  <style>
-    botscript-chatbox {
-      position: fixed;
-      bottom: 0;
-      right: 0;
-    }
-  </style>
 </head>
 
 <body>
@@ -32,18 +25,24 @@
       <h1 class="display-3">Hello, BotScript!</h1>
       <p>A text-based scripting language, dialog system and bot engine for Conversational User Interfaces</p>
       <p>
+        <a onclick="openMyBot();return false" href="#" style="float: none;" role="button">Open my bot?</a>
+      </p>
+      <p>
         <a class="btn-primary btn-lg chat-box-toggle" href="#" style="float: none;" role="button">Chat Now &raquo;</a>
         <!-- Place this tag where you want the button to render. -->
         <a class="github-button" href="https://github.com/yeuai/botscript" data-size="large" data-show-count="true"
-        aria-label="Star yeuai/botscript on GitHub">Star</a>
+          aria-label="Star yeuai/botscript on GitHub">Star</a>
       </p>
     </div>
   </div>
   <div class="container">
-    <botscript-chatbox id="chatbox" auto-reply="false"></botscript-chatbox>
     <h2 id="greeting">Do you have any questions to ask BotScript?</h2>
     <p id="messages"></p>
   </div>
+
+  <script src="botscript.ai.js"></script>
+  <script src="botscript.plugins.js"></script>
+  <script src="chatbox.js"></script>
 
   <script>
     const { BotScript, Request, TYPES } = BotScriptAI;
@@ -51,9 +50,10 @@
     const request = new Request();
     const urlParams = new URLSearchParams(window.location.search);
     const botId = urlParams.get('bot');
-    const chatbox = document.getElementById('chatbox');
-    console.log('autoReply: ', chatbox.autoReply);
-    chatbox.autoReply = false;
+
+    function openMyBot() {
+      location.href = '/?bot=' + (botId || 'demo');
+    }
 
     bot.parse('> addTimeNow');
     bot.parse(`
@@ -85,6 +85,19 @@
     * true @> list_patient
     - Here is your list: $people /format:list
 
+    /plugin: test
+    \`\`\`js
+    req.variables.today = new Date().getDate();
+    req.variables.day = new Date().getDay();
+
+    # test 2
+    req.variables.year = new Date().getFullYear();
+    \`\`\`
+
+    > test
+
+    + howdy
+    - Today is $today
     `);
 
     bot.init()
@@ -95,18 +108,6 @@
         await sendBot(request.enter('What is my ip?'));
         await sendBot(request.enter('Show my list'));
       });
-
-    // add reply message
-    chatbox.addEventListener(
-      'messageAdded',
-      async (evt) => {
-        const {text, type} = evt.detail;
-        if (type === 'sent') {
-          const reply = await bot.handleAsync(request.enter(text));
-          chatbox.addReply({message: reply.speechResponse});
-        }
-      }
-    );
 
     /**
      * Send bot message and wait response.
@@ -127,6 +128,33 @@
     }
   </script>
 
+  <div id="chatbox">
+    <div id="chat-circle" class="btn btn-raised">
+      <div id="chat-overlay"></div>
+      <i class="material-icons">speaker_phone</i>
+    </div>
+
+    <div class="chat-box">
+      <div class="chat-box-header">
+        ChatBox
+        <span class="chat-box-toggle"><i class="material-icons">close</i></span>
+      </div>
+      <div class="chat-box-body">
+        <div class="chat-box-overlay">
+        </div>
+        <div class="chat-logs">
+
+        </div>
+        <!--chat-log -->
+      </div>
+      <div class="chat-input">
+        <form>
+          <input type="text" id="chat-input" placeholder="Send a message..." />
+          <button type="submit" class="chat-submit" id="chat-submit"><i class="material-icons">send</i></button>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
