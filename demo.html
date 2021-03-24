@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hello BotScript!</title>
+  <link rel="icon" href="data:,">
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://widget.botscript.ai/styles.css" rel="stylesheet">
+
+  <!-- Place this tag in your head or just before your close body tag. -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <script src="https://play.botscript.ai/botscript.ai.js"></script>
+  <script src="https://play.botscript.ai/botscript.plugins.js"></script>
+  <script src="https://widget.botscript.ai/botscript-widget.js"></script>
+
+  <style>
+    botscript-chatbox {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Main jumbotron for a primary marketing message or call to action -->
+  <div class="jumbotron">
+    <div class="container">
+      <h1 class="display-3">Hello, BotScript!</h1>
+      <p>A text-based scripting language, dialog system and bot engine for Conversational User Interfaces</p>
+      <p>
+        <a class="btn-primary btn-lg chat-box-toggle" href="#" style="float: none;" role="button">Chat Now &raquo;</a>
+        <!-- Place this tag where you want the button to render. -->
+        <a class="github-button" href="https://github.com/yeuai/botscript" data-size="large" data-show-count="true"
+        aria-label="Star yeuai/botscript on GitHub">Star</a>
+      </p>
+    </div>
+  </div>
+  <div class="container">
+    <botscript-chatbox id="chatbox" auto-reply="false"></botscript-chatbox>
+    <h2 id="greeting">Do you have any questions to ask BotScript?</h2>
+    <p id="messages"></p>
+  </div>
+
+  <script>
+    const { BotScript, Request, TYPES } = BotScriptAI;
+    const bot = new BotScript();
+    const request = new Request();
+    const urlParams = new URLSearchParams(window.location.search);
+    const botId = urlParams.get('bot');
+    const chatbox = document.getElementById('chatbox');
+    console.log('autoReply: ', chatbox.autoReply);
+    chatbox.autoReply = false;
+
+    bot.parse('> addTimeNow');
+    bot.parse(`
+    /include:
+    - https://raw.githubusercontent.com/yeuai/botscript/master/examples/definition.bot
+    - https://raw.githubusercontent.com/yeuai/botscript/master/examples/basic.bot
+    ${botId ? '- https://botscript.ai/api/kb/' + botId : ''}
+
+    @ geoip https://api.ipify.org/?format=json
+    #- header: value
+    #- header: value (2)
+
+    @ list_patient https://raw.githubusercontent.com/yeuai/botscript/master/examples/data/list.json
+
+    /format:list
+    {{#each people}}
+      {{name}} / {{age}},
+    {{/each}}
+
+    # conditional command
+    + what is my ip
+    * true @> geoip
+    - Here is your ip: $ip
+
+    + what time is it
+    - It is $time
+
+    + show my list
+    * true @> list_patient
+    - Here is your list: $people /format:list
+
+    `);
+
+    bot.init()
+      .then(async () => {
+        await sendBot(request.enter('Hello!'));
+        await sendBot(request.enter(`I'm vunb`));
+        await sendBot(request.enter('What time is it?'));
+        await sendBot(request.enter('What is my ip?'));
+        await sendBot(request.enter('Show my list'));
+      });
+
+    // add reply message
+    chatbox.addEventListener(
+      'messageAdded',
+      async (evt) => {
+        const {text, type} = evt.detail;
+        if (type === 'sent') {
+          const reply = await bot.handleAsync(request.enter(text));
+          chatbox.addReply({message: reply.speechResponse});
+        }
+      }
+    );
+
+    /**
+     * Send bot message and wait response.
+     * */
+    async function sendBot(req) {
+      // human ask
+      appendChatbox(`Human ask: <strong>${req.message}</strong>`);
+      const reply = await bot.handleAsync(req);
+      // bot reply
+      appendChatbox(`Bot reply: <em>${reply.speechResponse}</em>`);
+    }
+
+    function appendChatbox(message, id = 'messages') {
+      const chatbox = document.getElementById(id);
+      const elem = document.createElement("div");
+      elem.innerHTML = message;
+      chatbox.append(elem);
+    }
+  </script>
+
+</body>
+
+</html>
