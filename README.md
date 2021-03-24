@@ -526,9 +526,11 @@ Syntax:
 ~~~bash
 /plugin: name
 ```js
-  // javascript code here;
-  // access human request or bot context via name: req, ctx
-  // normalize message or what you need
+# javascript code here;
+# access human request or bot context via name: req, ctx
+# normalize message or what you need
+
+console.log('Human say: ', req.message)
 ```
 ~~~
 
@@ -538,8 +540,8 @@ Example:
 # add time now to current variable for each request
 /plugin: addTimeNow
 ```js
-  const now = new Date();
-  req.variables.time = `${now.getHours()}:${now.getMinutes()}`;
+const now = new Date();
+req.variables.time = `${now.getHours()}:${now.getMinutes()}`;
 ```
 ~~~
 

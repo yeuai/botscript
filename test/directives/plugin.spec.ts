@@ -12,7 +12,7 @@ describe('Directive: /plugin', () => {
     req.variables.today = new Date().getDate();
     req.variables.day = new Date().getDay();
 
-    // test 2
+    # test 2
     req.variables.year = new Date().getFullYear();
     \`\`\`
 
