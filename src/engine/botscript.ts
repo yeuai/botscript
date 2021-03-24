@@ -8,6 +8,7 @@ import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
+import { VmRunner } from '../lib/vm';
 
 /**
  * BotScript dialogue engine
@@ -31,6 +32,7 @@ export class BotScript extends EventEmitter {
 
   /**
    * plugins system
+   * returns: void | Promise<any> | PluginCallback
    */
   plugins: Map<string, (req: Request, ctx: Context) => void | Promise<any> | PluginCallback>;
 
@@ -192,8 +194,14 @@ export class BotScript extends EventEmitter {
       } else if (/^plugin/.test(item)) {
         const vPlugin = this.context.directives.get(item) as Struct;
         const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code);
-        this.logger.debug(`javascript code: /plugin ${vPlugin.name} => ${vCode}`);
-
+        const vName = vPlugin.name.replace(/^plugin:/, '');
+        this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
+        // add custom plugin
+        this.plugin(vName, async (req, ctx) => {
+          this.logger.debug('Execute plugin: ' + vName);
+          await VmRunner.run(vCode, {req, ctx});
+          this.logger.debug(`Execute plugin: ${vName} done!`);
+        });
       }
     }
     this.logger.info('Ready!');
@@ -276,15 +284,17 @@ export class BotScript extends EventEmitter {
         if (typeof cond === 'string' && !utils.evaluate(cond, req)) {
           return false;
         } else {
-          this.logger.debug('context conditional plugin is activated: (%s) %s', x, cond);
+          this.logger.debug('context conditional plugin is activated: %s', x);
         }
 
         // deconstruct group of plugins from (struct:head)
         info.head.forEach(p => {
           if (this.plugins.has(p)) {
-            this.logger.debug('context plugin is activated:: (%s)', p);
+            this.logger.debug('context plugin is activated: %s', p);
             const pluginGroup = this.plugins.get(p) as PluginCallback;
             activatedPlugins.push(pluginGroup);
+          } else {
+            this.logger.warn('context plugin not found: %s!', p);
           }
         });
       });
