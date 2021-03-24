@@ -114,7 +114,7 @@ export class Context {
             // support shorthand $var /:list or $var :list
             vDirectiveName = 'format' + vDirectiveName;
           }
-          // console.log('Directive format: ' + vDirectiveName);
+          logger.info('Directive /format: ' + vDirectiveName);
           if (this.directives.has(vDirectiveName)) {
             const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
             const vResult = interpolate(vFormatTemplate, {
