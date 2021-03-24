@@ -461,7 +461,7 @@ function noReplyHandle() {
 Syntax:
 
 ```bash
-/directive: text, command or [definition]
+/directive: name
 - option 1
 - option 2
 ```
@@ -471,33 +471,77 @@ Available built-in supported directives:
 * include
 * nlu
 * format
+* plugin
+
+### Directive /include
 
 Example:
 
 ```bash
 # import bot scripts from url
-/include: text or [definition]
+/include: 
+- url 1
+- url 2
+```
 
+### Directive /nlu
+
+Example:
+
+```bash
 # use your custom nlu server
-/nlu: command service
+/nlu: name of command
+```
 
+### Directive /format
+
+Example:
+
+```bash
+/format: bold
+<strong>{{value}}</strong>
+
++ bold *{me}
+- $me :bold
+
+# addvanced example, use handlebars syntax
 # format variable in population
-/format:list
+
+/format: list
 {{#each people}}
   {{name}} / {{age}},
 {{/each}}
 
-/format: bold
-<strong>{{value}}</strong>
-
 + show my list
-* true @> list_patient
-- Here is your list: $people /format:list
-- Here is your list: $people :list (shorthand)
-
-+ bold *{me}
-- $me :bold
+* true @> cmd_list_patient
+- Here is your list: $people :list
 ```
+
+### Directive /plugin
+
+A plugin is compiled in the script document and one defined in a directive:
+
+Syntax:
+
+~~~bash
+/plugin: name
+```js
+  // javascript code here;
+  // access human request or bot context via name: req, ctx
+  // normalize message or what you need
+```
+~~~
+
+Example:
+
+~~~bash
+# add time now to current variable for each request
+/plugin: addTimeNow
+```js
+  const now = new Date();
+  req.variables.time = `${now.getHours()}:${now.getMinutes()}`;
+```
+~~~
 
 # Examples
 
