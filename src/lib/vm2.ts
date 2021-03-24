@@ -1,12 +1,12 @@
-import { Script } from 'vm';
+import { NodeVM, VMScript } from 'vm2';
 
 export class VmRunner {
-  runInVm(code: string, sandbox: any, path?: string) {
+  runInVm(vm: NodeVM, code: string, path?: string) {
     // promisify task runner
     return new Promise((resolve, reject) => {
       try {
-        const script = new Script(code, { filename: path, timeout: 5000 });
-        const retValue = script.runInNewContext(sandbox);
+        const script = new VMScript(code, { filename: path });
+        const retValue = vm.run(script);
 
         // Check if code returned a Promise-like object
         if (retValue && typeof retValue.then === 'function') {
@@ -27,8 +27,13 @@ export class VmRunner {
    * @returns
    */
   static run(code: string, sandbox: any) {
+    const vm = new NodeVM({
+      wrapper: 'none',
+      sandbox,
+      timeout: 5000,
+    });
 
     const runner = new VmRunner();
-    return runner.runInVm(code, sandbox);
+    return runner.runInVm(vm, code);
   }
 }

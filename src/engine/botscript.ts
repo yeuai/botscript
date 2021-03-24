@@ -8,7 +8,6 @@ import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
-import { VmRunner } from '../lib/vm';
 
 /**
  * BotScript dialogue engine
@@ -199,8 +198,18 @@ export class BotScript extends EventEmitter {
         // add custom plugin
         this.plugin(vName, async (req, ctx) => {
           this.logger.debug('Execute plugin: ' + vName);
-          await VmRunner.run(vCode, {req, ctx});
-          this.logger.debug(`Execute plugin: ${vName} done!`);
+          // run in browser or node
+          if (typeof window === 'undefined') {
+            this.logger.debug('Execute plugin in node!');
+            const { VmRunner } = await import('../lib/vm2');
+            await VmRunner.run(vCode, {req, ctx});
+          } else {
+            this.logger.debug('Execute plugin in browser!');
+            const { VmRunner } = await import('../lib/vm');
+            await VmRunner.run(vCode, {req, ctx});
+          }
+
+          this.logger.debug(`Execute plugin: ${vName} => done!`);
         });
       }
     }
