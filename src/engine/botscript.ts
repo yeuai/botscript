@@ -129,9 +129,9 @@ export class BotScript extends EventEmitter {
       // concat multiple lines (normalize)
       .replace(/\n\^/gm, ' ')
       // normalize javascript code block
-      .replace(/```js([\s\S]*)```/, (match, code) => {
-        this.logger.debug('javascript code:', code);
-        return match.replace(/\n+/, '\n');
+      .replace(/```js([\s\S]*)```/g, (match) => {
+        const vBlockNormalize = match.replace(/\n+/g, '\n');
+        return vBlockNormalize;
       })
       // remove spaces
       .trim();
@@ -189,6 +189,11 @@ export class BotScript extends EventEmitter {
           this.logger.info('Parse url from:', vLink);
           await this.parseUrl(vLink);
         }
+      } else if (/^plugin/.test(item)) {
+        const vPlugin = this.context.directives.get(item) as Struct;
+        const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code);
+        this.logger.debug(`javascript code: /plugin ${vPlugin.name} => ${vCode}`);
+
       }
     }
     this.logger.info('Ready!');
