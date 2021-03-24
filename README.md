@@ -478,7 +478,7 @@ Available built-in supported directives:
 Example:
 
 ```bash
-# import bot scripts from url
+# import botscript document from urls
 /include: 
 - url 1
 - url 2
