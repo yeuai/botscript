@@ -24,8 +24,8 @@ describe('Directive: /plugin', () => {
     await bot.init();
 
     it('should load directive /plugin', async () => {
-      console.log(bot.context.directives);
-      console.log(bot.context.plugins);
+      // console.log(bot.context.directives);
+      // console.log(bot.context.plugins);
       assert.isTrue(bot.context.directives.has('plugin:test'), 'contains directive /plugin');
     });
 

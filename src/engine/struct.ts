@@ -122,10 +122,17 @@ export class Struct {
           struct.name = tokens[0];
           struct.options = ['GET', tokens[1]];
         } else if (tokens.length === 3) {
-          const action = /post/i.test(tokens[1]) ? 'post' : 'get';
+          const method = tokens[1];
           struct.name = tokens[0];
-          struct.options = [action, tokens[2]];
+          struct.options = [method, tokens[2]];
         } else {
+          // TODO: support new command definition
+          /**
+           * @ command_name
+           * - url: POST https://command-service.url/api/endpoint
+           * - header: 1
+           * - header: 2
+           */
           throw new Error('invalid command');
         }
         break;
