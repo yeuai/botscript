@@ -16,6 +16,14 @@ mock
     intent: 'react_positive',
     entities: [{ id: 1, name: 'John Smith' }],
   })
+  .onPut('/api/http/put').reply(200, {
+    error: 0,
+    message: 'Ok',
+  })
+  .onDelete('/api/http/delete').reply(200, {
+    error: 0,
+    message2: 'Ok',
+  })
   .onGet('/api/data/list').reply(200, {
     people: [{
         name: 'Vũ',
