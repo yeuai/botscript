@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { Method } from 'axios';
 import { evalSync } from 'jexl';
 import { Struct, Request } from '../common';
 import { TestConditionalCallback, Types } from '../interfaces/types';
@@ -93,12 +93,12 @@ export function evaluate(expr: string, context: any) {
  */
 export function callHttpService(command: Struct, req: Request) {
   const vIsGetMethod = /^get$/i.test(command.options[0]);
+  const url = interpolate(command.options[1], req.variables);
+  const body = vIsGetMethod ? undefined : req.variables;
+  const method = command.options[0] as Method;
   const headers = command.body
     .filter(x => x.split(REGEX_HEADER_SEPARATOR).length === 2)
     .map(x => x.split(REGEX_HEADER_SEPARATOR).map(kv => kv.trim()));
-  const method = vIsGetMethod ? 'GET' : 'POST';
-  const url = interpolate(command.options[1], req.variables);
-  const body = vIsGetMethod ? undefined : req.variables;
 
   logger.info(`Send command request @${command.name}: ${method} ${url}${(method === 'POST' && body) ? ', body=' + JSON.stringify(body) : ''}`);
 
