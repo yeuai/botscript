@@ -425,6 +425,8 @@ Syntax:
 * conditional expression
 ```
 
+> From `v1.6.0`: A plugin can be compiled directly in the botscript document
+
 Example:
 
 ```js
