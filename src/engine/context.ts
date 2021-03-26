@@ -103,8 +103,10 @@ export class Context {
       // matching & replacing: ${var}, $var, #{var}, #var
       // syntax: $var /format:list
       // shorthand: $var :list
-      .replace(/[#$]\{?([a-z][\w_-]*)\}?\s*([\/:][a-z:_-]+)?/g, (match, variable: string, format: string) => {
+      .replace(/[#$]\{?([a-zA-Z][\w_-]*)\}?(\s*[\/:][a-z:_-]+)?/g, (match, variable: string, format: string) => {
         const value = req.variables[variable];
+        // allow multiple spaces repeat in front of a format => so we must trim() it!
+        format = (format || '').trim();
         if (format && /[/:]/.test(format.charAt(0))) {
           let vDirectiveName = format.substring(1);
           if (!/^format/.test(vDirectiveName)) {
