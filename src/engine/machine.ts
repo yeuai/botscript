@@ -199,11 +199,11 @@ export class BotMachine {
             return false;
           },
           isFlow: (context, event) => {
-            if (context.req.isFlowing) {
-              const { req, ctx } = context;
+            const { req, ctx } = context;
+            if (req.isFlowing && ctx.flows.has(req.currentFlow)) {
               const flow = ctx.flows.get(req.currentFlow) as Struct;
 
-              this.logger.debug('Dialogue request is in the flow: ', context.req.currentFlow);
+              this.logger.debug('Dialogue request is in the flow: ', req.currentFlow);
               // Explore and capture variables
               const isMatch = this.explore({ dialog: flow, ctx, req });
               if (isMatch) {
@@ -211,8 +211,11 @@ export class BotMachine {
               } else {
                 this.logger.debug('Dialogue flow is not captured!');
               }
+            } else {
+              // update state
+              req.isFlowing = false;
             }
-            return context.req.isFlowing;
+            return req.isFlowing;
           },
         },
         actions: {
