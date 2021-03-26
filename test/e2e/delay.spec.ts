@@ -19,7 +19,7 @@ mock
   .onPut('/api/http/put').reply(200, {
     error: 0,
     message: 'Ok',
-    Capitalization: 'NewVar',
+    Titlecase: 'NewVar',
   })
   .onDelete('/api/http/delete').reply(200, {
     error: 0,

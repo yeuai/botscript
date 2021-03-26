@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { BotScript, Request } from '../../src/engine';
 
-describe('Population: Variable Capitalization', () => {
+describe('Population: Variable $Titlecase', () => {
 
   it('should distinguish uppercase or lowercase', async () => {
     const bot = new BotScript();
@@ -11,7 +11,7 @@ describe('Population: Variable Capitalization', () => {
 
     + put me
     * true @> service1
-    - Result $message $Capitalization
+    - Result $message $Titlecase
     `);
     await bot.init();
 
