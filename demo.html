@@ -31,7 +31,7 @@
       <h1 class="display-3">Hello, BotScript!</h1>
       <p>A text-based scripting language, dialog system and bot engine for Conversational User Interfaces</p>
       <p>
-        <a class="btn-primary btn-lg chat-box-toggle" href="#" style="float: none;" role="button">Chat Now &raquo;</a>
+        <a class="btn-primary btn-lg chat-box-toggle" href="#" style="float: none;" onclick="toogleChatbox()" role="button">Chat Now &raquo;</a>
         <iframe src="https://ghbtns.com/github-btn.html?user=yeuai&repo=botscript&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
       </p>
     </div>
@@ -134,6 +134,10 @@
       const elem = document.createElement("div");
       elem.innerHTML = message;
       chatbox.append(elem);
+    }
+
+    function toogleChatbox() {
+      chatbox.visible = !chatbox.visible;
     }
   </script>
 
