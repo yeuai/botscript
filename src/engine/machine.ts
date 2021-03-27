@@ -83,7 +83,7 @@ export class BotMachine {
                   // popolate flows from currentFlow and assign to request
                   const { req, ctx } = context;
                   const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
-
+                  this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
                   // test conditional flows
                   utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
                     if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {

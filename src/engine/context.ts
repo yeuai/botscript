@@ -157,15 +157,53 @@ export class Context {
    * - Support scope variables, flows and context data
    * @param req
    */
-   newRequest(req: Request) {
+  newRequest(req: Request) {
     const request = new Request();
+    request.botId = this.id;
     request.variables = req.variables;
+    request.isForward = false;
     request.enter(req.message);
 
     if (req.botId !== this.id) {
       // a new pure request
       return request;
     }
+
+    // keep state value persitence in dialogue flows (scope)
+    const {
+      prompt,
+      isNotResponse,
+      isFlowing,
+      originalDialogue,
+      currentDialogue,
+      currentFlow,
+      currentFlowIsResolved,
+      entities,
+      flows,
+      intent,
+      missingFlows,
+      previous,
+      resolvedFlows,
+      sessionId,
+    } = req;
+    logger.info('Request is flowing: ' + isFlowing);
+    // transfer state to new request
+    Object.assign(request, {
+      prompt,
+      isNotResponse,
+      isFlowing,
+      originalDialogue,
+      currentDialogue,
+      currentFlow,
+      currentFlowIsResolved,
+      entities,
+      flows,
+      intent,
+      missingFlows,
+      previous,
+      resolvedFlows,
+      sessionId,
+    });
 
     return request;
   }

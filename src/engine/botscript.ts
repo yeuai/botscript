@@ -248,21 +248,12 @@ export class BotScript extends EventEmitter {
   async handleAsync(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
-
     const request = context.newRequest(req);
 
-    // verify bot id
-    if (req.botId !== context.id) {
-      req.botId = context.id;
-      req.prompt = [];
-      req.speechResponse = '';
-      req.isNotResponse = false;
-      req.isFlowing = false;
-      req.currentDialogue = '';
-    }
-
     // req.botId = context.id;
-    req.isForward = false;
+    // req.isForward = false;
+
+    req = request;
 
     // fire plugin for pre-processing
     const plugins = [...context.plugins.keys()];
