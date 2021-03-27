@@ -11,19 +11,19 @@ describe('Register.bot (e2e)', async () => {
 
   it('should register account successfully', async () => {
     const bot = new BotScript();
-    const req = new Request();
+    let req = new Request();
     bot.parse(scripts);
 
-    await bot.handleAsync(req.enter('đăng ký'));
+    req = await bot.handleAsync(req.enter('đăng ký'));
 
     expect(req.speechResponse).match(/nhập tài khoản/i);
-    await bot.handleAsync(req.enter('vunb'));
+    req = await bot.handleAsync(req.enter('vunb'));
 
     expect(req.speechResponse).match(/nhập password/i);
-    await bot.handleAsync(req.enter('123456'));
+    req = await bot.handleAsync(req.enter('123456'));
 
     expect(req.speechResponse).match(/xác nhận thông tin/i);
-    await bot.handleAsync(req.enter('yes'));
+    req = await bot.handleAsync(req.enter('yes'));
 
     const {reg_username, reg_result_message} = req.variables;
     const vResult = `Bạn đã đăng ký thành công, tài khoản ${reg_username}: ok!`;
@@ -35,19 +35,19 @@ describe('Register.bot (e2e)', async () => {
 
   it('should register account failure', async () => {
     const bot = new BotScript();
-    const req = new Request();
+    let req = new Request();
     bot.parse(scripts);
 
-    await bot.handleAsync(req.enter('đăng ký'));
+    req = await bot.handleAsync(req.enter('đăng ký'));
 
     expect(req.speechResponse).match(/nhập tài khoản/i);
-    await bot.handleAsync(req.enter('vunb2'));
+    req = await bot.handleAsync(req.enter('vunb2'));
 
     expect(req.speechResponse).match(/nhập password/i);
-    await bot.handleAsync(req.enter('123456'));
+    req = await bot.handleAsync(req.enter('123456'));
 
     expect(req.speechResponse).match(/xác nhận thông tin/i);
-    await bot.handleAsync(req.enter('no'));
+    req = await bot.handleAsync(req.enter('no'));
 
     expect(req.speechResponse).match(/bạn đã hủy đăng ký/i);
     bot.logger.info('Your input: ', req.message);
