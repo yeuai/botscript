@@ -17,6 +17,15 @@ export function random<T>(candidates: T[]) {
 }
 
 /**
+ * Generate a new id
+ * Ref: https://stackoverflow.com/a/44078785/1896897
+ * @returns Simple unique id
+ */
+export function newid() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+/**
  * Test conditional flow
  * @param dialogue
  * @param variables

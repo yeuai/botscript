@@ -1,4 +1,4 @@
-import { random } from '../lib/utils';
+import { random, newid } from '../lib/utils';
 import { interpolate } from '../lib/template';
 import { Request } from './request';
 import { Struct } from './struct';
@@ -23,6 +23,10 @@ export class Context {
   plugins: Map<string, Struct>;
   // directives system
   directives: Map<string, Struct>;
+  /**
+   * id context
+   */
+  idctx: string;
 
   constructor() {
     this.definitions = new Map();
@@ -32,6 +36,7 @@ export class Context {
     this.patterns = new Map();
     this.plugins = new Map();
     this.directives = new Map();
+    this.idctx = newid();
   }
 
   /**
@@ -40,7 +45,7 @@ export class Context {
   get id(): string {
     return this.definitions.has('botid')
       ? (this.definitions.get('botid') as Struct).value
-      : '';
+      : this.idctx;
   }
 
   /**
@@ -145,5 +150,23 @@ export class Context {
     let output = this.interpolateDefinition(text);
     output = this.interpolateVariables(output, req);
     return output;
+  }
+
+  /**
+   * Copy shadow data to botscript request
+   * - Support scope variables, flows and context data
+   * @param req
+   */
+   newRequest(req: Request) {
+    const request = new Request();
+    request.variables = req.variables;
+    request.enter(req.message);
+
+    if (req.botId !== this.id) {
+      // a new pure request
+      return request;
+    }
+
+    return request;
   }
 }
