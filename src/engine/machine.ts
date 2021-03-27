@@ -211,10 +211,12 @@ export class BotMachine {
               } else {
                 this.logger.debug('Dialogue flow is not captured!');
               }
-            } else {
-              // update state
-              req.isFlowing = false;
             }
+            //// TODO: Update req states here? i don't think so??
+            // else {
+            //   // update state
+            //   req.isFlowing = false;
+            // }
             return req.isFlowing;
           },
         },
