@@ -101,9 +101,10 @@ export function evaluate(expr: string, context: any) {
  * @param req
  */
 export function callHttpService(command: Struct, req: Request) {
+  const contexts = req.contexts;
   const vIsGetMethod = /^get$/i.test(command.options[0]);
-  const url = interpolate(command.options[1], req.variables);
-  const body = vIsGetMethod ? undefined : req.variables;
+  const url = interpolate(command.options[1], contexts);
+  const body = vIsGetMethod ? undefined : contexts;
   const method = command.options[0] as Method;
   const headers = command.body
     .filter(x => x.split(REGEX_HEADER_SEPARATOR).length === 2)

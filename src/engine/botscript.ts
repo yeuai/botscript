@@ -444,20 +444,20 @@ export class BotScript extends EventEmitter {
 
             // append result into variables
             this.logger.debug('Append command result into variables:', x.value);
-            // TODO: Refactor this.emit('command', {error: false, req, ctx, result, command_name})
-            this.emit('command', null, req, ctx, command.name, result);
+            this.emit('command', null, {req, ctx, result, name: command.name});
             if (!Array.isArray(result)) {
               // backwards compatibility.
+              // TODO: Remove in version 2.x
               Object.assign(req.variables, result);
             }
             Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
-            this.emit('command', err, req, ctx, command.name);
+            this.emit('command', err, {req, ctx, name: command.name});
           }
         } else {
           this.logger.warn('No command definition:', x.value);
-          this.emit('command', 'No command definition!', req, ctx, x.value);
+          this.emit('command', 'No command definition!', {req, ctx, name: x.value});
         }
       } else if (x.type === Types.ConditionalEvent) {
         // conditional event
@@ -504,7 +504,7 @@ export class BotScript extends EventEmitter {
     req.speechResponse = ctx.interpolate(replyCandidate || '[noReply]', req);
     this.logger.info(`Populate speech response: ${req.message} -> ${replyCandidate} -> ${req.speechResponse}`);
     // Add previous speech history
-    // TODO: make sure previous has initialized!
+    // Since v1.6: system variables are initialized before process!
     req.previous.splice(0, 0, req.speechResponse);
     if (req.previous.length > 100) {
       req.previous.pop();
