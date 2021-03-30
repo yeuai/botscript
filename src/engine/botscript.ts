@@ -383,7 +383,7 @@ export class BotScript extends EventEmitter {
         // https://github.com/yeuai/botscript/issues/20
         if (type === '=') {
           this.logger.info('New syntax support: ' + x);
-          const explicitedType = value[0];
+          const explicitedType = value.charAt(0);
           if (/^[->@?+]/.test(explicitedType)) {
             type = explicitedType;
             value = value.slice(1).trim();
@@ -408,9 +408,7 @@ export class BotScript extends EventEmitter {
     this.logger.info('Conditions test: ', dialogConditions);
 
     for (const x of dialogConditions) {
-      if (!x) {
-        return req;
-      } else if (x.type === Types.ConditionalForward) {
+      if (x.type === Types.ConditionalForward) {
         // conditional forward
         if (ctx.dialogues.has(x.value)) {
           req.isForward = true;
