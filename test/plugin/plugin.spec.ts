@@ -109,8 +109,8 @@ describe('Plugin', () => {
       req = await botPlugin.handleAsync(req);
       assert.match(req.speechResponse, /my name is bob/i, 'ask name');
 
-      // req = await botPlugin.handleAsync(req);
-      // assert.match(req.speechResponse, /i lost my name/i, 'ask name again');
+      req = await botPlugin.handleAsync(req);
+      assert.match(req.speechResponse, /i lost my name/i, 'ask name again');
 
     });
 
