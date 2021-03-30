@@ -295,7 +295,7 @@ export class BotScript extends EventEmitter {
         // TODO: Support multiple (AND) conditions
         const info = ctx.plugins.get(x) as Struct;
         const cond = info.conditions.find(() => true) as string;
-        if (typeof cond === 'string' && !utils.evaluate(cond, req)) {
+        if (typeof cond === 'string' && !utils.evaluate(cond, req.contexts)) {
           return false;
         } else {
           this.logger.debug('context conditional plugin is activated: %s', x);
