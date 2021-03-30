@@ -384,9 +384,9 @@ export class BotScript extends EventEmitter {
         if (type === '=') {
           this.logger.info('New syntax support: ' + x);
           const explicitedType = value[0];
-          if (/^[->@?+]>/.test(explicitedType)) {
+          if (/^[->@?+]/.test(explicitedType)) {
             type = explicitedType;
-            value = value.slice(1);
+            value = value.slice(1).trim();
           } else {
             // default type (a reply)
             // ex: * expression => a reply

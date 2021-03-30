@@ -37,10 +37,10 @@ describe('BotScript: Conditional dialogue', () => {
     it('a reply', async () => {
       let req = new Request();
       req = await bot.handleAsync(req.enter('my name is vunb'));
-      assert.match(req.speechResponse, /hello my boss/i);
+      assert.equal(req.speechResponse, 'Hello my boss!', 'reply exactly!');
 
       req = await bot.handleAsync(req.enter('my name is boss'));
-      assert.match(req.speechResponse, /i know you/i);
+      assert.equal(req.speechResponse, 'I know you!');
     });
   });
 
