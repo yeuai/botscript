@@ -27,7 +27,7 @@ describe('Register.bot (e2e)', async () => {
 
     const {reg_result_message} = req.variables;
     const vResult = `Bạn đã đăng ký thành công, tài khoản vunb: ok!`;
-    console.log('Request:', req);
+    // console.log('Request:', req);
     expect(reg_result_message).match(/ok/);
     expect(req.speechResponse).eq(vResult);
     bot.logger.info('Chi tiết tài khoản: ', req.variables);

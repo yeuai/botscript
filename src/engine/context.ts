@@ -86,17 +86,25 @@ export class Context {
   interpolateVariables(text: string, req: Request) {
     logger.debug('interpolateVariables:', text);
     return text
+      // 1. object/array referencing.
       // matching & replacing: $var.[0].a.b (note: .[0].a.b is a path of property of an array)
-      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, propPath) => {
+      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match: string, variable: string, propPath: string) => {
         try {
-          const vValue = req.variables[variable];
-          if (!vValue) {
-            logger.info(`Not found: ${variable}, ${propPath}`);
-            return '';
+          const data = {};
+          if (variable === 'flows') { // keyword: $flows
+            const prop = propPath.replace(/^\.+/, '');
+            Object.assign(data, {
+              flows: {
+                [prop]: req.$flows[prop],
+              },
+            });
+          } else {
+            const vValue = req.variables[variable];
+            Object.assign(data, { [variable]: vValue });
           }
+
           // interpolate value from variables
           const template = `{{${variable + propPath}}}`;
-          const data = { [variable]: vValue };
           logger.info(`interpolate: ${template}, ${JSON.stringify(data)}`);
           const vResult = interpolate(template, data);
           return vResult;
@@ -105,6 +113,7 @@ export class Context {
           return 'undefined';
         }
       })
+      // 2. variable reference
       // matching & replacing: ${var}, $var, #{var}, #var
       // syntax: $var /format:list
       // shorthand: $var :list
@@ -133,6 +142,7 @@ export class Context {
         }
         return value || '';
       })
+      // 3. number reference
       // matching & replacing: $123, $456
       .replace(/(\$\d*(?![\w\d]))/g, (match, variable) => {
         const value = req.variables[variable];
@@ -168,6 +178,11 @@ export class Context {
       logger.info('Human send the first-message request: ' + request.message);
       request.botId = this.id;
       return request;
+    }
+
+    let $flows = {};
+    if (req.isFlowing) {
+      $flows = req.$flows;
     }
 
     // keep state value persitence in dialogue flows (scope)
@@ -208,6 +223,7 @@ export class Context {
       resolvedFlows,
       sessionId,
       botId,
+      $flows,
     });
 
     return request;

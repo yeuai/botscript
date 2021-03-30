@@ -299,7 +299,6 @@ export class BotScript extends EventEmitter {
           }
         }
 
-        this.logger.debug('context conditional plugin is activated: %s', x);
         // deconstruct group of plugins from (struct:head)
         info.head.forEach(p => {
           if (this.plugins.has(p)) {
@@ -314,6 +313,7 @@ export class BotScript extends EventEmitter {
 
     // fire plugin pre-processing
     for (const plugin of activatedPlugins) {
+      this.logger.debug('plugin fire: %s', plugin.name);
       const vPostProcessing = await plugin(req, ctx);
       if (typeof vPostProcessing === 'function') {
         postProcessing.push(vPostProcessing);
@@ -399,7 +399,7 @@ export class BotScript extends EventEmitter {
         return { type, expr, value };
       })
       .filter(x => {
-        const vTestResult = utils.evaluate(x.expr, req.variables);
+        const vTestResult = utils.evaluate(x.expr, req.contexts);
         this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult}|`, x.type, x.expr, x.value);
         return vTestResult;
       });

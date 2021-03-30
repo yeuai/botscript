@@ -366,6 +366,12 @@ Example:
 - You are $age
 ```
 
+System variables:
+
+* `$previous`: history of dialogue chat
+* `$flows`: available in context of dialogue is flowing
+* `$input`: human message input
+
 ## patterns
 
 A pattern within trigger which helps the dialogue `human <-> bot` can be activated and bot has a better capability to reply human.  

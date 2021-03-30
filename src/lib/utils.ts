@@ -86,10 +86,10 @@ export function evaluate(expr: string, context: any) {
 
   try {
     const vTestResult = evalSync(expr, vars);
-    logger.debug(`Evaluate: expr=${expr}, test=${vTestResult}`);
+    logger.debug(`Evaluate test: expr=${expr} => ${vTestResult}`);
     return vTestResult;
   } catch (err) {
-    logger.warn('Error while eval expression', { msg: (err && err.message) });
+    logger.warn(`Error while eval expression: expr=${expr} =>`, { msg: (err && err.message) });
     return undefined;
   }
 
