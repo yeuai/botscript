@@ -208,8 +208,7 @@ export class BotMachine {
               // Explore and capture variables
               const isMatch = this.explore({ dialog: flow, ctx, req });
               if (isMatch) {
-                // TODO: Move to req.varflows[req.currentFlow];
-                const vCurrentFlowValue = req.variables[req.currentFlow];
+                const vCurrentFlowValue = req.$flows[req.currentFlow];
                 this.logger.debug(`Captured a dialogue flow: ${req.currentFlow} => ${vCurrentFlowValue}`);
               } else {
                 this.logger.debug('Dialogue flow is not captured!');
@@ -371,6 +370,7 @@ export class BotMachine {
             req.variables.$ = captures.$1;
             // dialogue is in the flow
             if (req.isFlowing) {
+              req.$flows[req.currentFlow] = captures.$1;
               req.variables[req.currentFlow] = captures.$1;
             }
           }
