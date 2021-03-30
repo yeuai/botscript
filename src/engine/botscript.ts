@@ -6,6 +6,7 @@ import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
+import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 
@@ -202,11 +203,11 @@ export class BotScript extends EventEmitter {
           if (typeof window === 'undefined') {
             this.logger.debug('Execute plugin in node!');
             const { VmRunner } = await import('../lib/vm2');
-            await VmRunner.run(vCode, {req, ctx});
+            await VmRunner.run(vCode, { req, ctx });
           } else {
             this.logger.debug('Execute plugin in browser!');
             const { VmRunner } = await import('../lib/vm');
-            await VmRunner.run(vCode, {req, ctx});
+            await VmRunner.run(vCode, { req, ctx });
           }
 
           this.logger.debug(`Execute plugin: ${vName} => done!`);
@@ -360,50 +361,45 @@ export class BotScript extends EventEmitter {
 
     const dialogConditions = conditions
       // filter only conditional reply dialogue
-      // .filter(x => !/^%/.test(x)) // TODO: Remove deprecated previous conditions
-      .map(x => {
-        const REGEX_COND_REPLY_TESTER = /([->@?+=])>/;
-        const REGEX_COND_REPLY_TOKEN = /[->@?+=]>/;
+      .filter(x => {
+        // pattern ensures valid syntax: expr => action
         const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
-
         if (!match) {
           this.logger.debug('Not a conditional reply:', x);
           return false;
         } else {
-          // split exactly supported conditions
-          const tokens = x.split(REGEX_COND_REPLY_TOKEN);
-          if (tokens.length === 2) {
-            let type = match[1];
-            const expr = tokens[0].trim();
-            let value = tokens[1].trim();
-            // New syntax support
-            // https://github.com/yeuai/botscript/issues/20
-            if (type === '=') {
-              this.logger.info('New syntax support: ' + x);
-              const explicitedType = value[0];
-              if (/^[->@?+]>/.test(explicitedType)) {
-                type = explicitedType;
-                value = value.slice(1);
-              } else {
-                // default type (a reply)
-                // ex: * expression => a reply
-                // or: * expression => - a reply
-                type = Types.ConditionalReply;
-              }
-            }
-            // Ex: Conditional reply to call http service
-            // * $reg_confirm == 'yes' @> register_account
-            // * $name == undefined -> You never told me your name
-            return { type, expr, value };
-          } else {
-            return false;
-          }
+          return true;
         }
       })
-      .filter(x => {
-        if (x === false) {
-          return false;
+      .map(x => {
+        // Re-run tester to get verify expression
+        const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
+        // split exactly supported conditions
+        const tokens = x.split(REGEX_COND_REPLY_TOKEN);
+        let type = match[1];
+        const expr = tokens[0].trim();
+        let value = tokens[1].trim();
+        // New syntax support
+        // https://github.com/yeuai/botscript/issues/20
+        if (type === '=') {
+          this.logger.info('New syntax support: ' + x);
+          const explicitedType = value[0];
+          if (/^[->@?+]>/.test(explicitedType)) {
+            type = explicitedType;
+            value = value.slice(1);
+          } else {
+            // default type (a reply)
+            // ex: * expression => a reply
+            // or: * expression => - a reply
+            type = Types.ConditionalReply;
+          }
         }
+        // e.g. a conditional reply to call http service
+        // * $reg_confirm == 'yes' @> register_account
+        // * $name == undefined -> You never told me your name
+        return { type, expr, value };
+      })
+      .filter(x => {
         const vTestResult = utils.evaluate(x.expr, req.variables);
         this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult}|`, x.type, x.expr, x.value);
         return vTestResult;
