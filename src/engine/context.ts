@@ -154,19 +154,19 @@ export class Context {
 
   /**
    * Copy shadow data to botscript request
+   * - Normalize human request
    * - Support scope variables, flows and context data
-   * TODO: rename `newRequest(req: Response)` to `createResponse(req: Response)`
    * @param req
    */
-  newRequest(req: Request) {
+  newRequest(req: Request)
+    : Request {
     const request = new Request();
-    request.botId = this.id;
-    request.variables = req.variables;
-    request.isForward = false;
     request.enter(req.message);
-
     if (req.botId !== this.id) {
-      // a new pure request
+      // a new first-message request
+      // or change new bot context => just reset
+      logger.info('Human send the first-message request: ' + request.message);
+      request.botId = this.id;
       return request;
     }
 
@@ -179,6 +179,7 @@ export class Context {
       currentDialogue,
       currentFlow,
       currentFlowIsResolved,
+      variables,
       entities,
       flows,
       intent,
@@ -186,8 +187,9 @@ export class Context {
       previous,
       resolvedFlows,
       sessionId,
+      botId,
     } = req;
-    logger.info('Request is flowing: ' + isFlowing);
+    logger.info('Normalize human request: isFlowing=' + isFlowing, request.message);
     // transfer state to new request
     Object.assign(request, {
       prompt,
@@ -197,6 +199,7 @@ export class Context {
       currentDialogue,
       currentFlow,
       currentFlowIsResolved,
+      variables,
       entities,
       flows,
       intent,
@@ -204,6 +207,7 @@ export class Context {
       previous,
       resolvedFlows,
       sessionId,
+      botId,
     });
 
     return request;

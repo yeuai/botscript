@@ -93,6 +93,7 @@ export class Request {
     this.flows = [];
     this.variables = {};
     this.isFlowing = false;
+    this.isForward = false;
     this.resolvedFlows = [];
     this.missingFlows = [];
     this.previous = [];
@@ -109,6 +110,7 @@ export class Request {
    */
   enter(text: string) {
     this.message = text;
+    this.isForward = false;
     return this;
   }
 }

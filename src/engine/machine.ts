@@ -83,6 +83,7 @@ export class BotMachine {
                   // popolate flows from currentFlow and assign to request
                   const { req, ctx } = context;
                   const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+                  // TODO: Move test conditional flow to replypopulation?
                   this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
                   // test conditional flows
                   utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
@@ -207,7 +208,9 @@ export class BotMachine {
               // Explore and capture variables
               const isMatch = this.explore({ dialog: flow, ctx, req });
               if (isMatch) {
-                this.logger.debug('Captured a dialogue flow: ', req.currentFlow, req.variables);
+                // TODO: Move to req.varflows[req.currentFlow];
+                const vCurrentFlowValue = req.variables[req.currentFlow];
+                this.logger.debug(`Captured a dialogue flow: ${req.currentFlow} => ${vCurrentFlowValue}`);
               } else {
                 this.logger.debug('Dialogue flow is not captured!');
               }
@@ -336,11 +339,10 @@ export class BotMachine {
       const result = getActivators(dialog, ctx, req)
         .filter((x) => x.test(req.message))
         .some(pattern => {
-          this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
-
           // extract message information
           const captures = execPattern(req.message, pattern);
           const knowledges = {...req.variables, ...captures, $previous: req.previous, $input: req.message};
+          this.logger.debug(`Explore dialogue for evaluation: ${pattern.source} => captures:`, captures);
 
           // Test conditional activation
           // - A conditions begins with star symbol: *

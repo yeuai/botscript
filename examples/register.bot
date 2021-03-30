@@ -7,11 +7,11 @@
 ~ reg_username
 - Nhập tài khoản bạn muốn đăng ký?
 ^ Vui lòng sử dụng chữ cái, số và dấu chấm.
-+ /^[a-z0-9](\.?[a-z0-9]){3,}/
++ /^([a-zA-Z]\.?[a-zA-Z0-9]{3,})$/
 
 # No prompt response!
 ~ reg_password
-- Hãy nhập password:
+- Hãy nhập password?
 + *{password}
 
 ~ reg_confirm

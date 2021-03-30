@@ -3,6 +3,7 @@
  */
 export class Response {
 
+  public botId: string;
   public currentNode: string;
   public complete: boolean;
   public text: string;
