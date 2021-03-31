@@ -17,6 +17,15 @@ export function random<T>(candidates: T[]) {
 }
 
 /**
+ * Generate a new id
+ * Ref: https://stackoverflow.com/a/44078785/1896897
+ * @returns Simple unique id
+ */
+export function newid() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+/**
  * Test conditional flow
  * @param dialogue
  * @param variables
@@ -77,10 +86,10 @@ export function evaluate(expr: string, context: any) {
 
   try {
     const vTestResult = evalSync(expr, vars);
-    logger.debug(`Evaluate: expr=${expr}, test=${vTestResult}`);
+    logger.debug(`Evaluate test: expr=${expr} => ${vTestResult}`);
     return vTestResult;
   } catch (err) {
-    logger.warn('Error while eval expression', { msg: (err && err.message) });
+    logger.warn(`Error while eval expression: expr=${expr} =>`, { msg: (err && err.message) });
     return undefined;
   }
 
@@ -92,9 +101,10 @@ export function evaluate(expr: string, context: any) {
  * @param req
  */
 export function callHttpService(command: Struct, req: Request) {
+  const contexts = req.contexts;
   const vIsGetMethod = /^get$/i.test(command.options[0]);
-  const url = interpolate(command.options[1], req.variables);
-  const body = vIsGetMethod ? undefined : req.variables;
+  const url = interpolate(command.options[1], contexts);
+  const body = vIsGetMethod ? undefined : contexts;
   const method = command.options[0] as Method;
   const headers = command.body
     .filter(x => x.split(REGEX_HEADER_SEPARATOR).length === 2)

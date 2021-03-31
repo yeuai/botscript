@@ -366,6 +366,12 @@ Example:
 - You are $age
 ```
 
+System variables:
+
+* `$previous`: history of dialogue chat
+* `$flows`: available in context of dialogue is flowing
+* `$input`: human message input
+
 ## patterns
 
 A pattern within trigger which helps the dialogue `human <-> bot` can be activated and bot has a better capability to reply human.  
@@ -381,7 +387,10 @@ There are two ways add pattern capability in BotScript:
 
 Built-in pattern capability already supported in BotScript. Just declare and use basic [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) within form: `/(\w+)\s(\w+)/` and it will capture two words `John Smith`, for example.
 
-A pattern must be wrapped in `/` to use advanced syntax which [XRegExp](http://xregexp.com/) supports.
+A pattern must be wrapped in `/` to use advanced syntax which [XRegExp](http://xregexp.com/) supports.  
+A part of a pattern can be enclosed in parentheses (...). This is called a [capturing group](https://javascript.info/regexp-groups)
+
+> Note: Pattern will capture entities in a group then it can be accessed via variables in order $1, $2, ...
 
 Example:
 

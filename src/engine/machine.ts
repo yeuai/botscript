@@ -83,7 +83,8 @@ export class BotMachine {
                   // popolate flows from currentFlow and assign to request
                   const { req, ctx } = context;
                   const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
-
+                  // TODO: Move test conditional flow to replypopulation?
+                  this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
                   // test conditional flows
                   utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
                     if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
@@ -207,7 +208,8 @@ export class BotMachine {
               // Explore and capture variables
               const isMatch = this.explore({ dialog: flow, ctx, req });
               if (isMatch) {
-                this.logger.debug('Captured a dialogue flow: ', req.currentFlow, req.variables);
+                const vCurrentFlowValue = req.$flows[req.currentFlow];
+                this.logger.debug(`Captured a dialogue flow: ${req.currentFlow} => ${vCurrentFlowValue}`);
               } else {
                 this.logger.debug('Dialogue flow is not captured!');
               }
@@ -336,11 +338,11 @@ export class BotMachine {
       const result = getActivators(dialog, ctx, req)
         .filter((x) => x.test(req.message))
         .some(pattern => {
-          this.logger.debug('Dialogue matches & captures (resolved): ', pattern.source);
-
           // extract message information
           const captures = execPattern(req.message, pattern);
+          // TODO: Remove `captures` in version 2.x, move to $flows.context
           const knowledges = {...req.variables, ...captures, $previous: req.previous, $input: req.message};
+          this.logger.debug(`Explore dialogue for evaluation: ${pattern.source} => captures:`, captures);
 
           // Test conditional activation
           // - A conditions begins with star symbol: *
@@ -360,12 +362,15 @@ export class BotMachine {
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
           req.variables = knowledges;
+          // assign session captured flows
+          Object.assign(req.$flows, captures);
 
           // add $ as the first matched variable for reply population
           if (captures.$1) {
             req.variables.$ = captures.$1;
             // dialogue is in the flow
             if (req.isFlowing) {
+              req.$flows[req.currentFlow] = captures.$1;
               req.variables[req.currentFlow] = captures.$1;
             }
           }

@@ -1,6 +1,6 @@
 {
   "name": "@yeuai/botscript",
-  "version": "1.6.3",
+  "version": "1.7.0",
   "description": "A text-based scripting language and bot engine for Conversational User Interfaces (CUI)",
   "main": "dist/engine",
   "scripts": {

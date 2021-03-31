@@ -41,6 +41,13 @@ export class Request {
   public missingFlows: string[];
 
   /**
+   * Data context flows
+   */
+  public $flows: {
+    [x: string]: string;
+  };
+
+  /**
    * Human variables extracted in the conversation
    */
   public variables: any;
@@ -93,9 +100,11 @@ export class Request {
     this.flows = [];
     this.variables = {};
     this.isFlowing = false;
+    this.isForward = false;
     this.resolvedFlows = [];
     this.missingFlows = [];
     this.previous = [];
+    this.$flows = {};
 
     if (message) {
       this.message = message.toLowerCase();
@@ -109,6 +118,20 @@ export class Request {
    */
   enter(text: string) {
     this.message = text;
+    this.isForward = false;
     return this;
+  }
+
+  /**
+   * Get current request contexts
+   */
+  get contexts() {
+    const $flows = this.$flows;
+    return {
+      ...this.variables,
+      $previous: this.previous,
+      $input: this.message,
+      $flows,
+    };
   }
 }

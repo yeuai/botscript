@@ -1,4 +1,4 @@
-import { random } from '../lib/utils';
+import { random, newid } from '../lib/utils';
 import { interpolate } from '../lib/template';
 import { Request } from './request';
 import { Struct } from './struct';
@@ -23,6 +23,10 @@ export class Context {
   plugins: Map<string, Struct>;
   // directives system
   directives: Map<string, Struct>;
+  /**
+   * id context
+   */
+  idctx: string;
 
   constructor() {
     this.definitions = new Map();
@@ -32,6 +36,7 @@ export class Context {
     this.patterns = new Map();
     this.plugins = new Map();
     this.directives = new Map();
+    this.idctx = newid();
   }
 
   /**
@@ -40,7 +45,7 @@ export class Context {
   get id(): string {
     return this.definitions.has('botid')
       ? (this.definitions.get('botid') as Struct).value
-      : '';
+      : this.idctx;
   }
 
   /**
@@ -81,17 +86,25 @@ export class Context {
   interpolateVariables(text: string, req: Request) {
     logger.debug('interpolateVariables:', text);
     return text
+      // 1. object/array referencing.
       // matching & replacing: $var.[0].a.b (note: .[0].a.b is a path of property of an array)
-      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match, variable, propPath) => {
+      .replace(/\$([a-z][\w_-]*)(\.[.\w[\]]*[\w\]])/g, (match: string, variable: string, propPath: string) => {
         try {
-          const vValue = req.variables[variable];
-          if (!vValue) {
-            logger.info(`Not found: ${variable}, ${propPath}`);
-            return '';
+          const data = {};
+          if (variable === 'flows') { // keyword: $flows
+            const prop = propPath.replace(/^\.+/, '');
+            Object.assign(data, {
+              flows: {
+                [prop]: req.$flows[prop],
+              },
+            });
+          } else {
+            const vValue = req.variables[variable];
+            Object.assign(data, { [variable]: vValue });
           }
+
           // interpolate value from variables
           const template = `{{${variable + propPath}}}`;
-          const data = { [variable]: vValue };
           logger.info(`interpolate: ${template}, ${JSON.stringify(data)}`);
           const vResult = interpolate(template, data);
           return vResult;
@@ -100,6 +113,7 @@ export class Context {
           return 'undefined';
         }
       })
+      // 2. variable reference
       // matching & replacing: ${var}, $var, #{var}, #var
       // syntax: $var /format:list
       // shorthand: $var :list
@@ -128,6 +142,7 @@ export class Context {
         }
         return value || '';
       })
+      // 3. number reference
       // matching & replacing: $123, $456
       .replace(/(\$\d*(?![\w\d]))/g, (match, variable) => {
         const value = req.variables[variable];
@@ -145,5 +160,72 @@ export class Context {
     let output = this.interpolateDefinition(text);
     output = this.interpolateVariables(output, req);
     return output;
+  }
+
+  /**
+   * Copy shadow data to botscript request
+   * - Normalize human request
+   * - Support scope variables, flows and context data
+   * @param req
+   */
+  newRequest(req: Request)
+    : Request {
+    const request = new Request();
+    request.enter(req.message);
+    if (req.botId !== this.id) {
+      // a new first-message request
+      // or change new bot context => just reset
+      logger.info('Human send the first-message request: ' + request.message);
+      request.botId = this.id;
+      return request;
+    }
+
+    let $flows = {};
+    if (req.isFlowing) {
+      $flows = req.$flows;
+    }
+
+    // keep state value persitence in dialogue flows (scope)
+    const {
+      prompt,
+      isNotResponse,
+      isFlowing,
+      originalDialogue,
+      currentDialogue,
+      currentFlow,
+      currentFlowIsResolved,
+      variables,
+      entities,
+      flows,
+      intent,
+      missingFlows,
+      previous,
+      resolvedFlows,
+      sessionId,
+      botId,
+    } = req;
+    logger.info('Normalize human request: isFlowing=' + isFlowing, request.message);
+    // transfer state to new request
+    Object.assign(request, {
+      prompt,
+      isNotResponse,
+      isFlowing,
+      originalDialogue,
+      currentDialogue,
+      currentFlow,
+      currentFlowIsResolved,
+      variables,
+      entities,
+      flows,
+      intent,
+      missingFlows,
+      previous,
+      resolvedFlows,
+      sessionId,
+      botId,
+      $flows,
+    });
+
+    return request;
   }
 }

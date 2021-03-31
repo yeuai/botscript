@@ -6,6 +6,7 @@ import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
+import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 
@@ -202,11 +203,11 @@ export class BotScript extends EventEmitter {
           if (typeof window === 'undefined') {
             this.logger.debug('Execute plugin in node!');
             const { VmRunner } = await import('../lib/vm2');
-            await VmRunner.run(vCode, {req, ctx});
+            await VmRunner.run(vCode, { req, ctx });
           } else {
             this.logger.debug('Execute plugin in browser!');
             const { VmRunner } = await import('../lib/vm');
-            await VmRunner.run(vCode, {req, ctx});
+            await VmRunner.run(vCode, { req, ctx });
           }
 
           this.logger.debug(`Execute plugin: ${vName} => done!`);
@@ -248,8 +249,12 @@ export class BotScript extends EventEmitter {
   async handleAsync(req: Request, ctx?: Context) {
     this.logger.debug('New request: ', req.message);
     const context = ctx || this.context;
+    const request = context.newRequest(req);
+
     // req.botId = context.id;
-    req.isForward = false;
+    // req.isForward = false;
+
+    req = request;
 
     // fire plugin for pre-processing
     const plugins = [...context.plugins.keys()];
@@ -287,13 +292,11 @@ export class BotScript extends EventEmitter {
         }
 
         // check context conditional plugin for activation
-        // TODO: Support multiple (AND) conditions
         const info = ctx.plugins.get(x) as Struct;
-        const cond = info.conditions.find(() => true) as string;
-        if (typeof cond === 'string' && !utils.evaluate(cond, req)) {
-          return false;
-        } else {
-          this.logger.debug('context conditional plugin is activated: %s', x);
+        for (const cond of info.conditions) {
+          if (!utils.evaluate(cond, req.contexts)) {
+            return false;
+          }
         }
 
         // deconstruct group of plugins from (struct:head)
@@ -310,6 +313,7 @@ export class BotScript extends EventEmitter {
 
     // fire plugin pre-processing
     for (const plugin of activatedPlugins) {
+      this.logger.debug('plugin fire: %s', plugin.name);
       const vPostProcessing = await plugin(req, ctx);
       if (typeof vPostProcessing === 'function') {
         postProcessing.push(vPostProcessing);
@@ -356,51 +360,46 @@ export class BotScript extends EventEmitter {
 
     const dialogConditions = conditions
       // filter only conditional reply dialogue
-      // .filter(x => !/^%/.test(x)) // TODO: Remove deprecated previous conditions
-      .map(x => {
-        const REGEX_COND_REPLY_TESTER = /([->@?+=])>/;
-        const REGEX_COND_REPLY_TOKEN = /[->@?+=]>/;
+      .filter(x => {
+        // pattern ensures valid syntax: expr => action
         const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
-
         if (!match) {
           this.logger.debug('Not a conditional reply:', x);
           return false;
         } else {
-          // split exactly supported conditions
-          const tokens = x.split(REGEX_COND_REPLY_TOKEN);
-          if (tokens.length === 2) {
-            let type = match[1];
-            const expr = tokens[0].trim();
-            let value = tokens[1].trim();
-            // New syntax support
-            // https://github.com/yeuai/botscript/issues/20
-            if (type === '=') {
-              this.logger.info('New syntax support: ' + x);
-              const explicitedType = value[0];
-              if (/^[->@?+]>/.test(explicitedType)) {
-                type = explicitedType;
-                value = value.slice(1);
-              } else {
-                // default type (a reply)
-                // ex: * expression => a reply
-                // or: * expression => - a reply
-                type = Types.ConditionalReply;
-              }
-            }
-            // Ex: Conditional reply to call http service
-            // * $reg_confirm == 'yes' @> register_account
-            // * $name == undefined -> You never told me your name
-            return { type, expr, value };
-          } else {
-            return false;
-          }
+          return true;
         }
       })
-      .filter(x => {
-        if (x === false) {
-          return false;
+      .map(x => {
+        // Re-run tester to get verify expression
+        const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
+        // split exactly supported conditions
+        const tokens = x.split(REGEX_COND_REPLY_TOKEN);
+        let type = match[1];
+        const expr = tokens[0].trim();
+        let value = tokens[1].trim();
+        // New syntax support
+        // https://github.com/yeuai/botscript/issues/20
+        if (type === '=') {
+          this.logger.info('New syntax support: ' + x);
+          const explicitedType = value.charAt(0);
+          if (/^[->@?+]/.test(explicitedType)) {
+            type = explicitedType;
+            value = value.slice(1).trim();
+          } else {
+            // default type (a reply)
+            // ex: * expression => a reply
+            // or: * expression => - a reply
+            type = Types.ConditionalReply;
+          }
         }
-        const vTestResult = utils.evaluate(x.expr, req.variables);
+        // e.g. a conditional reply to call http service
+        // * $reg_confirm == 'yes' @> register_account
+        // * $name == undefined -> You never told me your name
+        return { type, expr, value };
+      })
+      .filter(x => {
+        const vTestResult = utils.evaluate(x.expr, req.contexts);
         this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult}|`, x.type, x.expr, x.value);
         return vTestResult;
       });
@@ -408,9 +407,7 @@ export class BotScript extends EventEmitter {
     this.logger.info('Conditions test: ', dialogConditions);
 
     for (const x of dialogConditions) {
-      if (!x) {
-        return req;
-      } else if (x.type === Types.ConditionalForward) {
+      if (x.type === Types.ConditionalForward) {
         // conditional forward
         if (ctx.dialogues.has(x.value)) {
           req.isForward = true;
@@ -447,20 +444,20 @@ export class BotScript extends EventEmitter {
 
             // append result into variables
             this.logger.debug('Append command result into variables:', x.value);
-            // TODO: Refactor this.emit('command', {error: false, req, ctx, result, command_name})
-            this.emit('command', null, req, ctx, command.name, result);
+            this.emit('command', null, {req, ctx, result, name: command.name});
             if (!Array.isArray(result)) {
               // backwards compatibility.
+              // TODO: Remove in version 2.x
               Object.assign(req.variables, result);
             }
             Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
-            this.emit('command', err, req, ctx, command.name);
+            this.emit('command', err, {req, ctx, name: command.name});
           }
         } else {
           this.logger.warn('No command definition:', x.value);
-          this.emit('command', 'No command definition!', req, ctx, x.value);
+          this.emit('command', 'No command definition!', {req, ctx, name: x.value});
         }
       } else if (x.type === Types.ConditionalEvent) {
         // conditional event
@@ -507,7 +504,7 @@ export class BotScript extends EventEmitter {
     req.speechResponse = ctx.interpolate(replyCandidate || '[noReply]', req);
     this.logger.info(`Populate speech response: ${req.message} -> ${replyCandidate} -> ${req.speechResponse}`);
     // Add previous speech history
-    // TODO: make sure previous has initialized!
+    // Since v1.6: system variables are initialized before process!
     req.previous.splice(0, 0, req.speechResponse);
     if (req.previous.length > 100) {
       req.previous.pop();
