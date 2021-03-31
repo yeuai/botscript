@@ -6,3 +6,4 @@ export * from './pattern';
 export * from './machine';
 export * from './botscript';
 export * from '../version';
+export * from './next';

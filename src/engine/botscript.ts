@@ -9,6 +9,7 @@ import * as utils from '../lib/utils';
 import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
+import { createNextRequest } from './next';
 
 /**
  * BotScript dialogue engine
@@ -35,6 +36,11 @@ export class BotScript extends EventEmitter {
    * returns: void | Promise<any> | PluginCallback
    */
   plugins: Map<string, (req: Request, ctx: Context) => void | Promise<any> | PluginCallback>;
+
+  /**
+   * Last request
+   */
+  lastRequest?: Request;
 
   constructor() {
     super();
@@ -203,10 +209,12 @@ export class BotScript extends EventEmitter {
           if (typeof window === 'undefined') {
             this.logger.debug('Execute plugin in node!');
             const { VmRunner } = await import('../lib/vm2');
+            // TODO: support post-processing
             await VmRunner.run(vCode, { req, ctx });
           } else {
             this.logger.debug('Execute plugin in browser!');
             const { VmRunner } = await import('../lib/vm');
+            // TODO: support post-processing
             await VmRunner.run(vCode, { req, ctx });
           }
 
@@ -272,6 +280,9 @@ export class BotScript extends EventEmitter {
 
     // emit reply done.
     this.emit('reply', req, ctx);
+
+    // remember last request
+    this.lastRequest = req;
     return req;
   }
 
@@ -511,6 +522,13 @@ export class BotScript extends EventEmitter {
     }
 
     return req;
+  }
+
+  /**
+   * New request flows
+   */
+  newRequest(message: string) {
+    return createNextRequest(message, this.lastRequest);
   }
 
 }
