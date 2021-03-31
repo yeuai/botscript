@@ -108,9 +108,11 @@ describe('Plugin', () => {
 
       req = await botPlugin.handleAsync(req);
       assert.match(req.speechResponse, /my name is bob/i, 'ask name');
+      assert.equal(req.$flows.name, 'Bob', 'got name');
 
       req = await botPlugin.handleAsync(req);
       assert.match(req.speechResponse, /i lost my name/i, 'ask name again');
+      assert.isUndefined(req.$flows.name, 'forgot `name` when plugin is not activated');
 
     });
 
