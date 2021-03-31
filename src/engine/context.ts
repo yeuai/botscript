@@ -166,6 +166,7 @@ export class Context {
    * Copy shadow data to botscript request
    * - Normalize human request
    * - Support scope variables, flows and context data
+   * TODO: rename `newRequest()` to `createResponse()`
    * @param req
    */
   newRequest(req: Request)

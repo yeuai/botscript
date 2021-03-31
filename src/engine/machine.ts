@@ -378,7 +378,7 @@ export class BotMachine {
         });
 
       // log result
-      this.logger.info('Found dialogue:', result);
+      this.logger.debug(`Test dialogue candidate: ${dialog.name} =>`, result);
 
       return result;
     } catch (error) {

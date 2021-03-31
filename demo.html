@@ -43,9 +43,8 @@
   </div>
 
   <script>
-    const { BotScript, Request, TYPES } = BotScriptAI;
+    const { BotScript } = BotScriptAI;
     const bot = new BotScript();
-    const request = new Request();
     const urlParams = new URLSearchParams(window.location.search);
     const botId = urlParams.get('bot');
     const chatbox = document.getElementById('chatbox');
@@ -99,11 +98,11 @@
 
     bot.init()
       .then(async () => {
-        await sendBot(request.enter('Hello!'));
-        await sendBot(request.enter(`I'm vunb`));
-        await sendBot(request.enter('What time is it?'));
-        await sendBot(request.enter('What is my ip?'));
-        await sendBot(request.enter('Show my list'));
+        await sendBot(bot.newRequest('Hello!'));
+        await sendBot(bot.newRequest(`I'm vunb`));
+        await sendBot(bot.newRequest('What time is it?'));
+        await sendBot(bot.newRequest('What is my ip?'));
+        await sendBot(bot.newRequest('Show my list'));
       });
 
     // add reply message
@@ -112,7 +111,8 @@
       async (evt) => {
         const {text, type} = evt.detail;
         if (type === 'sent') {
-          const reply = await bot.handleAsync(request.enter(text));
+          const request = bot.newRequest(text);
+          const reply = await bot.handleAsync(request);
           chatbox.addReply({message: reply.speechResponse});
         }
       }
