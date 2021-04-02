@@ -429,6 +429,21 @@ export class BotScript extends EventEmitter {
         } else {
           this.logger.warn('No forward destination:', x.value);
         }
+      } else if (x.type === Types.ConditionalFlow) {
+        const flow = x.value;
+        if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
+          this.logger.info('Add conditional flow: ', flow);
+          req.missingFlows.push(flow);
+        }
+
+        if (!req.isFlowing) {
+          req.isFlowing = true;
+          req.currentFlowIsResolved = false;
+          req.currentFlow = req.missingFlows.find(() => true) as string;
+          this.logger.debug('Resolve conditional flow of current dialogue: ' + req.currentDialogue);
+          this.machine.resolve(req, ctx);
+        }
+
       } else if (x.type === Types.ConditionalReply) {
         // conditional reply
         const reply = x.value;
@@ -455,7 +470,7 @@ export class BotScript extends EventEmitter {
 
             // append result into variables
             this.logger.debug('Append command result into variables:', x.value);
-            this.emit('command', null, {req, ctx, result, name: command.name});
+            this.emit('command', null, { req, ctx, result, name: command.name });
             if (!Array.isArray(result)) {
               // backwards compatibility.
               // TODO: Remove in version 2.x
@@ -464,11 +479,11 @@ export class BotScript extends EventEmitter {
             Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
-            this.emit('command', err, {req, ctx, name: command.name});
+            this.emit('command', err, { req, ctx, name: command.name });
           }
         } else {
           this.logger.warn('No command definition:', x.value);
-          this.emit('command', 'No command definition!', {req, ctx, name: x.value});
+          this.emit('command', 'No command definition!', { req, ctx, name: x.value });
         }
       } else if (x.type === Types.ConditionalEvent) {
         // conditional event
