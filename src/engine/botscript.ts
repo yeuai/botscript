@@ -6,7 +6,7 @@ import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
-import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN } from '../lib/regex';
+import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN, REGEX_COND_LAMDA_EXPR } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 import { createNextRequest } from './next';
@@ -385,7 +385,7 @@ export class BotScript extends EventEmitter {
         // Re-run tester to get verify expression
         const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
         // split exactly supported conditions
-        const tokens = x.split(REGEX_COND_REPLY_TOKEN);
+        const tokens = x.split(REGEX_COND_LAMDA_EXPR);
         let type = match[1];
         const expr = tokens[0].trim();
         let value = tokens[1].trim();
@@ -394,7 +394,7 @@ export class BotScript extends EventEmitter {
         if (type === '=') {
           this.logger.info('New syntax support: ' + x);
           const explicitedType = value.charAt(0);
-          if (/^[->@?+]/.test(explicitedType)) {
+          if (REGEX_COND_REPLY_TOKEN.test(explicitedType)) {
             type = explicitedType;
             value = value.slice(1).trim();
           } else {
