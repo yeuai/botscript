@@ -95,8 +95,10 @@ export class BotMachine {
 
                   if (req.currentFlowIsResolved) {
                     // remove current flow & get next
-                    this.logger.debug('Remove current flow: ', req.currentFlow);
-                    req.resolvedFlows.push(req.currentFlow);
+                    if (req.currentFlow) {
+                      this.logger.debug('Remove current flow: ', req.currentFlow);
+                      req.resolvedFlows.push(req.currentFlow);
+                    }
                     req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
                     req.currentFlow = req.missingFlows.find(() => true) as string;
                     req.isFlowing = req.missingFlows.some(() => true);
@@ -117,6 +119,10 @@ export class BotMachine {
                     const setFlows = new Set(req.flows);
                     // update nested flows
                     currentFlow.flows.forEach(x => setFlows.add(x));
+                    // missing optional flows (conditional flows)
+                    for (const flow of req.missingFlows) {
+                      setFlows.add(flow);
+                    }
                     req.flows = Array.from(setFlows);
                   }
 

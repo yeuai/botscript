@@ -17,7 +17,7 @@ describe('conditional flow', () => {
     # conditional flows
     + i want to ask
     * $topic == 'buy phone' ~> ask item
-    * $item -> You selected: $item
+    * $flows.done && $flows.count == 2 -> You selected: $flows.item
     ~ ask topic
     - I dont know topic: $topic
     `);

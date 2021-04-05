@@ -127,7 +127,12 @@ export class Request {
    * Get current request contexts
    */
   get contexts() {
-    const $flows = this.$flows;
+    const resolved = this.resolvedFlows.length;
+    const missing = this.missingFlows.length;
+    const count = this.flows.length;
+    // flows are resolved
+    const done = (count > 0) && (count === resolved) && (missing === 0);
+    const $flows = {...this.$flows, resolved, missing, count, done}; // $flow scope
     return {
       ...this.variables,
       $previous: this.previous,

@@ -370,7 +370,7 @@ export class BotScript extends EventEmitter {
       this.logger.info('Bot has no response! Conditions will not be applied.');
       return req;
     }
-    this.logger.info('Evaluate conditions for dialogue:', req.currentDialogue);
+    this.logger.info('Evaluate conditions for dialogue:', req.currentDialogue, req.contexts);
     let conditions: string[] = [];
     const dialog = ctx.getDialogue(req.currentDialogue) as Struct;
     if (dialog) {
@@ -424,11 +424,11 @@ export class BotScript extends EventEmitter {
       })
       .filter(x => {
         const vTestResult = utils.evaluate(x.expr, req.contexts);
-        this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult}|`, x.type, x.expr, x.value);
+        this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult} | ${x.expr} => ${x.type} ${x.value}`);
         return vTestResult;
       });
 
-    this.logger.info('Conditions test: ', dialogConditions);
+    this.logger.info('Conditions test passed:', dialogConditions);
 
     for (const x of dialogConditions) {
       if (x.type === Types.ConditionalForward) {
@@ -450,7 +450,7 @@ export class BotScript extends EventEmitter {
           && req.missingFlows.indexOf(flow) < 0
           && !req.isFlowing
         ) {
-          this.logger.info('Add conditional flow: ', flow);
+          this.logger.info('Add conditional flow: ', flow, req.resolvedFlows);
           req.missingFlows.push(flow);
           vIsAddedFlow = true;
         }
@@ -542,7 +542,7 @@ export class BotScript extends EventEmitter {
         this.logger.info('No dialogue population!');
       }
     } else {
-      this.logger.info('Populate already candidate:', req.speechResponse);
+      this.logger.info('Populate already candidate:', req.speechResponse, req.contexts);
     }
 
     // Generate output!
