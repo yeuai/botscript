@@ -42,6 +42,7 @@ export class Request {
 
   /**
    * Data context flows
+   * TODO: Rename $flows to $scope? => $scope.ask_flow_info
    */
   public $flows: {
     [x: string]: string;

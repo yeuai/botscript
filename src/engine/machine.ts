@@ -341,7 +341,7 @@ export class BotMachine {
           // extract message information
           const captures = execPattern(req.message, pattern);
           // TODO: Remove `captures` in version 2.x, move to $flows.context
-          const knowledges = {...req.variables, ...captures, $previous: req.previous, $input: req.message};
+          const knowledges = { ...req.variables, ...captures, $previous: req.previous, $input: req.message };
           this.logger.debug(`Explore dialogue for evaluation: ${pattern.source} => captures:`, captures);
 
           // Test conditional activation
@@ -362,8 +362,10 @@ export class BotMachine {
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
           req.variables = knowledges;
-          // assign session captured flows
-          Object.assign(req.$flows, captures);
+          if (req.isFlowing) {
+            // assign session captured flows
+            Object.assign(req.$flows, captures);
+          }
 
           // add $ as the first matched variable for reply population
           if (captures.$1) {

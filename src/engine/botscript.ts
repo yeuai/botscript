@@ -283,6 +283,19 @@ export class BotScript extends EventEmitter {
 
     // remember last request
     this.lastRequest = req;
+    if (!this.lastRequest.isFlowing) {
+      // TODO: Move to request.scope or request.$flows?
+      const keys = Object.keys(this.lastRequest.$flows);
+      this.lastRequest.flows = [];
+      this.lastRequest.missingFlows = [];
+      this.lastRequest.resolvedFlows = [];
+      this.logger.info('Clean dialogue flows a completed task: ' + req.message);
+      for (const item of keys) {
+        // forgot resolve task/flows
+        this.logger.debug('Remove scope variable: ' + item);
+        delete this.lastRequest.variables[item];
+      }
+    }
     return req;
   }
 
