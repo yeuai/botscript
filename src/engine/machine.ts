@@ -82,16 +82,16 @@ export class BotMachine {
                 cond: (context, event) => {
                   // popolate flows from currentFlow and assign to request
                   const { req, ctx } = context;
-                  const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
-                  // TODO: Move test conditional flow to replypopulation?
-                  this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
-                  // test conditional flows
-                  utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
-                    if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
-                      this.logger.info('Add conditional flow: ', flow);
-                      req.missingFlows.push(flow);
-                    }
-                  });
+                  // const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+                  // // TODO: Move test conditional flow to replypopulation?
+                  // this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
+                  // // test conditional flows
+                  // utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
+                  //   if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
+                  //     this.logger.info('Add conditional flow: ', flow);
+                  //     req.missingFlows.push(flow);
+                  //   }
+                  // });
 
                   if (req.currentFlowIsResolved) {
                     // remove current flow & get next
@@ -325,7 +325,7 @@ export class BotMachine {
       })
       .start();
     botService.send('DIGEST');
-    this.logger.info('Get current dialogue response: ', req.currentDialogue);
+    this.logger.info('Resolved dialogue:', req.currentDialogue);
     return req;
   }
 

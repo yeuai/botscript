@@ -357,7 +357,7 @@ export class BotScript extends EventEmitter {
       this.logger.info('Bot has no response! Conditions will not be applied.');
       return req;
     }
-    this.logger.info('Evaluate conditional command for:', req.currentDialogue);
+    this.logger.info('Evaluate conditions for dialogue:', req.currentDialogue);
     let conditions: string[] = [];
     const dialog = ctx.getDialogue(req.currentDialogue) as Struct;
     if (dialog) {
@@ -430,16 +430,22 @@ export class BotScript extends EventEmitter {
           this.logger.warn('No forward destination:', x.value);
         }
       } else if (x.type === Types.ConditionalFlow) {
+        let vIsAddedFlow = false;
         const flow = x.value;
-        if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
+        if (
+          req.resolvedFlows.indexOf(flow) < 0
+          && req.missingFlows.indexOf(flow) < 0
+          && !req.isFlowing
+        ) {
           this.logger.info('Add conditional flow: ', flow);
           req.missingFlows.push(flow);
+          vIsAddedFlow = true;
         }
 
-        if (!req.isFlowing) {
+        if (vIsAddedFlow) {
           req.isFlowing = true;
           req.currentFlowIsResolved = false;
-          req.currentFlow = req.missingFlows.find(() => true) as string;
+          // req.currentFlow = req.missingFlows.find(() => true) as string;
           this.logger.debug('Resolve conditional flow of current dialogue: ' + req.currentDialogue);
           this.machine.resolve(req, ctx);
         }
