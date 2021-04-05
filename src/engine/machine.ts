@@ -346,7 +346,7 @@ export class BotMachine {
         .some(pattern => {
           // extract message information
           const captures = execPattern(req.message, pattern);
-          // TODO: Remove `captures` in version 2.x, move to $flows.context
+          // TODO: Remove `captures` in version 2.x, move to $flows.context (not append to variables)
           const knowledges = { ...req.variables, ...captures, $previous: req.previous, $input: req.message };
           this.logger.debug(`Explore dialogue for evaluation: ${pattern.source} => captures:`, captures);
 
