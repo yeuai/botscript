@@ -367,21 +367,23 @@ export class BotMachine {
           // update dialogue response
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
-          req.variables = knowledges;
+          // req.variables = knowledges;
           if (req.isFlowing) {
             // assign session captured flows
-            Object.assign(req.$flows, captures);
+            Object.assign(req.$flows, captures, { [req.currentFlow]: captures.$1 });
+          } else {
+            Object.assign(req.variables, captures);
           }
 
           // add $ as the first matched variable for reply population
-          if (captures.$1) {
-            req.variables.$ = captures.$1;
-            // dialogue is in the flow
-            if (req.isFlowing) {
-              req.$flows[req.currentFlow] = captures.$1;
-              req.variables[req.currentFlow] = captures.$1;
-            }
-          }
+          // if (captures.$1) {
+          //   req.variables.$ = captures.$1;
+          //   // dialogue is in the flow
+          //   if (req.isFlowing) {
+          //     req.$flows[req.currentFlow] = captures.$1;
+          //     req.variables[req.currentFlow] = captures.$1;
+          //   }
+          // }
           return true;
         });
 

@@ -99,7 +99,7 @@ export class Context {
               },
             });
           } else {
-            const vValue = req.variables[variable];
+            const vValue = req.contexts[variable];
             Object.assign(data, { [variable]: vValue });
           }
 
@@ -118,7 +118,7 @@ export class Context {
       // syntax: $var /format:list
       // shorthand: $var :list
       .replace(/[#$]\{?([a-zA-Z][\w_-]*)\}?(\s*[\/:][a-z:_-]+)?/g, (match, variable: string, format: string) => {
-        const value = req.variables[variable];
+        const value = req.contexts[variable];
         // allow multiple spaces repeat in front of a format => so we must trim() it!
         format = (format || '').trim();
         if (format && /[/:]/.test(format.charAt(0))) {
@@ -145,7 +145,7 @@ export class Context {
       // 3. number reference
       // matching & replacing: $123, $456
       .replace(/(\$\d*(?![\w\d]))/g, (match, variable) => {
-        const value = req.variables[variable];
+        const value = req.contexts[variable];
         return value || '';
       });
   }
