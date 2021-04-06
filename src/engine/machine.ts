@@ -82,21 +82,23 @@ export class BotMachine {
                 cond: (context, event) => {
                   // popolate flows from currentFlow and assign to request
                   const { req, ctx } = context;
-                  const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
-                  // TODO: Move test conditional flow to replypopulation?
-                  this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
-                  // test conditional flows
-                  utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
-                    if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
-                      this.logger.info('Add conditional flow: ', flow);
-                      req.missingFlows.push(flow);
-                    }
-                  });
+                  // const dialog = ctx.dialogues.get(req.originalDialogue) as Struct;
+                  // // TODO: Move test conditional flow to replypopulation?
+                  // this.logger.debug('Test conditional flow of original dialogue: ' + req.originalDialogue);
+                  // // test conditional flows
+                  // utils.testConditionalType(Types.ConditionalFlow, dialog, req, (flow: string) => {
+                  //   if (req.resolvedFlows.indexOf(flow) < 0 && req.missingFlows.indexOf(flow) < 0) {
+                  //     this.logger.info('Add conditional flow: ', flow);
+                  //     req.missingFlows.push(flow);
+                  //   }
+                  // });
 
                   if (req.currentFlowIsResolved) {
                     // remove current flow & get next
-                    this.logger.debug('Remove current flow: ', req.currentFlow);
-                    req.resolvedFlows.push(req.currentFlow);
+                    if (req.currentFlow) {
+                      this.logger.debug('Remove current flow: ', req.currentFlow);
+                      req.resolvedFlows.push(req.currentFlow);
+                    }
                     req.missingFlows = req.missingFlows.filter(x => x !== req.currentFlow);
                     req.currentFlow = req.missingFlows.find(() => true) as string;
                     req.isFlowing = req.missingFlows.some(() => true);
@@ -117,6 +119,10 @@ export class BotMachine {
                     const setFlows = new Set(req.flows);
                     // update nested flows
                     currentFlow.flows.forEach(x => setFlows.add(x));
+                    // missing optional flows (conditional flows)
+                    for (const flow of req.missingFlows) {
+                      setFlows.add(flow);
+                    }
                     req.flows = Array.from(setFlows);
                   }
 
@@ -325,7 +331,7 @@ export class BotMachine {
       })
       .start();
     botService.send('DIGEST');
-    this.logger.info('Get current dialogue response: ', req.currentDialogue);
+    this.logger.info('Resolved dialogue:', req.currentDialogue);
     return req;
   }
 
@@ -340,8 +346,7 @@ export class BotMachine {
         .some(pattern => {
           // extract message information
           const captures = execPattern(req.message, pattern);
-          // TODO: Remove `captures` in version 2.x, move to $flows.context
-          const knowledges = {...req.variables, ...captures, $previous: req.previous, $input: req.message};
+          const knowledges = { ...req.variables, ...captures, $previous: req.previous, $input: req.message };
           this.logger.debug(`Explore dialogue for evaluation: ${pattern.source} => captures:`, captures);
 
           // Test conditional activation
@@ -361,19 +366,13 @@ export class BotMachine {
           // update dialogue response
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
-          req.variables = knowledges;
-          // assign session captured flows
-          Object.assign(req.$flows, captures);
-
-          // add $ as the first matched variable for reply population
-          if (captures.$1) {
-            req.variables.$ = captures.$1;
-            // dialogue is in the flow
-            if (req.isFlowing) {
-              req.$flows[req.currentFlow] = captures.$1;
-              req.variables[req.currentFlow] = captures.$1;
-            }
+          if (req.isFlowing) {
+            // assign session captured flows
+            Object.assign(req.$flows, captures, { [req.currentFlow]: captures.$1 });
+          } else {
+            Object.assign(req.variables, captures);
           }
+
           return true;
         });
 

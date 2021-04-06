@@ -109,11 +109,22 @@ A trigger is a pattern help bot knows what human is saying.
 
 A trigger begins with symbol `+` in the dialogue.
 
-A trigger may contains **wildcards**. With wildcards, you can set a placeholder within trigger that the bot can capture.
+A trigger may contains **wildcards**, **Alternations**, or **Defintion**. With wildcards, you can set a placeholder within trigger that the bot can capture. The values matched by the wildcards can be retrieved in the responses by using the tags `$var` or values in order `$1`, `$2`, `$3`.
+
+Example:
 
 ```bash
+## trigger uses asterisk as a wildcard
 + My name is *{name}
 - Nice to meet you $name!
+
+## trigger use a parentheses and straight slash as an alternations
++ (hello|hallo|chào)
+- Hello $1
+
+## trigger use defintion as alternations array.
++ my favorite color is [colors]
+- I like $1 too.
 ```
 
 A dialogue may contains more than one trigger. Which helps bot to detect exactly in more case.

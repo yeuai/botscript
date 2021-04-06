@@ -52,28 +52,12 @@ describe('BotScript: Conditional dialogue', () => {
     - support
     - feedback
 
-    ~ ask topic
-    - What topic do you want to ask?
-    + *{topic}
-
-    ~ buy phone
-    - What do you want to buy
-    + I want to buy *{item}
-    + *{item}
-
     + cancel
     - You are canceled!
 
     @ geoip https://api.ipify.org/?format=json
     #- header: value
     #- header: value (2)
-
-    # conditional flows
-    + i want to ask
-    * $topic == 'buy phone' ~> buy phone
-    * $item == 'orange' -> Sorry! We don't have orange.
-    ~ ask topic
-    - You are done! Item: $item
 
     # conditional command
     + what is my ip
@@ -133,37 +117,6 @@ describe('BotScript: Conditional dialogue', () => {
 
       req2 = await condBot.handleAsync(req2.enter('its me'));
       assert.match(req2.speechResponse, /i know you/i);
-    });
-
-    it('should handle conditional flows', async () => {
-      let req = new Request('i want to ask');
-      req = await condBot.handleAsync(req);
-      assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
-      assert.equal(req.currentFlow, 'ask topic');
-
-      req = await condBot.handleAsync(req.enter('buy phone'));
-      assert.match(req.speechResponse, /what do you want to buy/i);
-      assert.equal(req.currentFlow, 'buy phone');
-
-      req = await condBot.handleAsync(req.enter('apple'));
-      assert.match(req.speechResponse, /you are done/i);
-      assert.equal(req.currentFlow, undefined);
-
-    });
-
-    it('should handle conditional reply', async () => {
-      let req = new Request('i want to ask');
-      req = await condBot.handleAsync(req);
-      assert.match(req.speechResponse, /what topic/i, 'bot ask topic');
-      assert.equal(req.currentFlow, 'ask topic');
-
-      req = await condBot.handleAsync(req.enter('buy phone'));
-      assert.match(req.speechResponse, /what do you want to buy/i);
-      assert.equal(req.currentFlow, 'buy phone');
-
-      req = await condBot.handleAsync(req.enter('orange'));
-      assert.match(req.speechResponse, /sorry/i);
-      assert.equal(req.currentFlow, undefined);
     });
 
     it('should handle conditional command', async () => {

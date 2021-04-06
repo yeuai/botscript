@@ -42,6 +42,7 @@ export class Request {
 
   /**
    * Data context flows
+   * TODO: Rename $flows to $scope? => $scope.ask_flow_info
    */
   public $flows: {
     [x: string]: string;
@@ -123,12 +124,18 @@ export class Request {
   }
 
   /**
-   * Get current request contexts
+   * Get current request contexts scope
    */
   get contexts() {
-    const $flows = this.$flows;
+    const resolved = this.resolvedFlows.length;
+    const missing = this.missingFlows.length;
+    const count = this.flows.length;
+    // flows are resolved
+    const done = (count > 0) && (count === resolved) && (missing === 0);
+    const $flows = {...this.$flows, resolved, missing, count, done}; // $flow scope
     return {
       ...this.variables,
+      ...this.$flows,
       $previous: this.previous,
       $input: this.message,
       $flows,

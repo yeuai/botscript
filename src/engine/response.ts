@@ -14,6 +14,12 @@ export class Response {
   public speechResponse: string;
   public intent: string;
   public input: string;
+  // bot response histories
+  public history: [{
+    flows: [{
+      [key: string]: string,
+    }],
+  }];
 
   constructor() {
     this.contexts = [];

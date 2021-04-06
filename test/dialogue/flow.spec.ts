@@ -41,21 +41,24 @@ describe('Dialogue: flow', () => {
     it('bot should ask human email', async () => {
       const req = flowsRequest.enter('20');
       flowsRequest = await bot.handleAsync(req);
+      const {name, age} = flowsRequest.contexts; // request contexts
       assert.isTrue(flowsRequest.isFlowing, 'still in dialogue flows!');
-      assert.equal(flowsRequest.variables.name, 'Vu', 'human name');
-      assert.equal(flowsRequest.variables.age, '20', 'human age');
+      assert.equal(name, 'Vu', 'human name');
+      assert.equal(age, '20', 'human age');
+      assert.equal(flowsRequest.variables.name, 'Vu', 'name as a variable context');
+      assert.equal(flowsRequest.$flows.age, '20', 'age as a flow context');
       assert.match(flowsRequest.speechResponse, /What is your email/i, 'bot send a next question');
     });
 
     it('bot should respond a greet with human name, age and email', async () => {
       const req = flowsRequest.enter('my email is vunb@example.com');
       flowsRequest = await bot.handleAsync(req);
-      assert.isFalse(flowsRequest.isFlowing, 'exit dialogue flows!');
+      assert.isFalse(flowsRequest.isFlowing, 'exits dialogue flows!');
       assert.equal(flowsRequest.variables.name, 'Vu', 'human name');
-      // variable: v1.x
-      assert.equal(flowsRequest.variables.age, '20', 'human age');
-      assert.equal(flowsRequest.variables.email, 'vunb@example.com', 'human email');
-      // scope: $flow
+      // variable: v1.x (not clean after flow is resolved)
+      // assert.equal(flowsRequest.variables.age, '20', 'human age');
+      // assert.equal(flowsRequest.variables.email, 'vunb@example.com', 'human email');
+      // scope: $flow from v1.7.x
       assert.equal(flowsRequest.$flows.age, '20', 'human age');
       assert.equal(flowsRequest.$flows.email, 'vunb@example.com', 'human email');
       assert.match(flowsRequest.speechResponse, /hello/i, 'bot send a greeting');
@@ -106,8 +109,8 @@ describe('Dialogue: flow', () => {
       const req = flowsRequest.enter('20');
       flowsRequest = await bot.handleAsync(req);
       assert.isTrue(flowsRequest.isFlowing, 'still in dialogue flows!');
-      assert.equal(flowsRequest.variables.name, 'Vu', 'human name');
-      assert.equal(flowsRequest.variables.age, '20', 'human age');
+      assert.equal(flowsRequest.contexts.name, 'Vu', 'human name');
+      assert.equal(flowsRequest.contexts.age, '20', 'human age');
       assert.match(flowsRequest.speechResponse, /What is your email/i, 'bot send a next question');
     });
 
@@ -115,7 +118,8 @@ describe('Dialogue: flow', () => {
       const req = flowsRequest.enter('my email is vunb@example.com');
       flowsRequest = await bot.handleAsync(req);
       assert.isFalse(flowsRequest.isFlowing, 'exit dialogue flows!');
-      assert.equal(flowsRequest.variables.name, 'Vu', 'human name');
+      // variable: v1.x (not clean after flow is resolved)
+      // assert.equal(flowsRequest.variables.name, 'Vu', 'human name');
       // scope: $flow v1.7+
       assert.equal(flowsRequest.$flows.age, '20', 'human age');
       assert.equal(flowsRequest.$flows.email, 'vunb@example.com', 'human email');

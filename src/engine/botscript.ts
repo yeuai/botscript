@@ -6,7 +6,7 @@ import { Logger } from '../lib/logger';
 import { BotMachine } from './machine';
 import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
-import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN } from '../lib/regex';
+import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN, REGEX_COND_LAMDA_EXPR } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
 import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 import { createNextRequest } from './next';
@@ -283,6 +283,13 @@ export class BotScript extends EventEmitter {
 
     // remember last request
     this.lastRequest = req;
+    if (!this.lastRequest.isFlowing) {
+      // TODO: Refactor and move bot reply to ./response.model
+      this.logger.info('Clean dialogue flows as a completed task: ' + req.message);
+      this.lastRequest.flows = [];
+      this.lastRequest.missingFlows = [];
+      this.lastRequest.resolvedFlows = [];
+    }
     return req;
   }
 
@@ -357,7 +364,7 @@ export class BotScript extends EventEmitter {
       this.logger.info('Bot has no response! Conditions will not be applied.');
       return req;
     }
-    this.logger.info('Evaluate conditional command for:', req.currentDialogue);
+    this.logger.info('Evaluate conditions for dialogue:', req.currentDialogue, req.contexts);
     let conditions: string[] = [];
     const dialog = ctx.getDialogue(req.currentDialogue) as Struct;
     if (dialog) {
@@ -385,7 +392,7 @@ export class BotScript extends EventEmitter {
         // Re-run tester to get verify expression
         const match = REGEX_COND_REPLY_TESTER.exec(x) as RegExpExecArray;
         // split exactly supported conditions
-        const tokens = x.split(REGEX_COND_REPLY_TOKEN);
+        const tokens = x.split(REGEX_COND_LAMDA_EXPR);
         let type = match[1];
         const expr = tokens[0].trim();
         let value = tokens[1].trim();
@@ -394,7 +401,7 @@ export class BotScript extends EventEmitter {
         if (type === '=') {
           this.logger.info('New syntax support: ' + x);
           const explicitedType = value.charAt(0);
-          if (/^[->@?+]/.test(explicitedType)) {
+          if (REGEX_COND_REPLY_TOKEN.test(explicitedType)) {
             type = explicitedType;
             value = value.slice(1).trim();
           } else {
@@ -411,11 +418,11 @@ export class BotScript extends EventEmitter {
       })
       .filter(x => {
         const vTestResult = utils.evaluate(x.expr, req.contexts);
-        this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult}|`, x.type, x.expr, x.value);
+        this.logger.info(`Evaluate test: ${vTestResult} is ${!!vTestResult} | ${x.expr} => ${x.type} ${x.value}`);
         return vTestResult;
       });
 
-    this.logger.info('Conditions test: ', dialogConditions);
+    this.logger.info('Conditions test passed:', dialogConditions);
 
     for (const x of dialogConditions) {
       if (x.type === Types.ConditionalForward) {
@@ -429,6 +436,27 @@ export class BotScript extends EventEmitter {
         } else {
           this.logger.warn('No forward destination:', x.value);
         }
+      } else if (x.type === Types.ConditionalFlow) {
+        let vIsAddedFlow = false;
+        const flow = x.value;
+        if (
+          req.resolvedFlows.indexOf(flow) < 0
+          && req.missingFlows.indexOf(flow) < 0
+          && !req.isFlowing
+        ) {
+          this.logger.info('Add conditional flow: ', flow, req.resolvedFlows);
+          req.missingFlows.push(flow);
+          vIsAddedFlow = true;
+        }
+
+        if (vIsAddedFlow) {
+          req.isFlowing = true;
+          req.currentFlowIsResolved = false;
+          // req.currentFlow = req.missingFlows.find(() => true) as string;
+          this.logger.debug('Resolve conditional flow of current dialogue: ' + req.currentDialogue);
+          this.machine.resolve(req, ctx);
+        }
+
       } else if (x.type === Types.ConditionalReply) {
         // conditional reply
         const reply = x.value;
@@ -455,7 +483,7 @@ export class BotScript extends EventEmitter {
 
             // append result into variables
             this.logger.debug('Append command result into variables:', x.value);
-            this.emit('command', null, {req, ctx, result, name: command.name});
+            this.emit('command', null, { req, ctx, result, name: command.name });
             if (!Array.isArray(result)) {
               // backwards compatibility.
               // TODO: Remove in version 2.x
@@ -464,11 +492,11 @@ export class BotScript extends EventEmitter {
             Object.assign(req.variables, { [command.name]: result });
           } catch (err) {
             this.logger.info('Cannot call http service: ', command);
-            this.emit('command', err, {req, ctx, name: command.name});
+            this.emit('command', err, { req, ctx, name: command.name });
           }
         } else {
           this.logger.warn('No command definition:', x.value);
-          this.emit('command', 'No command definition!', {req, ctx, name: x.value});
+          this.emit('command', 'No command definition!', { req, ctx, name: x.value });
         }
       } else if (x.type === Types.ConditionalEvent) {
         // conditional event
@@ -508,7 +536,7 @@ export class BotScript extends EventEmitter {
         this.logger.info('No dialogue population!');
       }
     } else {
-      this.logger.info('Populate already candidate:', req.speechResponse);
+      this.logger.info('Populate already candidate:', req.speechResponse, req.contexts);
     }
 
     // Generate output!
