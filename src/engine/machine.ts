@@ -346,7 +346,6 @@ export class BotMachine {
         .some(pattern => {
           // extract message information
           const captures = execPattern(req.message, pattern);
-          // TODO: Remove `captures` in version 2.x, move to $flows.context (not append to variables)
           const knowledges = { ...req.variables, ...captures, $previous: req.previous, $input: req.message };
           this.logger.debug(`Explore dialogue for evaluation: ${pattern.source} => captures:`, captures);
 
@@ -367,7 +366,6 @@ export class BotMachine {
           // update dialogue response
           req.currentDialogue = dialog.name;
           req.currentFlowIsResolved = true;
-          // req.variables = knowledges;
           if (req.isFlowing) {
             // assign session captured flows
             Object.assign(req.$flows, captures, { [req.currentFlow]: captures.$1 });
@@ -375,15 +373,6 @@ export class BotMachine {
             Object.assign(req.variables, captures);
           }
 
-          // add $ as the first matched variable for reply population
-          // if (captures.$1) {
-          //   req.variables.$ = captures.$1;
-          //   // dialogue is in the flow
-          //   if (req.isFlowing) {
-          //     req.$flows[req.currentFlow] = captures.$1;
-          //     req.variables[req.currentFlow] = captures.$1;
-          //   }
-          // }
           return true;
         });
 
