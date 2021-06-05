@@ -1,3 +1,5 @@
+import { IReply } from '../interfaces/reply';
+
 /**
  * Dialogue response
  */
@@ -20,6 +22,8 @@ export class Response {
       [key: string]: string,
     }],
   }];
+  // candidate
+  reply?: IReply;
 
   constructor() {
     this.contexts = [];

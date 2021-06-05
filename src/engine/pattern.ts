@@ -6,6 +6,8 @@ import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
 import { IMapActivator } from '../interfaces/map-activator';
 import { evaluate } from '../lib/utils';
+import { IMapValue } from '../interfaces/map-value';
+import { IReply } from '../interfaces/reply';
 
 const logger = new Logger('Pattern');
 
@@ -126,7 +128,8 @@ export function transform(pattern: string, request: Request, context: Context, n
  * @param input
  * @param pattern
  */
-export function execPattern(input: string, pattern: RegExp | IActivator) {
+export function execPattern(input: string, pattern: RegExp | IActivator)
+  : IMapValue {
   const result = pattern instanceof RegExp ? XRegExp.exec(input, pattern) : pattern.exec(input);
 
   // no captures!
@@ -155,10 +158,12 @@ export function getActivationConditions(dialog: Struct) {
 }
 
 /**
- * Get sorted trigger activators
+ * - Get sorted trigger activators
+ * - Explore request message
+ * - Extract matched pattern
  */
 export function getReplyDialogue(ctx: Context, req: Request)
-  : Struct | undefined {
+  : IReply {
   const vActivators: IMapActivator[] = [];
   Array.from(ctx.dialogues.values())
     .forEach(x => {
@@ -172,6 +177,7 @@ export function getReplyDialogue(ctx: Context, req: Request)
       }
     });
   // transform activators and sort
+  let vCaptures: IMapValue | undefined;
   let vDialogue: Struct | undefined;
   vActivators.filter(x => x.pattern.test(req.message))
     // sort activator in descending order of length
@@ -196,8 +202,13 @@ export function getReplyDialogue(ctx: Context, req: Request)
           }
         }
       }
+      // summary knowledges
       vDialogue = dialog;
+      vCaptures = captures;
       return true;
     });
-  return vDialogue;
+  return {
+    captures: vCaptures,
+    dialog: vDialogue,
+  };
 }

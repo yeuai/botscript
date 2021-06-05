@@ -5,10 +5,11 @@ import * as utils from '../lib/utils';
 import { Request } from './request';
 import { getActivators, execPattern, getActivationConditions, getReplyDialogue } from './pattern';
 import { Struct } from './struct';
+import { Response } from './response';
 
 export class BotMachine {
 
-  private machine: StateMachine<{ ctx: Context, req: Request }, any, EventObject>;
+  private machine: StateMachine<{ ctx: Context, req: Request, res: Response }, any, EventObject>;
   private logger: Logger;
 
   constructor() {
@@ -22,7 +23,7 @@ export class BotMachine {
             on: {
               DIGEST: {
                 target: 'digest',
-                actions: ['exploreDialogue'],
+                actions: ['onDigest'],
               },
             },
           },
@@ -159,23 +160,28 @@ export class BotMachine {
             return false;
           },
           isDialogue: (context, event) => {
-            const { req, ctx } = context;
-            if (!req.isFlowing) {
-              // process purpose bot
-              this.logger.info('Find dialogue candidate ...');
-              for (const [name, dialog] of ctx.dialogues) {
-                const isMatch = this.explore({ dialog, ctx, req });
-                if (isMatch) {
-                  this.logger.debug('Found a dialogue candidate: ', name, req.variables);
-                  req.currentDialogue = dialog.name;
-                  req.originalDialogue = dialog.name;
-                  req.flows = dialog.flows;
-                  req.missingFlows = dialog.flows;
-                  // break;
-                  return true;
-                }
+            const { req, res, ctx } = context;
+            this.logger.info('Find dialogue candidate ...');
+            res.reply = getReplyDialogue(ctx, req);
+
+            if (res.reply?.dialog) {
+              const dialog = res.reply.dialog;
+              req.currentDialogue = dialog.name;
+              req.currentFlowIsResolved = true;
+              if (!req.isFlowing) {
+                // process purpose bot
+                this.logger.debug('Found a dialogue candidate: ', dialog.name, req.variables);
+                req.currentDialogue = dialog.name;
+                req.originalDialogue = dialog.name;
+                req.flows = dialog.flows;
+                req.missingFlows = dialog.flows;
+                Object.assign(req.variables, res.reply.captures);
+                return true;
+              } else {
+                this.logger.info('Not found dialogue candidate!');
+                // assign session captured flows
+                Object.assign(req.$flows, res.reply?.captures, { [req.currentFlow]: res.reply?.captures?.$1 });
               }
-              this.logger.info('Not found dialogue candidate!');
             }
             return false;
           },
@@ -198,14 +204,8 @@ export class BotMachine {
           },
         },
         actions: {
-          exploreDialogue: ({ req, ctx }) => {
-            this.logger.debug('Explore human request: ', req.message);
-            // Sort all triggers and patterns
-            const vResult = getReplyDialogue(ctx, req);
-
-            if (vResult) {
-              this.logger.info('Found a candidate!');
-            }
+          onDigest: ({ req, res, ctx }) => {
+            this.logger.debug('onDigest: ', req.message);
           },
           notifyDone: (context, event) => {
             this.logger.info('Bot machine done!');
@@ -234,7 +234,8 @@ export class BotMachine {
 
     // TODO: Explore dialogues first to define type which is forward, flow or first-dialogue.
     // TODO: Explore should support async task
-    const botMachine = this.machine.withContext({ ctx, req });
+    const res = new Response();
+    const botMachine = this.machine.withContext({ ctx, req, res });
     const botService = interpret(botMachine)
       .onTransition(state => {
         this.logger.info('Enter state: ', state.value);
