@@ -99,7 +99,7 @@ export class BotScript extends EventEmitter {
    * Get struct type
    * @param type type
    */
-  private type(type: string): Map<string, any> {
+  private type(type: string): Map<string, Struct> {
     switch (type) {
       case 'definition':
         return this.context.definitions;

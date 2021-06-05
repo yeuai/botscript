@@ -3,7 +3,7 @@ import { Context } from './context';
 import { Logger } from '../lib/logger';
 import * as utils from '../lib/utils';
 import { Request } from './request';
-import { getActivators, execPattern, getActivationConditions } from './pattern';
+import { getActivators, execPattern, getActivationConditions, getReplyDialogue } from './pattern';
 import { Struct } from './struct';
 
 export class BotMachine {
@@ -200,6 +200,12 @@ export class BotMachine {
         actions: {
           exploreDialogue: ({ req, ctx }) => {
             this.logger.debug('Explore human request: ', req.message);
+            // Sort all triggers and patterns
+            const vResult = getReplyDialogue(ctx, req);
+
+            if (vResult) {
+              this.logger.info('Found a candidate!');
+            }
           },
           notifyDone: (context, event) => {
             this.logger.info('Bot machine done!');

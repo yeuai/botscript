@@ -4,6 +4,8 @@ import { Request } from './request';
 import { Context } from './context';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
+import { IMapActivator } from '../interfaces/map-activator';
+import { evaluate } from '../lib/utils';
 
 const logger = new Logger('Pattern');
 
@@ -150,4 +152,52 @@ export function getActivators(dialog: Struct, ctx: Context, req: Request, notEqu
 export function getActivationConditions(dialog: Struct) {
   // exclude conditional reply
   return dialog.conditions.filter(x => !/>/.test(x));
+}
+
+/**
+ * Get sorted trigger activators
+ */
+export function getReplyDialogue(ctx: Context, req: Request)
+  : Struct | undefined {
+  const vActivators: IMapActivator[] = [];
+  Array.from(ctx.dialogues.values())
+    .forEach(x => {
+      for (const trigger of x.triggers) {
+        const activator = transform(trigger, req, ctx, false);
+        vActivators.push({
+          id: x.name,
+          trigger,
+          pattern: activator,
+        })
+      }
+    });
+  // transform activators and sort
+  let vDialogue: Struct | undefined;
+  vActivators.filter(x => x.pattern.test(req.message))
+    // sort activator in descending order of length
+    .sort((a, b) => b.pattern.source.length - a.pattern.source.length)
+    // map info
+    .some(x => {
+      const captures = execPattern(req.message, x.pattern);
+      const knowledges = { ...req.variables, ...captures, $previous: req.previous, $input: req.message };
+      logger.debug(`Evaluate dialogue: ${x.pattern.source} => captures:`, captures);
+
+      // Test conditional activation
+      // - A conditions begins with star symbol: *
+      // - Syntax: * expression
+      const dialog = ctx.getDialogue(x.id) as Struct;
+      const conditions = getActivationConditions(dialog);
+      if (conditions.length > 0) {
+        for (const cond of conditions) {
+          const expr = cond.replace(/^[*]/, '');
+          const vTestResult = evaluate(expr, knowledges);
+          if (!vTestResult) {
+            return false;
+          }
+        }
+      }
+      vDialogue = dialog;
+      return true;
+    });
+  return vDialogue;
 }

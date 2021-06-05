@@ -1,3 +1,5 @@
+import { newid } from '../lib/utils';
+
 /**
  * Struct types
  */
@@ -48,6 +50,7 @@ function getScriptHead(script: string): string[] {
  * Script data structure
  */
 export class Struct {
+  id: string;
   type: string;
   content: string;
   name: string;
@@ -65,6 +68,7 @@ export class Struct {
    * @param content
    */
   constructor(content: string) {
+    this.id = newid();
     this.type = getScriptType(content);
     this.head = getScriptHead(content);
     this.body = getScriptBody(content);

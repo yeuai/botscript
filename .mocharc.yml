@@ -5,3 +5,6 @@ retries: 3
 exit: true
 spec:
   - test/**/*.spec.ts
+  # test 1 spec
+  # - test/e2e/delay.spec.ts
+  # - test/engine/conditions.spec.ts
