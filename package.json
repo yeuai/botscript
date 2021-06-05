@@ -29,7 +29,6 @@
     "@types/jexl": "^2.2.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.20.14",
-    "@types/xregexp": "^4.4.0",
     "axios-mock-adapter": "^1.19.0",
     "browserify": "^17.0.0",
     "chai": "^4.3.4",
