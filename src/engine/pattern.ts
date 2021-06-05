@@ -179,7 +179,11 @@ export function getReplyDialogue(ctx: Context, req: Request)
   // transform activators and sort
   let vCaptures: IMapValue | undefined;
   let vDialogue: Struct | undefined;
-  vActivators.filter(x => x.pattern.test(req.message))
+  vActivators
+    .filter(x => {
+      logger.debug(`Test candidate: [${req.message}][${x.pattern.source}]`);
+      return x.pattern.test(req.message);
+    })
     // sort activator in descending order of length
     .sort((a, b) => b.pattern.source.length - a.pattern.source.length)
     // map info
