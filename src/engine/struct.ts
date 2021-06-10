@@ -1,9 +1,10 @@
+import { IMapValue } from '../interfaces/map-value';
 import { newid } from '../lib/utils';
 
 /**
  * Struct types
  */
-export const TYPES: any = ({
+export const TYPES: IMapValue = ({
   '!': 'definition',
   '+': 'dialogue',
   '-': 'response',
