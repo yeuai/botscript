@@ -11,9 +11,10 @@ export class Trigger {
   pattern: RegExp | IActivator;
   hasWildcards: boolean;
 
-  constructor(pattern: string = '') {
+  constructor(pattern: string = '', id?: string) {
     this.original = pattern;
     this.source = pattern;
+    this.dialog = id || '';
   }
 
   /**

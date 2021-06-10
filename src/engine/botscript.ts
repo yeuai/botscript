@@ -199,6 +199,9 @@ export class BotScript extends EventEmitter {
         });
       }
     }
+
+    // sort triggers
+    this.context.sortTriggers();
     this.logger.info('Ready!');
     this.emit('ready');
     return this;

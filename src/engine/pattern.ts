@@ -199,18 +199,18 @@ export function getActivationConditions(dialog: Struct) {
  */
 export function getReplyDialogue(ctx: Context, req: Request)
   : IReply {
-  const vActivators: IMapActivator[] = [];
-  Array.from(ctx.dialogues.values())
-    .forEach(x => {
-      for (const trigger of x.triggers) {
-        const activator = transform(trigger, req, ctx, false);
-        vActivators.push({
-          id: x.name,
-          trigger,
-          pattern: activator,
-        })
+  // get sorted activators.
+  const vActivators: IMapActivator[]
+    = ctx.triggers.map(x => {
+      const activator = transform(x.source, req, ctx, false);
+      const item: IMapActivator = {
+        id: x.dialog,
+        trigger: x.source,
+        pattern: activator
       }
+      return item;
     });
+
   // transform activators and sort
   let vCaptures: IMapValue | undefined;
   let vDialogue: Struct | undefined;

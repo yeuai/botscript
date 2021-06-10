@@ -29,7 +29,7 @@ export class Context {
    */
   idctx: string;
 
-  triggers: Trigger[];
+  private _sorted_triggers: Trigger[];
 
   constructor() {
     this.definitions = new Map();
@@ -40,7 +40,7 @@ export class Context {
     this.plugins = new Map();
     this.directives = new Map();
     this.idctx = newid();
-    this.triggers = [];
+    this._sorted_triggers = [];
   }
 
   /**
@@ -53,10 +53,22 @@ export class Context {
   }
 
   /**
+   * Get all of context triggers
+   */
+  get triggers(): Trigger[] {
+    if (this._sorted_triggers?.length > 0) {
+      return this._sorted_triggers;
+    } else {
+      this.sortTriggers();
+      return this._sorted_triggers;
+    }
+  }
+
+  /**
    * Get struct type
    * @param type type
    */
-   private type(type: string): Map<string, Struct> {
+  private type(type: string): Map<string, Struct> {
     switch (type) {
       case 'definition':
         return this.definitions;
@@ -82,6 +94,17 @@ export class Context {
   add(struct: Struct) {
     this.type(struct.type).set(struct.name, struct);
     return this;
+  }
+
+  /**
+   * sort trigger
+   */
+  sortTriggers(): void {
+    this._sorted_triggers = [];
+    Array.from(this.dialogues.values())
+      .forEach(x => {
+        this._sorted_triggers.push(...x.triggers.map(t => new Trigger(t, x.name)));
+      });
   }
 
   /**
