@@ -96,29 +96,6 @@ export class BotScript extends EventEmitter {
   }
 
   /**
-   * Get struct type
-   * @param type type
-   */
-  private type(type: string): Map<string, Struct> {
-    switch (type) {
-      case 'definition':
-        return this.context.definitions;
-      case 'dialogue':
-        return this.context.dialogues;
-      case 'flows':
-        return this.context.flows;
-      case 'command':
-        return this.context.commands;
-      case 'plugin':
-        return this.context.plugins;
-      case 'directive':
-        return this.context.directives;
-      default:
-        throw new Error('Not found type: ' + type);
-    }
-  }
-
-  /**
    * Script structure parser
    * @param content
    */
@@ -162,8 +139,8 @@ export class BotScript extends EventEmitter {
 
     scripts.forEach(data => {
       const struct = Struct.parse(data);
-      // append bot data struct
-      this.type(struct.type).set(struct.name, struct);
+      // add bot context
+      this.context.add(struct);
     });
 
     return this;

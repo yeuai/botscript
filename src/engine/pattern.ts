@@ -8,6 +8,7 @@ import { IMapActivator } from '../interfaces/map-activator';
 import { evaluate } from '../lib/utils';
 import { IMapValue } from '../interfaces/map-value';
 import { IReply } from '../interfaces/reply';
+import { Trigger } from './trigger';
 
 const logger = new Logger('Pattern');
 
@@ -78,6 +79,40 @@ const findDefinitionReplacer = (
 
   return replacement;
 };
+
+/**
+ * Format pattern before transform
+ * @param pattern
+ * @param context
+ * @returns
+ */
+export function format(pattern: string, context: Context): Trigger {
+  const trigger = new Trigger(pattern);
+  // is it already a string pattern?
+  if (/^\/.+\/$/m.test(pattern)) {
+    trigger.source = (pattern.match(/^\/(.+)\/$/m) as RegExpMatchArray)[1];
+    return trigger;
+  } else {
+    // definition poplulation
+    const definitions = context.definitions;
+    // basic pattern
+    PATTERN_INTERPOLATIONS.forEach(p => {
+      const { search, replaceWith } = p;
+      if (typeof replaceWith === 'string') {
+        trigger.source = trigger.source.replace(search, replaceWith);
+      } else {
+        trigger.source = trigger.source.replace(search,
+          (substr, name) => {
+            const replacement = replaceWith(substr, name, definitions);
+            return findDefinitionReplacer(replacement, search, replaceWith, definitions);
+          },
+        );
+      }
+    });
+  }
+
+  return trigger;
+}
 
 /**
  * Transform & interpolate pattern
