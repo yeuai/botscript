@@ -100,11 +100,14 @@ export class Context {
    * sort trigger
    */
   sortTriggers(): void {
+    const vTriggers: Trigger[] = [];
     this._sorted_triggers = [];
     Array.from(this.dialogues.values())
       .forEach(x => {
-        this._sorted_triggers.push(...x.triggers.map(t => new Trigger(t, x.name)));
+        vTriggers.push(...x.triggers.map(t => new Trigger(t, x.name)));
       });
+    // sort & cache triggers.
+    this._sorted_triggers = vTriggers.sort(Trigger.sorter);
   }
 
   /**

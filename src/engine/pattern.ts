@@ -199,9 +199,14 @@ export function getActivationConditions(dialog: Struct) {
  */
 export function getReplyDialogue(ctx: Context, req: Request)
   : IReply {
+  // transform activators and sort
+  let vCaptures: IMapValue | undefined;
+  let vDialogue: Struct | undefined;
+
   // get sorted activators.
-  const vActivators: IMapActivator[]
-    = ctx.triggers.map(x => {
+  const vActivators: IMapActivator[] = ctx.triggers
+    // transform trigger into activator
+    .map(x => {
       const activator = transform(x.source, req, ctx, false);
       const item: IMapActivator = {
         id: x.dialog,
@@ -209,18 +214,14 @@ export function getReplyDialogue(ctx: Context, req: Request)
         pattern: activator
       }
       return item;
-    });
-
-  // transform activators and sort
-  let vCaptures: IMapValue | undefined;
-  let vDialogue: Struct | undefined;
-  vActivators
+    })
+    // filter pattern candidates
     .filter(x => {
       logger.debug(`Test candidate: [${req.message}][${x.pattern.source}]`);
       return x.pattern.test(req.message);
-    })
-    // sort activator in descending order of length
-    .sort((a, b) => b.pattern.source.length - a.pattern.source.length)
+    });
+  // compare & matching conditional dialog
+  vActivators
     // map info
     .some(x => {
       const captures = execPattern(req.message, x.pattern);
@@ -247,7 +248,8 @@ export function getReplyDialogue(ctx: Context, req: Request)
       return true;
     });
   return {
-    captures: vCaptures,
     dialog: vDialogue,
+    captures: vCaptures,
+    candidate: vActivators.length,
   };
 }
