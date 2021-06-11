@@ -8,6 +8,7 @@ import { IMapActivator } from '../interfaces/map-activator';
 import { evaluate } from '../lib/utils';
 import { IMapValue } from '../interfaces/map-value';
 import { IReply } from '../interfaces/reply';
+import { Trigger } from './trigger';
 
 const logger = new Logger('Pattern');
 
@@ -78,6 +79,40 @@ const findDefinitionReplacer = (
 
   return replacement;
 };
+
+/**
+ * Format pattern before transform
+ * @param pattern
+ * @param context
+ * @returns
+ */
+export function format(pattern: string, context: Context): Trigger {
+  const trigger = new Trigger(pattern);
+  // is it already a string pattern?
+  if (/^\/.+\/$/m.test(pattern)) {
+    trigger.source = (pattern.match(/^\/(.+)\/$/m) as RegExpMatchArray)[1];
+    return trigger;
+  } else {
+    // definition poplulation
+    const definitions = context.definitions;
+    // basic pattern
+    PATTERN_INTERPOLATIONS.forEach(p => {
+      const { search, replaceWith } = p;
+      if (typeof replaceWith === 'string') {
+        trigger.source = trigger.source.replace(search, replaceWith);
+      } else {
+        trigger.source = trigger.source.replace(search,
+          (substr, name) => {
+            const replacement = replaceWith(substr, name, definitions);
+            return findDefinitionReplacer(replacement, search, replaceWith, definitions);
+          },
+        );
+      }
+    });
+  }
+
+  return trigger;
+}
 
 /**
  * Transform & interpolate pattern
@@ -164,28 +199,29 @@ export function getActivationConditions(dialog: Struct) {
  */
 export function getReplyDialogue(ctx: Context, req: Request)
   : IReply {
-  const vActivators: IMapActivator[] = [];
-  Array.from(ctx.dialogues.values())
-    .forEach(x => {
-      for (const trigger of x.triggers) {
-        const activator = transform(trigger, req, ctx, false);
-        vActivators.push({
-          id: x.name,
-          trigger,
-          pattern: activator,
-        })
-      }
-    });
   // transform activators and sort
   let vCaptures: IMapValue | undefined;
   let vDialogue: Struct | undefined;
-  vActivators
+
+  // get sorted activators.
+  const vActivators: IMapActivator[] = ctx.triggers
+    // transform trigger into activator
+    .map(x => {
+      const activator = transform(x.source, req, ctx, false);
+      const item: IMapActivator = {
+        id: x.dialog,
+        trigger: x.source,
+        pattern: activator
+      }
+      return item;
+    })
+    // filter pattern candidates
     .filter(x => {
       logger.debug(`Test candidate: [${req.message}][${x.pattern.source}]`);
       return x.pattern.test(req.message);
-    })
-    // sort activator in descending order of length
-    .sort((a, b) => b.pattern.source.length - a.pattern.source.length)
+    });
+  // compare & matching conditional dialog
+  vActivators
     // map info
     .some(x => {
       const captures = execPattern(req.message, x.pattern);
@@ -212,7 +248,8 @@ export function getReplyDialogue(ctx: Context, req: Request)
       return true;
     });
   return {
-    captures: vCaptures,
     dialog: vDialogue,
+    captures: vCaptures,
+    candidate: vActivators.length,
   };
 }
