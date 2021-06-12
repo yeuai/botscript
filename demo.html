@@ -5,23 +5,11 @@
   <meta charset="UTF-8" />
   <title>Hello BotScript!</title>
   <link rel="icon" href="data:,">
-
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://widget.botscript.ai/styles.css" rel="stylesheet">
-
   <!--link app scripts-->
   <script src="https://play.botscript.ai/botscript.ai.js"></script>
   <script src="https://play.botscript.ai/botscript.plugins.js"></script>
-  <script src="https://widget.botscript.ai/botscript-widget.js"></script>
-
-  <style>
-    botscript-chatbox {
-      position: fixed;
-      bottom: 0;
-      right: 0;
-    }
-  </style>
 </head>
 
 <body>
@@ -31,25 +19,23 @@
       <h1 class="display-3">Hello, BotScript!</h1>
       <p>A text-based scripting language, dialog system and bot engine for Conversational User Interfaces</p>
       <p>
-        <a class="btn-primary btn-lg chat-box-toggle" href="#" style="float: none;" onclick="toogleChatbox()" role="button">Chat Now &raquo;</a>
-        <iframe src="https://ghbtns.com/github-btn.html?user=yeuai&repo=botscript&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+        <a class="btn-primary btn-lg" href="https://v2.botscript.ai/#/register" target="_blank">Register Now &raquo;</a>
+        <iframe src="https://ghbtns.com/github-btn.html?user=yeuai&repo=botscript&type=star&count=true&size=large"
+          frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
       </p>
     </div>
   </div>
   <div class="container">
-    <botscript-chatbox id="chatbox" auto-reply="false"></botscript-chatbox>
     <h2 id="greeting">Do you have any questions to ask BotScript?</h2>
     <p id="messages"></p>
   </div>
-
+  <div id="fb-root"></div>
+  <div id="fb-customer-chat" class="fb-customerchat"></div>
   <script>
     const { BotScript } = BotScriptAI;
     const bot = new BotScript();
     const urlParams = new URLSearchParams(window.location.search);
     const botId = urlParams.get('bot');
-    const chatbox = document.getElementById('chatbox');
-    console.log('autoReply: ', chatbox.autoReply);
-    chatbox.autoReply = false;
 
     bot.parse('> addTimeNow');
     bot.parse(`
@@ -105,19 +91,6 @@
         await sendBot(bot.newRequest('Show my list'));
       });
 
-    // add reply message
-    chatbox.addEventListener(
-      'messageAdded',
-      async (evt) => {
-        const {text, type} = evt.detail;
-        if (type === 'sent') {
-          const request = bot.newRequest(text);
-          const reply = await bot.handleAsync(request);
-          chatbox.addReply({message: reply.speechResponse});
-        }
-      }
-    );
-
     /**
      * Send bot message and wait response.
      * */
@@ -135,12 +108,28 @@
       elem.innerHTML = message;
       chatbox.append(elem);
     }
-
-    function toogleChatbox() {
-      chatbox.visible = !chatbox.visible;
-    }
   </script>
 
+  <script>
+    // fb-customer-chat.js
+    var chatbox = document.getElementById('fb-customer-chat');
+    chatbox.setAttribute("page_id", "104330261088219");
+    chatbox.setAttribute("attribution", "biz_inbox");
+    window.fbAsyncInit = function () {
+      FB.init({
+        xfbml: true,
+        version: 'v11.0'
+      });
+    };
+
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = 'https://connect.facebook.net/vi_VN/sdk/xfbml.customerchat.js';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
 </body>
 
 </html>
