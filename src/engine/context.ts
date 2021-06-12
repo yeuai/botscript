@@ -4,6 +4,7 @@ import { Request } from './request';
 import { Struct } from './struct';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
+import { Trigger } from './trigger';
 
 const logger = new Logger('Context');
 
@@ -28,6 +29,8 @@ export class Context {
    */
   idctx: string;
 
+  private _sorted_triggers: Trigger[];
+
   constructor() {
     this.definitions = new Map();
     this.dialogues = new Map();
@@ -37,6 +40,7 @@ export class Context {
     this.plugins = new Map();
     this.directives = new Map();
     this.idctx = newid();
+    this._sorted_triggers = [];
   }
 
   /**
@@ -46,6 +50,64 @@ export class Context {
     return this.definitions.has('botid')
       ? (this.definitions.get('botid') as Struct).value
       : this.idctx;
+  }
+
+  /**
+   * Get all of context triggers
+   */
+  get triggers(): Trigger[] {
+    if (this._sorted_triggers?.length > 0) {
+      return this._sorted_triggers;
+    } else {
+      this.sortTriggers();
+      return this._sorted_triggers;
+    }
+  }
+
+  /**
+   * Get struct type
+   * @param type type
+   */
+  private type(type: string): Map<string, Struct> {
+    switch (type) {
+      case 'definition':
+        return this.definitions;
+      case 'dialogue':
+        return this.dialogues;
+      case 'flows':
+        return this.flows;
+      case 'command':
+        return this.commands;
+      case 'plugin':
+        return this.plugins;
+      case 'directive':
+        return this.directives;
+      default:
+        throw new Error('Not found type: ' + type);
+    }
+  }
+
+  /**
+   * Add context struct
+   * @param struct
+   */
+  add(struct: Struct) {
+    this.type(struct.type).set(struct.name, struct);
+    return this;
+  }
+
+  /**
+   * sort trigger
+   */
+  sortTriggers(): void {
+    const vTriggers: Trigger[] = [];
+    this._sorted_triggers = [];
+    Array.from(this.dialogues.values())
+      .forEach(x => {
+        vTriggers.push(...x.triggers.map(t => new Trigger(t, x.name)));
+      });
+    // sort & cache triggers.
+    this._sorted_triggers = vTriggers.sort(Trigger.sorter);
   }
 
   /**

@@ -4,6 +4,11 @@ import { Request } from './request';
 import { Context } from './context';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
+import { IMapActivator } from '../interfaces/map-activator';
+import { evaluate } from '../lib/utils';
+import { IMapValue } from '../interfaces/map-value';
+import { IReply } from '../interfaces/reply';
+import { Trigger } from './trigger';
 
 const logger = new Logger('Pattern');
 
@@ -76,6 +81,40 @@ const findDefinitionReplacer = (
 };
 
 /**
+ * Format pattern before transform
+ * @param pattern
+ * @param context
+ * @returns
+ */
+export function format(pattern: string, context: Context): Trigger {
+  const trigger = new Trigger(pattern);
+  // is it already a string pattern?
+  if (/^\/.+\/$/m.test(pattern)) {
+    trigger.source = (pattern.match(/^\/(.+)\/$/m) as RegExpMatchArray)[1];
+    return trigger;
+  } else {
+    // definition poplulation
+    const definitions = context.definitions;
+    // basic pattern
+    PATTERN_INTERPOLATIONS.forEach(p => {
+      const { search, replaceWith } = p;
+      if (typeof replaceWith === 'string') {
+        trigger.source = trigger.source.replace(search, replaceWith);
+      } else {
+        trigger.source = trigger.source.replace(search,
+          (substr, name) => {
+            const replacement = replaceWith(substr, name, definitions);
+            return findDefinitionReplacer(replacement, search, replaceWith, definitions);
+          },
+        );
+      }
+    });
+  }
+
+  return trigger;
+}
+
+/**
  * Transform & interpolate pattern
  * @param pattern dialogue trigger
  * @param context bot data context
@@ -124,7 +163,8 @@ export function transform(pattern: string, request: Request, context: Context, n
  * @param input
  * @param pattern
  */
-export function execPattern(input: string, pattern: RegExp | IActivator) {
+export function execPattern(input: string, pattern: RegExp | IActivator)
+  : IMapValue {
   const result = pattern instanceof RegExp ? XRegExp.exec(input, pattern) : pattern.exec(input);
 
   // no captures!
@@ -150,4 +190,66 @@ export function getActivators(dialog: Struct, ctx: Context, req: Request, notEqu
 export function getActivationConditions(dialog: Struct) {
   // exclude conditional reply
   return dialog.conditions.filter(x => !/>/.test(x));
+}
+
+/**
+ * - Get sorted trigger activators
+ * - Explore request message
+ * - Extract matched pattern
+ */
+export function getReplyDialogue(ctx: Context, req: Request)
+  : IReply {
+  // transform activators and sort
+  let vCaptures: IMapValue = {};
+  let vDialogue: Struct | undefined;
+
+  // get sorted activators.
+  const vActivators: IMapActivator[] = ctx.triggers
+    // transform trigger into activator
+    .map(x => {
+      const activator = transform(x.source, req, ctx, false);
+      const item: IMapActivator = {
+        id: x.dialog,
+        trigger: x.source,
+        pattern: activator
+      }
+      return item;
+    })
+    // filter pattern candidates
+    .filter(x => {
+      logger.debug(`Test candidate: [${req.message}][${x.pattern.source}]`);
+      return x.pattern.test(req.message);
+    });
+  // compare & matching conditional dialog
+  vActivators
+    // map info
+    .some(x => {
+      const captures = execPattern(req.message, x.pattern);
+      const knowledges = { ...req.variables, ...captures, $previous: req.previous, $input: req.message };
+      logger.debug(`Evaluate dialogue: ${x.pattern.source} => captures:`, captures);
+
+      // Test conditional activation
+      // - A conditions begins with star symbol: *
+      // - Syntax: * expression
+      const dialog = ctx.getDialogue(x.id) as Struct;
+      const conditions = getActivationConditions(dialog);
+      if (conditions.length > 0) {
+        for (const cond of conditions) {
+          const expr = cond.replace(/^[*]/, '');
+          const vTestResult = evaluate(expr, knowledges);
+          if (!vTestResult) {
+            return false;
+          }
+        }
+      }
+      // summary knowledges
+      vDialogue = dialog;
+      vCaptures = captures;
+      return true;
+    });
+  return {
+    dialog: vDialogue,
+    captures: vCaptures,
+    candidate: vActivators.length,
+  };
 }
