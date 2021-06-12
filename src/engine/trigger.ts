@@ -1,6 +1,6 @@
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
-import { wordsCount } from '../lib/word-count';
+import { wordsCount } from '../vendor/words-count/words-count';
 
 const logger = new Logger('Trigger');
 
