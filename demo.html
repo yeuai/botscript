@@ -20,7 +20,8 @@
       <p>A text-based scripting language, dialog system and bot engine for Conversational User Interfaces</p>
       <p>
         <a class="btn-primary btn-lg" href="https://v2.botscript.ai/#/register" target="_blank">Register Now &raquo;</a>
-        <iframe src="https://ghbtns.com/github-btn.html?user=yeuai&repo=botscript&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+        <iframe src="https://ghbtns.com/github-btn.html?user=yeuai&repo=botscript&type=star&count=true&size=large"
+          frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
       </p>
     </div>
   </div>
@@ -28,7 +29,8 @@
     <h2 id="greeting">Do you have any questions to ask BotScript?</h2>
     <p id="messages"></p>
   </div>
-
+  <div id="fb-root"></div>
+  <div id="fb-customer-chat" class="fb-customerchat"></div>
   <script>
     const { BotScript } = BotScriptAI;
     const bot = new BotScript();
@@ -108,6 +110,26 @@
     }
   </script>
 
+  <script>
+    // fb-customer-chat.js
+    var chatbox = document.getElementById('fb-customer-chat');
+    chatbox.setAttribute("page_id", "104330261088219");
+    chatbox.setAttribute("attribution", "biz_inbox");
+    window.fbAsyncInit = function () {
+      FB.init({
+        xfbml: true,
+        version: 'v11.0'
+      });
+    };
+
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = 'https://connect.facebook.net/vi_VN/sdk/xfbml.customerchat.js';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
 </body>
 
 </html>
