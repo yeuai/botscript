@@ -200,7 +200,7 @@ export function getActivationConditions(dialog: Struct) {
 export function getReplyDialogue(ctx: Context, req: Request)
   : IReply {
   // transform activators and sort
-  let vCaptures: IMapValue | undefined;
+  let vCaptures: IMapValue = {};
   let vDialogue: Struct | undefined;
 
   // get sorted activators.

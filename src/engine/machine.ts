@@ -160,27 +160,28 @@ export class BotMachine {
             return false;
           },
           isDialogue: (context, event) => {
-            const { req, res, ctx } = context;
             this.logger.info('Find dialogue candidate ...');
-            res.reply = getReplyDialogue(ctx, req);
+            const { req, res, ctx } = context;
+            const reply = getReplyDialogue(ctx, req);
+            // assign reply
+            res.reply = reply;
 
-            if (res.reply?.dialog) {
-              const dialog = res.reply.dialog;
+            if (reply.dialog) {
+              const dialog = reply.dialog;
               req.currentDialogue = dialog.name;
               req.currentFlowIsResolved = true;
               if (!req.isFlowing) {
                 // process purpose bot
                 this.logger.debug('Found a dialogue candidate: ', dialog.name, req.variables);
-                req.currentDialogue = dialog.name;
                 req.originalDialogue = dialog.name;
                 req.flows = dialog.flows;
                 req.missingFlows = dialog.flows;
-                Object.assign(req.variables, res.reply.captures);
+                Object.assign(req.variables, reply.captures);
                 return true;
               } else {
-                this.logger.info('Not found dialogue candidate!');
+                this.logger.info(`Dialogue is flowing: [current=${req.currentDialogue},original=${req.originalDialogue}]`);
                 // assign session captured flows
-                Object.assign(req.$flows, res.reply?.captures, { [req.currentFlow]: res.reply?.captures?.$1 });
+                Object.assign(req.$flows, reply.captures, { [req.currentFlow]: reply.captures.$1 });
               }
             }
             return false;
