@@ -25,15 +25,16 @@ To get started playing with BotScript, you must follows the following rules:
 
 ## definition
 
-A `definition` is an identifier of an entity, a list or a variable.
+A `definition` is an identifier of an entity, a group, a list or a property.
 
 The syntax start with symbol `!`:
 
 ```bash
-! name CuteBot
+! name
+- CuteBot
 ```
 
-The `CuteBot` is value of the variable `name`.
+The `CuteBot` is value instance of the property `name`. Think of bots with many names!
 
 To define a list of items, just enter item in a new line which started with symbol `-`:
 
@@ -43,6 +44,22 @@ To define a list of items, just enter item in a new line which started with symb
 - green
 - blue
 ```
+
+Also, you can define intents by data samples as following:
+
+! intent:goodbye
+- bye
+- goodbye
+- see you around
+- see you later
+- talk to you later
+
+! intent:ask_identity
+- who are you
+- what is your name
+- how should i address you
+- may i know your name
+- are you a bot
 
 ## comment
 
