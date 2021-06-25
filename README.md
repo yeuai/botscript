@@ -47,6 +47,7 @@ To define a list of items, just enter item in a new line which started with symb
 
 Also, you can define intents by data samples as following:
 
+```bash
 ! intent:goodbye
 - bye
 - goodbye
@@ -60,6 +61,7 @@ Also, you can define intents by data samples as following:
 - how should i address you
 - may i know your name
 - are you a bot
+```
 
 ## comment
 
