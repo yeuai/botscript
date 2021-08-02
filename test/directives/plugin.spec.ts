@@ -48,6 +48,7 @@ describe('Directive: /plugin', () => {
     req.variables.today = new Date().getDate();
 
     return (req, ctx) => {
+      // do post-processing.
       if (req.speechResponse === 'Hello') {
         req.speechResponse = 'Hello Human!';
       }

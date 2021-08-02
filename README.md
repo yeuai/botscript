@@ -572,6 +572,13 @@ Syntax:
 # normalize message or what you need
 
 console.log('Human say: ', req.message)
+
+return (req, ctx) => {
+  // do post-processing.
+  if (req.isNotResponse) {
+    req.speechResponse = 'I dont know!';
+  }
+}
 ```
 ~~~
 
