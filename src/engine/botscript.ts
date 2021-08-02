@@ -176,7 +176,7 @@ export class BotScript extends EventEmitter {
         }
       } else if (/^plugin/.test(item)) {
         const vPlugin = this.context.directives.get(item) as Struct;
-        const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code);
+        const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code) as string;
         const vName = vPlugin.name.replace(/^plugin:/, '');
         this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
         // add custom plugin
@@ -186,13 +186,17 @@ export class BotScript extends EventEmitter {
           if (typeof window === 'undefined') {
             this.logger.debug('Execute plugin in node!');
             const { VmRunner } = await import('../lib/vm2');
-            // TODO: support post-processing
-            await VmRunner.run(vCode, { req, ctx });
+            // support post-processing
+            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx });
+            this.logger.debug(`Plugin [${vName}] has post-processing function!`);
+            return vPostProcessingCallback;
           } else {
             this.logger.debug('Execute plugin in browser!');
             const { VmRunner } = await import('../lib/vm');
-            // TODO: support post-processing
-            await VmRunner.run(vCode, { req, ctx });
+            // support post-processing
+            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx });
+            this.logger.debug(`Plugin [${vName}] has post-processing function!`);
+            return vPostProcessingCallback;
           }
 
           this.logger.debug(`Execute plugin: ${vName} => done!`);
