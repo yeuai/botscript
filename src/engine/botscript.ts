@@ -151,14 +151,14 @@ export class BotScript extends EventEmitter {
             this.logger.debug('Execute plugin in node!');
             const { VmRunner } = await import('../lib/vm2');
             // support post-processing
-            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx });
+            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx, utils });
             this.logger.debug(`Plugin [${vName}] has post-processing function!`);
             return vPostProcessingCallback;
           } else {
             this.logger.debug('Execute plugin in browser!');
             const { VmRunner } = await import('../lib/vm');
             // support post-processing
-            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx });
+            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx, utils });
             this.logger.debug(`Plugin [${vName}] has post-processing function!`);
             return vPostProcessingCallback;
           }
@@ -200,7 +200,6 @@ export class BotScript extends EventEmitter {
     \`\`\`
     `);
     const vDirectivePlugin = Struct.parse(vDocument[0]);
-    console.log(`Add plugin: ${vDirectivePlugin.name}, type(${vDirectivePlugin.type})`);
     this.context.directives.set(vDirectivePlugin.name, vDirectivePlugin);
   }
 
@@ -275,7 +274,6 @@ export class BotScript extends EventEmitter {
         // deconstruct group of plugins from (struct:head)
         info.head.forEach(p => {
           const vPluginName = `plugin:${p}`;
-          console.log(vPluginName, this.context.directives);
           if (this.context.directives.has(vPluginName)) {
             this.logger.debug('context plugin is activated: %s', p);
             const pluginHandler = this.context.directives.get(vPluginName)?.value as PluginCallback;

@@ -125,7 +125,6 @@ export class Struct {
    * @param data
    */
   static parse(data: string) {
-    console.log('Parsing: ' + data);
     const struct = new Struct(data);
 
     // valuable data struct
@@ -182,7 +181,6 @@ export class Struct {
         struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
         break;
       case TYPES['/']:  // directives
-        console.log('Directive heads: ', struct.head);
         const sepIndex = struct.head[0].indexOf(':');
         const name = struct.head[0].replace(/\s+/g, '');
         struct.name = name;

@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "ES2015",
     "module": "commonjs",
-    "lib": [
-      "dom",
-      "es2018",
-      "es2019.string"
-    ],
+    "lib": ["dom", "es2018", "es2019.string"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -16,7 +12,5 @@
     "strictPropertyInitialization": false,
     "esModuleInterop": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
