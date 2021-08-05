@@ -85,10 +85,47 @@ export class Struct {
   }
 
   /**
+   * Normalize script content to block of structs
+   * @param content
+   */
+  static normalize(content: string): string[] {
+    const vContent = content
+      // convert CRLF into LF
+      .replace(/\r\n/g, '\n')
+      // remove spacing
+      .replace(/\n +/g, '\n')
+      // remove comments
+      .replace(/^#.*$\n/igm, '')
+      // remove inline comment
+      .replace(/# .*$\n/igm, '')
+      // separate definition struct (normalize)
+      .replace(/^!/gm, '\n!')
+      // concat multiple lines (normalize)
+      .replace(/\n\^/gm, ' ')
+      // normalize javascript code block
+      .replace(/```js([\s\S]*)```/g, (match) => {
+        const vBlockNormalize = match.replace(/\n+/g, '\n');
+        return vBlockNormalize;
+      })
+      // remove spaces
+      .trim();
+
+    const scripts = vContent
+      // split structure by linebreaks
+      .split(/\n{2,}/)
+      // remove empty lines
+      .filter(script => script)
+      // trim each of them
+      .map(script => script.trim());
+    return scripts;
+  }
+
+  /**
    * Parse data to script structure
    * @param data
    */
   static parse(data: string) {
+    console.log('Parsing: ' + data);
     const struct = new Struct(data);
 
     // valuable data struct
@@ -145,6 +182,7 @@ export class Struct {
         struct.conditions = struct.body.filter(x => x.startsWith('*')).map(x => x.replace(/^\*\s*/, ''));
         break;
       case TYPES['/']:  // directives
+        console.log('Directive heads: ', struct.head);
         const sepIndex = struct.head[0].indexOf(':');
         const name = struct.head[0].replace(/\s+/g, '');
         struct.name = name;

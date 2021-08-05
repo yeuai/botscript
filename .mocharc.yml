@@ -10,3 +10,4 @@ spec:
   # - test/engine/conditions.spec.ts
   # - test/dialogue/sorted.spec.ts
   # - test/directives/plugin.spec.ts
+  # - test/plugin/plugin.spec.ts

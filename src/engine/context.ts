@@ -28,6 +28,7 @@ export class Context {
    * id context
    */
   idctx: string;
+  ready: boolean;
 
   private _sorted_triggers: Trigger[];
 
@@ -108,6 +109,7 @@ export class Context {
       });
     // sort & cache triggers.
     this._sorted_triggers = vTriggers.sort(Trigger.sorter);
+    this.ready = true;
   }
 
   /**

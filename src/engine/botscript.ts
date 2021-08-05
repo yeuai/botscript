@@ -32,12 +32,6 @@ export class BotScript extends EventEmitter {
   logger: Logger;
 
   /**
-   * plugins system
-   * returns: void | Promise<any> | PluginCallback
-   */
-  plugins: Map<string, (req: Request, ctx: Context) => void | Promise<any> | PluginCallback>;
-
-  /**
    * Last request
    */
   lastRequest?: Request;
@@ -47,7 +41,6 @@ export class BotScript extends EventEmitter {
     this.context = new Context();
     this.logger = new Logger('Engine');
     this.machine = new BotMachine();
-    this.plugins = new Map();
 
     // add built-in plugins
     this.plugin('addTimeNow', addTimeNow);
@@ -100,42 +93,12 @@ export class BotScript extends EventEmitter {
    * @param content
    */
   parse(content: string) {
-    const vContent = content
-      // convert CRLF into LF
-      .replace(/\r\n/g, '\n')
-      // remove spacing
-      .replace(/\n +/g, '\n')
-      // remove comments
-      .replace(/^#.*$\n/igm, '')
-      // remove inline comment
-      .replace(/# .*$\n/igm, '')
-      // separate definition struct (normalize)
-      .replace(/^!/gm, '\n!')
-      // concat multiple lines (normalize)
-      .replace(/\n\^/gm, ' ')
-      // normalize javascript code block
-      .replace(/```js([\s\S]*)```/g, (match) => {
-        const vBlockNormalize = match.replace(/\n+/g, '\n');
-        return vBlockNormalize;
-      })
-      // remove spaces
-      .trim();
-
-    if (!vContent) {
-      // do nothing
-      return this;
+    if (!content) {
+      throw new Error('Cannot parse script: null or empty!');
     }
-
+    const scripts = Struct.normalize(content);
     // notify event parse botscript data content
-    this.emit('parse', vContent);
-
-    const scripts = vContent
-      // split structure by linebreaks
-      .split(/\n{2,}/)
-      // remove empty lines
-      .filter(script => script)
-      // trim each of them
-      .map(script => script.trim());
+    this.emit('parse', scripts);
 
     scripts.forEach(data => {
       const struct = Struct.parse(data);
@@ -165,6 +128,7 @@ export class BotScript extends EventEmitter {
   }
 
   async init() {
+    // TODO: Move to context initialization
     // parse include directive
     for (const item of this.context.directives.keys()) {
       this.logger.info('Preprocess directive:', item);
@@ -179,8 +143,8 @@ export class BotScript extends EventEmitter {
         const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code) as string;
         const vName = vPlugin.name.replace(/^plugin:/, '');
         this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
-        // add custom plugin
-        this.plugin(vName, async (req, ctx) => {
+        // add custom plugin & save handler in it own directive
+        vPlugin.value = async (req: Request, ctx: Context) => {
           this.logger.debug('Execute plugin: ' + vName);
           // run in browser or node
           if (typeof window === 'undefined') {
@@ -198,9 +162,7 @@ export class BotScript extends EventEmitter {
             this.logger.debug(`Plugin [${vName}] has post-processing function!`);
             return vPostProcessingCallback;
           }
-
-          this.logger.debug(`Execute plugin: ${vName} => done!`);
-        });
+        };
       }
     }
 
@@ -230,7 +192,16 @@ export class BotScript extends EventEmitter {
    * @param func
    */
   plugin(name: string, func: PluginCallback) {
-    this.plugins.set(name, func);
+    // this.plugins.set(name, func);
+    const vDocument = Struct.normalize(`
+    /plugin: ${name}
+    \`\`\`js
+    (${func.toString()})(req, ctx)
+    \`\`\`
+    `);
+    const vDirectivePlugin = Struct.parse(vDocument[0]);
+    console.log(`Add plugin: ${vDirectivePlugin.name}, type(${vDirectivePlugin.type})`);
+    this.context.directives.set(vDirectivePlugin.name, vDirectivePlugin);
   }
 
   /**
@@ -247,10 +218,13 @@ export class BotScript extends EventEmitter {
     // req.isForward = false;
 
     req = request;
+    if (!context.ready) {
+      // TODO: do context.init();
+      await this.init();
+    }
 
     // fire plugin for pre-processing
-    const plugins = [...context.plugins.keys()];
-    const postProcessing = await this.preProcessRequest(plugins, req, context);
+    const postProcessing = await this.preProcessRequest(req, context);
 
     // fires state machine to resolve request
     this.machine.resolve(req, context);
@@ -283,16 +257,13 @@ export class BotScript extends EventEmitter {
    * @param req
    * @param ctx
    */
-  private async preProcessRequest(plugins: string[], req: Request, ctx: Context) {
+  private async preProcessRequest(req: Request, ctx: Context) {
     const postProcessing: PluginCallback[] = [];
     const activatedPlugins: PluginCallback[] = [];
+    const plugins = [...ctx.plugins.keys()];
 
     plugins
       .forEach(x => {
-        if (!ctx.plugins.has(x)) {
-          return false;
-        }
-
         // check context conditional plugin for activation
         const info = ctx.plugins.get(x) as Struct;
         for (const cond of info.conditions) {
@@ -303,12 +274,14 @@ export class BotScript extends EventEmitter {
 
         // deconstruct group of plugins from (struct:head)
         info.head.forEach(p => {
-          if (this.plugins.has(p)) {
+          const vPluginName = `plugin:${p}`;
+          console.log(vPluginName, this.context.directives);
+          if (this.context.directives.has(vPluginName)) {
             this.logger.debug('context plugin is activated: %s', p);
-            const pluginGroup = this.plugins.get(p) as PluginCallback;
-            activatedPlugins.push(pluginGroup);
+            const pluginHandler = this.context.directives.get(vPluginName)?.value as PluginCallback;
+            activatedPlugins.push(pluginHandler);
           } else {
-            this.logger.warn('context plugin not found: %s!', p);
+            this.logger.warn('context plugin not found: %s!', vPluginName);
           }
         });
       });
