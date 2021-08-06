@@ -1,4 +1,5 @@
 import { NodeVM, VMScript } from 'vm2';
+import { PluginWrapperCallback } from '../interfaces/types';
 
 export class VmRunner {
   /**
@@ -23,7 +24,7 @@ export class VmRunner {
    * @param sandbox
    * @returns
    */
-  static run(code: string, sandbox: any): () => void {
+  static run(code: string, sandbox: any): PluginWrapperCallback {
     const vm = new NodeVM({
       wrapper: 'none',
       sandbox,

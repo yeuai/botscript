@@ -65,3 +65,23 @@ export function wrapCode(plugin: string): string {
     }
   })({req, ctx, utils, logger})`;
 }
+
+/**
+ * Extract plugin code & wrap it for Browser!
+ * @param plugin
+ * @returns
+ */
+export function wrapCodeBrowser(plugin: string): string {
+  const vCode = plugin
+    .replace(/```js([^`]*)```/, (m: string, code: string) => code)
+    .replace(/~~~js([^~]*)~~~/, (m: string, code: string) => code);
+
+  return `
+  () => (async ({req, ctx, utils, logger}) => {
+    try {
+      ${vCode}
+    } catch (error) {
+      logger.error('Execute error!', error);
+    }
+  })({req, ctx, utils, logger})`;
+}
