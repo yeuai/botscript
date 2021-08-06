@@ -8,8 +8,8 @@ import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN, REGEX_COND_LAMDA_EXPR } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
-import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 import { createNextRequest } from './next';
+import { wrapCode, PLUGINS_BUILT_IN } from '../plugins/built-in';
 
 /**
  * BotScript dialogue engine
@@ -41,12 +41,7 @@ export class BotScript extends EventEmitter {
     this.context = new Context();
     this.logger = new Logger('Engine');
     this.machine = new BotMachine();
-
-    // add built-in plugins
-    this.plugin('addTimeNow', addTimeNow);
-    this.plugin('noReplyHandle', noReplyHandle);
-    this.plugin('normalize', normalize);
-    this.plugin('nlu', nlu);
+    this.parse(PLUGINS_BUILT_IN);
 
     // add built-in patterns (NLU)
     this.addPatternCapability({
@@ -129,7 +124,8 @@ export class BotScript extends EventEmitter {
 
   async init() {
     // TODO: Move to context initialization
-    // parse include directive
+    // parse directives
+    const logger = new Logger('Plugin');
     for (const item of this.context.directives.keys()) {
       this.logger.info('Preprocess directive:', item);
       if (/^include/.test(item)) {
@@ -140,26 +136,28 @@ export class BotScript extends EventEmitter {
         }
       } else if (/^plugin/.test(item)) {
         const vPlugin = this.context.directives.get(item) as Struct;
-        const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code) as string;
+        const vCode = wrapCode(vPlugin.value);
         const vName = vPlugin.name.replace(/^plugin:/, '');
-        this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
+        // this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
         // add custom plugin & save handler in it own directive
         vPlugin.value = async (req: Request, ctx: Context) => {
           this.logger.debug('Execute plugin: ' + vName);
           // run in browser or node
           if (typeof window === 'undefined') {
-            this.logger.debug('Execute plugin in node!');
+            this.logger.debug(`Execute /plugin: ${vName} in node!`);
             const { VmRunner } = await import('../lib/vm2');
+            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
+            const vPostProcessingCallback = await vPreProcess();
             // support post-processing
-            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx, utils });
-            this.logger.debug(`Plugin [${vName}] has post-processing function!`);
+            this.logger.debug(`Plugin [${vName}] has pre-processed!`);
             return vPostProcessingCallback;
           } else {
-            this.logger.debug('Execute plugin in browser!');
+            this.logger.debug(`Execute /plugin: ${vName} in browser!`);
             const { VmRunner } = await import('../lib/vm');
+            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
+            const vPostProcessingCallback = await vPreProcess();
             // support post-processing
-            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx, utils });
-            this.logger.debug(`Plugin [${vName}] has post-processing function!`);
+            this.logger.debug(`Plugin [${vName}] has pre-processed!`);
             return vPostProcessingCallback;
           }
         };
@@ -184,23 +182,6 @@ export class BotScript extends EventEmitter {
   }) {
     this.context.patterns.set(name, { name, match, func });
     return this;
-  }
-
-  /**
-   * Add plugin system
-   * @param name
-   * @param func
-   */
-  plugin(name: string, func: PluginCallback) {
-    // this.plugins.set(name, func);
-    const vDocument = Struct.normalize(`
-    /plugin: ${name}
-    \`\`\`js
-    (${func.toString()})(req, ctx)
-    \`\`\`
-    `);
-    const vDirectivePlugin = Struct.parse(vDocument[0]);
-    this.context.directives.set(vDirectivePlugin.name, vDirectivePlugin);
   }
 
   /**
@@ -274,9 +255,9 @@ export class BotScript extends EventEmitter {
         // deconstruct group of plugins from (struct:head)
         info.head.forEach(p => {
           const vPluginName = `plugin:${p}`;
-          if (this.context.directives.has(vPluginName)) {
+          if (ctx.directives.has(vPluginName)) {
             this.logger.debug('context plugin is activated: %s', p);
-            const pluginHandler = this.context.directives.get(vPluginName)?.value as PluginCallback;
+            const pluginHandler = ctx.directives.get(vPluginName)?.value as PluginCallback;
             activatedPlugins.push(pluginHandler);
           } else {
             this.logger.warn('context plugin not found: %s!', vPluginName);

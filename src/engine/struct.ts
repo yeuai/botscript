@@ -103,7 +103,11 @@ export class Struct {
       // concat multiple lines (normalize)
       .replace(/\n\^/gm, ' ')
       // normalize javascript code block
-      .replace(/```js([\s\S]*)```/g, (match) => {
+      .replace(/```js([^`]*)```/gm, (match) => {
+        const vBlockNormalize = match.replace(/\n+/g, '\n');
+        return vBlockNormalize;
+      })
+      .replace(/~~~js([^~]*)~~~/gm, (match) => {
         const vBlockNormalize = match.replace(/\n+/g, '\n');
         return vBlockNormalize;
       })

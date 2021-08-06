@@ -69,11 +69,17 @@ describe('Plugin', () => {
 
       + what is my name
       - my name is $name
+
+      /plugin: human name
+      ~~~js
+      req.variables.name = 'Bob';
+      req.variables.intent = 'ask name';
+      ~~~
       `)
-      .plugin('human name', async (req, ctx) => {
-        req.variables.name = 'Bob';
-        req.variables.intent = 'ask name';
-      });
+    // .plugin('human name', async (req, ctx) => {
+    //   req.variables.name = 'Bob';
+    //   req.variables.intent = 'ask name';
+    // });
 
     it('should know human name', async () => {
       let req = new Request('what is your name?');
@@ -97,11 +103,17 @@ describe('Plugin', () => {
       + what is your name
       * $flows.name == undefined => i lost my name: $flows.name!
       - my name is $flows.name
+
+      /plugin: human name
+      ~~~js
+      req.variables.fired = true;
+      req.$flows.name = 'Bob';
+      ~~~
       `)
-      .plugin('human name', async (req, ctx) => {
-        req.variables.fired = true;
-        req.$flows.name = 'Bob';
-      });
+    // .plugin('human name', async (req, ctx) => {
+    //   req.variables.fired = true;
+    //   req.$flows.name = 'Bob';
+    // });
 
     it('should know human name', async () => {
       let req = new Request('what is your name?');

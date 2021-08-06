@@ -41,7 +41,8 @@ describe('BotScript', () => {
   describe('add custom pattern', () => {
     // tslint:disable-next-line: no-shadowed-variable
     const bot = new BotScript();
-    bot.plugin('nlp', (req) => {
+    bot.parse(`/plugin: nlp
+      ~~~js
       if (req.message === 'tôi là ai') {
         req.intent = 'whoami';
         req.entities = [{
@@ -49,7 +50,8 @@ describe('BotScript', () => {
           value: 'Genius',
         }];
       }
-    });
+      ~~~
+    `);
     bot.parse(`
     + ([{ tag:VB }]) [{ word:you }]
     - So you want to $1 me, huh?
