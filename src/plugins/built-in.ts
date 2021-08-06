@@ -42,7 +42,7 @@ const vResult = await utils.callHttpService(vCommandNlu, req);
 req.intent = vResult.intent;
 req.entities = vResult.entities;
 logger.info('NLU intent: ' + vResult.intent);
-logger.info('NLU entities: ' + vResult.entities);
+logger.info('NLU entities: ' + JSON.stringify(vResult.entities));
 ~~~
 `;
 

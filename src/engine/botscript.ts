@@ -139,7 +139,7 @@ export class BotScript extends EventEmitter {
         const vCode = wrapCode(vPlugin.value);
         const vName = vPlugin.name.replace(/^plugin:/, '');
         // this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
-        // add custom plugin & save handler in it own directive
+        this.logger.debug(`add custom plugin & save handler in it own directive: /${vPlugin.name}`);
         vPlugin.value = async (req: Request, ctx: Context) => {
           this.logger.debug('Execute plugin: ' + vName);
           // run in browser or node
@@ -253,14 +253,15 @@ export class BotScript extends EventEmitter {
         }
 
         // deconstruct group of plugins from (struct:head)
-        info.head.forEach(p => {
-          const vPluginName = `plugin:${p}`;
+        info.head.forEach(plugin => {
+          // Normalize plugin name
+          const vPluginName = `plugin:${plugin.replace(/\s+/g, '')}`;
           if (ctx.directives.has(vPluginName)) {
-            this.logger.debug('context plugin is activated: %s', p);
+            this.logger.debug('context plugin is activated: [%s]', vPluginName);
             const pluginHandler = ctx.directives.get(vPluginName)?.value as PluginCallback;
             activatedPlugins.push(pluginHandler);
           } else {
-            this.logger.warn('context plugin not found: %s!', vPluginName);
+            this.logger.warn('context plugin not found: [%s]!', vPluginName);
           }
         });
       });
