@@ -9,7 +9,7 @@ import * as utils from '../lib/utils';
 import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN, REGEX_COND_LAMDA_EXPR } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
 import { createNextRequest } from './next';
-import { wrapCode, PLUGINS_BUILT_IN } from '../plugins/built-in';
+import { PLUGINS_BUILT_IN } from '../plugins/built-in';
 
 /**
  * BotScript dialogue engine
@@ -88,19 +88,9 @@ export class BotScript extends EventEmitter {
    * @param content
    */
   parse(content: string) {
-    if (!content) {
-      throw new Error('Cannot parse script: null or empty!');
-    }
-    const scripts = Struct.normalize(content);
-    // notify event parse botscript data content
+    const scripts = this.context.parse(content);
+    // notify event parse botscript data context
     this.emit('parse', scripts);
-
-    scripts.forEach(data => {
-      const struct = Struct.parse(data);
-      // add bot context
-      this.context.add(struct);
-    });
-
     return this;
   }
 
@@ -109,63 +99,12 @@ export class BotScript extends EventEmitter {
    * @param url
    */
   async parseUrl(url: string) {
-    try {
-      const vListData = await utils.downloadScripts(url);
-      for (const vItem of vListData) {
-        this.parse(vItem);
-      }
-    } catch (error) {
-      const { message } = error;
-      this.logger.error(`Cannot download script:
-      - Url: ${url}
-      - Msg: ${message || error}`);
-    }
+    await this.context.parseUrl(url);
+    return this;
   }
 
   async init() {
-    // TODO: Move to context initialization
-    // parse directives
-    const logger = new Logger('Plugin');
-    for (const item of this.context.directives.keys()) {
-      this.logger.info('Preprocess directive:', item);
-      if (/^include/.test(item)) {
-        const vInclude = this.context.directives.get(item) as Struct;
-        for (const vLink of vInclude.options) {
-          this.logger.info('Parse url from:', vLink);
-          await this.parseUrl(vLink);
-        }
-      } else if (/^plugin/.test(item)) {
-        const vPlugin = this.context.directives.get(item) as Struct;
-        const vCode = wrapCode(vPlugin.value);
-        const vName = vPlugin.name.replace(/^plugin:/, '');
-        // this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
-        this.logger.debug(`add custom plugin & save handler in it own directive: /${vPlugin.name}`);
-        vPlugin.value = async (req: Request, ctx: Context) => {
-          this.logger.debug('Execute plugin: ' + vName);
-          // run in browser or node
-          if (typeof window === 'undefined') {
-            this.logger.debug(`Execute /plugin: ${vName} in node!`);
-            const { VmRunner } = await import('../lib/vm2');
-            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
-            const vPostProcessingCallback = await vPreProcess();
-            // support post-processing
-            this.logger.debug(`Plugin [${vName}] has pre-processed!`);
-            return vPostProcessingCallback;
-          } else {
-            this.logger.debug(`Execute /plugin: ${vName} in browser!`);
-            const { VmRunner } = await import('../lib/vm');
-            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
-            const vPostProcessingCallback = await vPreProcess();
-            // support post-processing
-            this.logger.debug(`Plugin [${vName}] has pre-processed!`);
-            return vPostProcessingCallback;
-          }
-        };
-      }
-    }
-
-    // sort triggers
-    this.context.sortTriggers();
+    await this.context.init();
     this.logger.info('Ready!');
     this.emit('ready');
     return this;
