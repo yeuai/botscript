@@ -151,4 +151,5 @@ export async function downloadScripts(url: string): Promise<string[]> {
  */
 export {
   clean,
+  axios,
 };
