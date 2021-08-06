@@ -138,8 +138,7 @@ export class BotScript extends EventEmitter {
 
     req = request;
     if (!context.ready) {
-      // TODO: do context.init();
-      await this.init();
+      await context.init();
     }
 
     // fire plugin for pre-processing
