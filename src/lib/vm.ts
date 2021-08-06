@@ -26,9 +26,9 @@ export class VmRunner {
    * @param sandbox
    * @returns
    */
-  static run(code: string, sandbox: any) {
-
-    const runner = new VmRunner();
-    return runner.runInVm(code, sandbox);
+  static run(code: string, sandbox: any): () => void {
+    const script = new Script(code, { timeout: 5000 });
+    const retValue = script.runInNewContext(sandbox);
+    return retValue;
   }
 }

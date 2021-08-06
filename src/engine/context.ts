@@ -1,12 +1,11 @@
-import { random, newid } from '../lib/utils';
 import { interpolate } from '../lib/template';
 import { Request } from './request';
 import { Struct } from './struct';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
 import { Trigger } from './trigger';
-
-const logger = new Logger('Context');
+import { wrapCode } from '../plugins/built-in';
+import * as utils from '../lib/utils';
 
 /**
  * Bot context
@@ -28,8 +27,10 @@ export class Context {
    * id context
    */
   idctx: string;
+  ready: boolean;
 
   private _sorted_triggers: Trigger[];
+  private logger = new Logger('Context');
 
   constructor() {
     this.definitions = new Map();
@@ -39,7 +40,7 @@ export class Context {
     this.patterns = new Map();
     this.plugins = new Map();
     this.directives = new Map();
-    this.idctx = newid();
+    this.idctx = utils.newid();
     this._sorted_triggers = [];
   }
 
@@ -97,6 +98,42 @@ export class Context {
   }
 
   /**
+   * Script structure parser
+   * @param content
+   */
+  parse(content: string) {
+    if (!content) {
+      throw new Error('Cannot parse script: null or empty!');
+    }
+    const scripts = Struct.normalize(content);
+    scripts.forEach(data => {
+      const struct = Struct.parse(data);
+      // add context struct data types.
+      this.add(struct);
+    });
+
+    return scripts;
+  }
+
+  /**
+   * Script data parse from Url.
+   * @param url
+   */
+  async parseUrl(url: string) {
+    try {
+      const vListData = await utils.downloadScripts(url);
+      for (const vItem of vListData) {
+        this.parse(vItem);
+      }
+    } catch (error) {
+      const { message } = error;
+      this.logger.error(`Cannot download script:
+      - Url: ${url}
+      - Msg: ${message || error}`);
+    }
+  }
+
+  /**
    * sort trigger
    */
   sortTriggers(): void {
@@ -108,6 +145,50 @@ export class Context {
       });
     // sort & cache triggers.
     this._sorted_triggers = vTriggers.sort(Trigger.sorter);
+    this.ready = true;
+  }
+
+  async init() {
+    const logger = new Logger('Plugin');
+    for (const item of this.directives.keys()) {
+      this.logger.info('Preprocess directive:', item);
+      if (/^include/.test(item)) {
+        const vInclude = this.directives.get(item) as Struct;
+        for (const vLink of vInclude.options) {
+          this.logger.info('Parse url from:', vLink);
+          await this.parseUrl(vLink);
+        }
+      } else if (/^plugin/.test(item)) {
+        const vPlugin = this.directives.get(item) as Struct;
+        const vCode = wrapCode(vPlugin.value);
+        const vName = vPlugin.name.replace(/^plugin:/, '');
+        // this.this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
+        this.logger.debug(`add custom plugin & save handler in it own directive: /${vPlugin.name}`);
+        vPlugin.value = async (req: Request, ctx: Context) => {
+          // run in browser or node
+          if (typeof window === 'undefined') {
+            logger.debug(`Execute /plugin: ${vName} in node!`);
+            const { VmRunner } = await import('../lib/vm2');
+            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
+            const vPostProcessingCallback = await vPreProcess();
+            // support post-processing
+            this.logger.debug(`Plugin [${vName}] has pre-processed!`);
+            return vPostProcessingCallback;
+          } else {
+            this.logger.debug(`Execute /plugin: ${vName} in browser!`);
+            const { VmRunner } = await import('../lib/vm');
+            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
+            const vPostProcessingCallback = await vPreProcess();
+            // support post-processing
+            this.logger.debug(`Plugin [${vName}] has pre-processed!`);
+            return vPostProcessingCallback;
+          }
+        };
+      }
+    }
+
+    // sort triggers
+    this.sortTriggers();
   }
 
   /**
@@ -128,7 +209,7 @@ export class Context {
    * @param text
    */
   interpolateDefinition(text: string) {
-    logger.debug('interpolateDefinition:', text);
+    this.logger.debug('interpolateDefinition:', text);
     return text.replace(/\[([\w-]+)\]/g, (match, defName) => {
       const definition = defName.toLowerCase();
       if (!this.definitions.has(definition)) {
@@ -136,7 +217,7 @@ export class Context {
         return match;
       }
       const list = this.definitions.get(definition) as Struct;
-      return random(list.options);
+      return utils.random(list.options);
     });
   }
 
@@ -146,7 +227,7 @@ export class Context {
    * @param req message request
    */
   interpolateVariables(text: string, req: Request) {
-    logger.debug('interpolateVariables:', text);
+    this.logger.debug('interpolateVariables:', text);
     return text
       // 1. object/array referencing.
       // matching & replacing: $var.[0].a.b (note: .[0].a.b is a path of property of an array)
@@ -167,11 +248,11 @@ export class Context {
 
           // interpolate value from variables
           const template = `{{${variable + propPath}}}`;
-          logger.info(`interpolate: ${template}, ${JSON.stringify(data)}`);
+          this.logger.info(`interpolate: ${template}, ${JSON.stringify(data)}`);
           const vResult = interpolate(template, data);
           return vResult;
         } catch (error) {
-          logger.error(`Cannot interpolate variable: ${variable} ${propPath}`, error);
+          this.logger.error(`Cannot interpolate variable: ${variable} ${propPath}`, error);
           return 'undefined';
         }
       })
@@ -192,7 +273,7 @@ export class Context {
             // support shorthand $var /:list or $var :list
             vDirectiveName = 'format' + vDirectiveName;
           }
-          logger.info('Directive /format: ' + vDirectiveName);
+          this.logger.info('Directive /format: ' + vDirectiveName);
           if (this.directives.has(vDirectiveName)) {
             const vFormatTemplate = this.directives.get(vDirectiveName)?.value;
             const vResult = interpolate(vFormatTemplate, {
@@ -218,7 +299,7 @@ export class Context {
    * @param req
    */
   interpolate(text: string, req: Request) {
-    logger.debug('interpolate:', text);
+    this.logger.debug('interpolate:', text);
     let output = this.interpolateDefinition(text);
     output = this.interpolateVariables(output, req);
     return output;
@@ -238,7 +319,7 @@ export class Context {
     if (req.botId !== this.id) {
       // a new first-message request
       // or change new bot context => just reset
-      logger.info('Human send the first-message request: ' + request.message);
+      this.logger.info('Human send the first-message request: ' + request.message);
       request.botId = this.id;
       return request;
     }
@@ -267,7 +348,7 @@ export class Context {
       sessionId,
       botId,
     } = req;
-    logger.info('Normalize human request: isFlowing=' + isFlowing, request.message);
+    this.logger.info('Normalize human request: isFlowing=' + isFlowing, request.message);
     // transfer state to new request
     Object.assign(request, {
       prompt,

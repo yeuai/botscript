@@ -8,8 +8,8 @@ import { IActivator } from '../interfaces/activator';
 import * as utils from '../lib/utils';
 import { REGEX_COND_REPLY_TESTER, REGEX_COND_REPLY_TOKEN, REGEX_COND_LAMDA_EXPR } from '../lib/regex';
 import { Types, PluginCallback } from '../interfaces/types';
-import { addTimeNow, noReplyHandle, normalize, nlu } from '../plugins';
 import { createNextRequest } from './next';
+import { PLUGINS_BUILT_IN } from '../plugins/built-in';
 
 /**
  * BotScript dialogue engine
@@ -32,12 +32,6 @@ export class BotScript extends EventEmitter {
   logger: Logger;
 
   /**
-   * plugins system
-   * returns: void | Promise<any> | PluginCallback
-   */
-  plugins: Map<string, (req: Request, ctx: Context) => void | Promise<any> | PluginCallback>;
-
-  /**
    * Last request
    */
   lastRequest?: Request;
@@ -47,13 +41,7 @@ export class BotScript extends EventEmitter {
     this.context = new Context();
     this.logger = new Logger('Engine');
     this.machine = new BotMachine();
-    this.plugins = new Map();
-
-    // add built-in plugins
-    this.plugin('addTimeNow', addTimeNow);
-    this.plugin('noReplyHandle', noReplyHandle);
-    this.plugin('normalize', normalize);
-    this.plugin('nlu', nlu);
+    this.parse(PLUGINS_BUILT_IN);
 
     // add built-in patterns (NLU)
     this.addPatternCapability({
@@ -100,49 +88,9 @@ export class BotScript extends EventEmitter {
    * @param content
    */
   parse(content: string) {
-    const vContent = content
-      // convert CRLF into LF
-      .replace(/\r\n/g, '\n')
-      // remove spacing
-      .replace(/\n +/g, '\n')
-      // remove comments
-      .replace(/^#.*$\n/igm, '')
-      // remove inline comment
-      .replace(/# .*$\n/igm, '')
-      // separate definition struct (normalize)
-      .replace(/^!/gm, '\n!')
-      // concat multiple lines (normalize)
-      .replace(/\n\^/gm, ' ')
-      // normalize javascript code block
-      .replace(/```js([\s\S]*)```/g, (match) => {
-        const vBlockNormalize = match.replace(/\n+/g, '\n');
-        return vBlockNormalize;
-      })
-      // remove spaces
-      .trim();
-
-    if (!vContent) {
-      // do nothing
-      return this;
-    }
-
-    // notify event parse botscript data content
-    this.emit('parse', vContent);
-
-    const scripts = vContent
-      // split structure by linebreaks
-      .split(/\n{2,}/)
-      // remove empty lines
-      .filter(script => script)
-      // trim each of them
-      .map(script => script.trim());
-
-    scripts.forEach(data => {
-      const struct = Struct.parse(data);
-      // add bot context
-      this.context.add(struct);
-    });
-
+    const scripts = this.context.parse(content);
+    // notify event parse botscript data context
+    this.emit('parse', scripts);
     return this;
   }
 
@@ -151,61 +99,12 @@ export class BotScript extends EventEmitter {
    * @param url
    */
   async parseUrl(url: string) {
-    try {
-      const vListData = await utils.downloadScripts(url);
-      for (const vItem of vListData) {
-        this.parse(vItem);
-      }
-    } catch (error) {
-      const { message } = error;
-      this.logger.error(`Cannot download script:
-      - Url: ${url}
-      - Msg: ${message || error}`);
-    }
+    await this.context.parseUrl(url);
+    return this;
   }
 
   async init() {
-    // parse include directive
-    for (const item of this.context.directives.keys()) {
-      this.logger.info('Preprocess directive:', item);
-      if (/^include/.test(item)) {
-        const vInclude = this.context.directives.get(item) as Struct;
-        for (const vLink of vInclude.options) {
-          this.logger.info('Parse url from:', vLink);
-          await this.parseUrl(vLink);
-        }
-      } else if (/^plugin/.test(item)) {
-        const vPlugin = this.context.directives.get(item) as Struct;
-        const vCode = vPlugin.value.replace(/```js([\s\S]*)```/, (m: string, code: string) => code) as string;
-        const vName = vPlugin.name.replace(/^plugin:/, '');
-        this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
-        // add custom plugin
-        this.plugin(vName, async (req, ctx) => {
-          this.logger.debug('Execute plugin: ' + vName);
-          // run in browser or node
-          if (typeof window === 'undefined') {
-            this.logger.debug('Execute plugin in node!');
-            const { VmRunner } = await import('../lib/vm2');
-            // support post-processing
-            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx });
-            this.logger.debug(`Plugin [${vName}] has post-processing function!`);
-            return vPostProcessingCallback;
-          } else {
-            this.logger.debug('Execute plugin in browser!');
-            const { VmRunner } = await import('../lib/vm');
-            // support post-processing
-            const vPostProcessingCallback = await VmRunner.run(vCode, { req, ctx });
-            this.logger.debug(`Plugin [${vName}] has post-processing function!`);
-            return vPostProcessingCallback;
-          }
-
-          this.logger.debug(`Execute plugin: ${vName} => done!`);
-        });
-      }
-    }
-
-    // sort triggers
-    this.context.sortTriggers();
+    await this.context.init();
     this.logger.info('Ready!');
     this.emit('ready');
     return this;
@@ -225,15 +124,6 @@ export class BotScript extends EventEmitter {
   }
 
   /**
-   * Add plugin system
-   * @param name
-   * @param func
-   */
-  plugin(name: string, func: PluginCallback) {
-    this.plugins.set(name, func);
-  }
-
-  /**
    * Async handle message request then create response back
    * @param req
    * @param ctx
@@ -247,10 +137,12 @@ export class BotScript extends EventEmitter {
     // req.isForward = false;
 
     req = request;
+    if (!context.ready) {
+      await context.init();
+    }
 
     // fire plugin for pre-processing
-    const plugins = [...context.plugins.keys()];
-    const postProcessing = await this.preProcessRequest(plugins, req, context);
+    const postProcessing = await this.preProcessRequest(req, context);
 
     // fires state machine to resolve request
     this.machine.resolve(req, context);
@@ -283,16 +175,13 @@ export class BotScript extends EventEmitter {
    * @param req
    * @param ctx
    */
-  private async preProcessRequest(plugins: string[], req: Request, ctx: Context) {
+  private async preProcessRequest(req: Request, ctx: Context) {
     const postProcessing: PluginCallback[] = [];
     const activatedPlugins: PluginCallback[] = [];
+    const plugins = [...ctx.plugins.keys()];
 
     plugins
       .forEach(x => {
-        if (!ctx.plugins.has(x)) {
-          return false;
-        }
-
         // check context conditional plugin for activation
         const info = ctx.plugins.get(x) as Struct;
         for (const cond of info.conditions) {
@@ -302,13 +191,15 @@ export class BotScript extends EventEmitter {
         }
 
         // deconstruct group of plugins from (struct:head)
-        info.head.forEach(p => {
-          if (this.plugins.has(p)) {
-            this.logger.debug('context plugin is activated: %s', p);
-            const pluginGroup = this.plugins.get(p) as PluginCallback;
-            activatedPlugins.push(pluginGroup);
+        info.head.forEach(plugin => {
+          // Normalize plugin name
+          const vPluginName = `plugin:${plugin.replace(/\s+/g, '')}`;
+          if (ctx.directives.has(vPluginName)) {
+            this.logger.debug('context plugin is activated: [%s]', vPluginName);
+            const pluginHandler = ctx.directives.get(vPluginName)?.value as PluginCallback;
+            activatedPlugins.push(pluginHandler);
           } else {
-            this.logger.warn('context plugin not found: %s!', p);
+            this.logger.warn('context plugin not found: [%s]!', vPluginName);
           }
         });
       });

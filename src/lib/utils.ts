@@ -5,6 +5,7 @@ import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
 import { interpolate } from './template';
 import { REGEX_HEADER_SEPARATOR } from './regex';
+import clean from './clean';
 
 const logger = new Logger('Utils');
 
@@ -144,3 +145,10 @@ export async function downloadScripts(url: string): Promise<string[]> {
     throw new Error('Data format unsupported!');
   }
 }
+
+/**
+ * Re-export other utils.
+ */
+export {
+  clean,
+};

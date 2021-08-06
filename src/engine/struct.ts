@@ -85,6 +85,46 @@ export class Struct {
   }
 
   /**
+   * Normalize script content to block of structs
+   * @param content
+   */
+  static normalize(content: string): string[] {
+    const vContent = content
+      // convert CRLF into LF
+      .replace(/\r\n/g, '\n')
+      // remove spacing
+      .replace(/\n +/g, '\n')
+      // remove comments
+      .replace(/^#.*$\n/igm, '')
+      // remove inline comment
+      .replace(/# .*$\n/igm, '')
+      // separate definition struct (normalize)
+      .replace(/^!/gm, '\n!')
+      // concat multiple lines (normalize)
+      .replace(/\n\^/gm, ' ')
+      // normalize javascript code block
+      .replace(/```js([^`]*)```/gm, (match) => {
+        const vBlockNormalize = match.replace(/\n+/g, '\n');
+        return vBlockNormalize;
+      })
+      .replace(/~~~js([^~]*)~~~/gm, (match) => {
+        const vBlockNormalize = match.replace(/\n+/g, '\n');
+        return vBlockNormalize;
+      })
+      // remove spaces
+      .trim();
+
+    const scripts = vContent
+      // split structure by linebreaks
+      .split(/\n{2,}/)
+      // remove empty lines
+      .filter(script => script)
+      // trim each of them
+      .map(script => script.trim());
+    return scripts;
+  }
+
+  /**
    * Parse data to script structure
    * @param data
    */

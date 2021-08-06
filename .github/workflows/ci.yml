@@ -14,25 +14,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js 10.x
-      uses: actions/setup-node@v1
-      with:
-        registry-url: https://npm.pkg.github.com/
-        node-version: 10.x
-        scope: '@yeuai'
-    - name: npm install, build, and test
-      run: |
-        npm install
-        npm run build --if-present
-        npm test
-    - name: publish
-      if: github.event_name == 'release' && github.event.action == 'published'
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_PKG_AUTH_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
-      run: |
-        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
-        echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
-        npm publish --ignore-scripts --@yeuai:registry='https://registry.npmjs.org'
-        npm publish --ignore-scripts --@yeuai:registry='https://npm.pkg.github.com'
+      - uses: actions/checkout@v1
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          registry-url: https://npm.pkg.github.com/
+          node-version: 14.x
+          scope: "@yeuai"
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm test
+      - name: publish
+        if: github.event_name == 'release' && github.event.action == 'published'
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_PKG_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_PKG_AUTH_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+          npm publish --ignore-scripts --@yeuai:registry='https://registry.npmjs.org'
+          npm publish --ignore-scripts --@yeuai:registry='https://npm.pkg.github.com'
