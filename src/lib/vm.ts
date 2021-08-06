@@ -1,4 +1,5 @@
 import { Script } from 'vm';
+import { PluginWrapperCallback } from '../interfaces/types';
 
 export class VmRunner {
   runInVm(code: string, sandbox: any, path?: string) {
@@ -26,7 +27,7 @@ export class VmRunner {
    * @param sandbox
    * @returns
    */
-  static run(code: string, sandbox: any): () => void {
+  static run(code: string, sandbox: any): PluginWrapperCallback {
     const script = new Script(code, { timeout: 5000 });
     const retValue = script.runInNewContext(sandbox);
     return retValue;

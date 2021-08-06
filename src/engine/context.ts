@@ -4,7 +4,7 @@ import { Struct } from './struct';
 import { IActivator } from '../interfaces/activator';
 import { Logger } from '../lib/logger';
 import { Trigger } from './trigger';
-import { wrapCode } from '../plugins/built-in';
+import { wrapCode, wrapCodeBrowser } from '../plugins/built-in';
 import * as utils from '../lib/utils';
 
 /**
@@ -161,6 +161,7 @@ export class Context {
       } else if (/^plugin/.test(item)) {
         const vPlugin = this.directives.get(item) as Struct;
         const vCode = wrapCode(vPlugin.value);
+        const vCodeBrowser = wrapCodeBrowser(vPlugin.value);
         const vName = vPlugin.name.replace(/^plugin:/, '');
         // this.this.logger.debug(`javascript code: /plugin: ${vName} => ${vCode}`);
         this.logger.debug(`add custom plugin & save handler in it own directive: /${vPlugin.name}`);
@@ -177,7 +178,7 @@ export class Context {
           } else {
             this.logger.debug(`Execute /plugin: ${vName} in browser!`);
             const { VmRunner } = await import('../lib/vm');
-            const vPreProcess = await VmRunner.run(vCode, { req, ctx, utils, logger });
+            const vPreProcess = await VmRunner.run(vCodeBrowser, { req, ctx, utils, logger });
             const vPostProcessingCallback = await vPreProcess();
             // support post-processing
             this.logger.debug(`Plugin [${vName}] has pre-processed!`);
