@@ -75,7 +75,7 @@ describe('Plugin', () => {
       req.variables.name = 'Bob';
       req.variables.intent = 'ask name';
       ~~~
-      `)
+      `);
     // .plugin('human name', async (req, ctx) => {
     //   req.variables.name = 'Bob';
     //   req.variables.intent = 'ask name';
@@ -109,7 +109,7 @@ describe('Plugin', () => {
       req.variables.fired = true;
       req.$flows.name = 'Bob';
       ~~~
-      `)
+      `);
     // .plugin('human name', async (req, ctx) => {
     //   req.variables.fired = true;
     //   req.$flows.name = 'Bob';
