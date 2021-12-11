@@ -4,7 +4,7 @@ import { callHttpService } from '../lib/utils';
 import { Logger } from '../lib/logger';
 
 const logger = new Logger('NLU');
-const defaultCommandNlu = Struct.parse(`@ nlu https://botscript.ai/api/nlu`);
+const defaultCommandNlu = Struct.parse(`@ nlu https://botscript-core.yeu.ai/api/nlu`);
 const defaultDirectiveNlu = Struct.parse(`/nlu: nlu`);
 
 /**

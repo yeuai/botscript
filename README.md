@@ -17,7 +17,7 @@ Here is a list of resources to get you started
 
 - 👯 [Read the wiki](https://github.com/yeuai/botscript/wiki) for all the details on how to get started playing with BotScript
 - 🤔 [Read API References](https://github.com/yeuai/botscript/wiki/API-References) to start coding
-- 💬 [Playground](https://play.botscript.ai/) to say hello?
+- 💬 [Playground](https://botscript.yeu.ai/) to say hello?
 
 # Specification
 
@@ -92,7 +92,7 @@ Example:
 
 ## dialogue
 
-A dialogue is a piece of conversation that human and bot interact with each other. 
+A dialogue is a piece of conversation that human and bot interact with each other.
 
 A dialogue must contains a `+` line, that defines a pattern can activate the bot to respond. This line also called with other name **trigger**.
 
@@ -114,13 +114,13 @@ Example:
 
 A dialogue may contains:
 
-* triggers
-* replies
-* flows
-* conditions
-* variables
-* commands
-* prompts
+- triggers
+- replies
+- flows
+- conditions
+- variables
+- commands
+- prompts
 
 ## triggers
 
@@ -156,9 +156,9 @@ A dialogue may contains more than one trigger. Which helps bot to detect exactly
 
 A trigger may contains:
 
-* definitions
-* patterns
-* variable
+- definitions
+- patterns
+- variable
 
 ## replies
 
@@ -173,12 +173,12 @@ A reply begins with `-` symbol in the dialogue and goes with the trigger. If the
 
 A reply may contains:
 
-* definitions
-* variables
+- definitions
+- variables
 
 ## flows
 
-Flows are tasks which need to be resolved. A flow can used to determine a precise flow of conversation 
+Flows are tasks which need to be resolved. A flow can used to determine a precise flow of conversation
 
 A flow must start with a `~` line, that defines the the task name.
 
@@ -210,13 +210,13 @@ The dialogue jumps to the splash flow then back to continue.
 
 A flow may contains:
 
-* triggers
-* replies
-* flows
-* conditions
-* commands
-* variables
-* prompts
+- triggers
+- replies
+- flows
+- conditions
+- commands
+- variables
+- prompts
 
 ## prompts
 
@@ -243,14 +243,14 @@ Example:
 
 ## conditions
 
-A conditions begins with star symbol: `*`  
+A conditions begins with star symbol: `*`
 
 Syntax: `* expression`
 
 There are two categories of conditions in the dialogue:
 
-* [x] **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
-* [x] **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
+- [x] **Conditional activation**: monitoring the ability to activate the dialogue in the conversation
+- [x] **Conditional reply**: checking the operation process in the dialogue and ability to respond to human
 
 For example:
 
@@ -270,12 +270,12 @@ Syntax: `* expression [type] [action]`
 
 There are six subcategories of conditional processing:
 
-* Conditional reply
-* Conditional flow
-* Conditional redirect
-* Conditional command
-* Conditional prompt
-* Conditional event
+- Conditional reply
+- Conditional flow
+- Conditional redirect
+- Conditional command
+- Conditional prompt
+- Conditional event
 
 Example:
 
@@ -384,7 +384,7 @@ A variable appears in a dialogue in both triggers and replies.
 
 A variable is declared within parentheses: `*{var1}` to capture a string and `#{var2}` to captures a number.
 
-A variable is populated in replies by defining after `$var1` sign or within form `${var2}`. 
+A variable is populated in replies by defining after `$var1` sign or within form `${var2}`.
 
 Example:
 
@@ -398,20 +398,20 @@ Example:
 
 System variables:
 
-* `$previous`: history of dialogue chat
-* `$flows`: available in context of dialogue is flowing
-* `$input`: human message input
+- `$previous`: history of dialogue chat
+- `$flows`: available in context of dialogue is flowing
+- `$input`: human message input
 
 ## patterns
 
-A pattern within trigger which helps the dialogue `human <-> bot` can be activated and bot has a better capability to reply human.  
+A pattern within trigger which helps the dialogue `human <-> bot` can be activated and bot has a better capability to reply human.
 
 Advanced pattern helps bot exactly knows what human is saying.
 
 There are two ways add pattern capability in BotScript:
 
-* Built-in pattern capability using Regular Expression
-* Custom pattern capability by add new handler
+- Built-in pattern capability using Regular Expression
+- Custom pattern capability by add new handler
 
 ### 1. Built-in pattern capability using Regular Expression
 
@@ -455,7 +455,7 @@ BotScript allows to define plugins which will be activated usage if the one adde
 A plugin started with `>` line for pre, post-processing  
 A plugin runs in pipeline of message request processing  
 A plugin may contain conditional activation  
-A plugin may be grouped in a group  
+A plugin may be grouped in a group
 
 Syntax:
 
@@ -477,8 +477,8 @@ Example:
 - it is $time
 */
 function addTimeNow(req: Request, ctx: Context) {
-  const now = new Date()
-  req.variables.time = `${now.getHours()} : ${now.getMinutes()}`
+  const now = new Date();
+  req.variables.time = `${now.getHours()} : ${now.getMinutes()}`;
 }
 
 /**
@@ -486,12 +486,12 @@ function addTimeNow(req: Request, ctx: Context) {
  * */
 function noReplyHandle() {
   const postProcessing = (res: Request) => {
-    if (res.message === 'NO REPLY!') {
-      res.message = `Sorry! I don't understand!`
+    if (res.message === "NO REPLY!") {
+      res.message = `Sorry! I don't understand!`;
     }
-  }
+  };
 
-  return postProcessing
+  return postProcessing;
 }
 ```
 
@@ -509,10 +509,10 @@ Syntax:
 
 Available built-in supported directives:
 
-* include
-* nlu
-* format
-* plugin
+- include
+- nlu
+- format
+- plugin
 
 ### Directive /include
 
@@ -520,7 +520,7 @@ Example:
 
 ```bash
 # import botscript document from urls
-/include: 
+/include:
 - url 1
 - url 2
 ```
@@ -564,7 +564,7 @@ A plugin is compiled in the script document and one defined in a directive:
 
 Syntax:
 
-~~~bash
+````bash
 /plugin: name
 ```js
 # javascript code here;
@@ -580,32 +580,29 @@ return (req, ctx) => {
   }
 }
 ```
-~~~
+````
 
 Example:
 
-~~~bash
+````bash
 # add time now to current variable for each request
 /plugin: addTimeNow
 ```js
 const now = new Date();
 req.variables.time = `${now.getHours()}:${now.getMinutes()}`;
 ```
-~~~
+````
 
 # Examples
 
 See the [`examples/`](./examples) directory.
 
-
-Contributing
-============
+# Contributing
 
 Pull requests and stars are highly welcome.
 
 For bugs and feature requests, please [create an issue](https://github.com/yeuai/botscript/issues/new).
 
-License
-=======
+# License
 
 BotScript is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
