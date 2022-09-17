@@ -18,6 +18,7 @@ export class BotMachine {
       {
         id: 'botscript',
         initial: 'pending',
+        predictableActionArguments: true,
         states: {
           pending: {
             on: {
@@ -210,7 +211,7 @@ export class BotMachine {
           },
           notifyDone: (context, event) => {
             this.logger.info('Bot machine done!');
-          }
+          },
         },
       },
     );
