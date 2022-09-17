@@ -7,6 +7,7 @@ export class Request {
   public sessionId: string;
   public message: string;
   public speechResponse: string;
+  public time: Date;  // request time
 
   /**
    * This flag indicates the dialogue is forwarding
@@ -106,6 +107,7 @@ export class Request {
     this.missingFlows = [];
     this.previous = [];
     this.$flows = {};
+    this.time = new Date();
 
     if (message) {
       this.message = message.toLowerCase();
@@ -132,7 +134,7 @@ export class Request {
     const count = this.flows.length;
     // flows are resolved
     const done = (count > 0) && (count === resolved) && (missing === 0);
-    const $flows = {...this.$flows, resolved, missing, count, done}; // $flow scope
+    const $flows = { ...this.$flows, resolved, missing, count, done }; // $flow scope
     return {
       ...this.variables,
       ...this.$flows,
