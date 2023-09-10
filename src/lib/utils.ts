@@ -90,7 +90,9 @@ export function evaluate(expr: string, context: any) {
     logger.debug(`Evaluate test: expr=${expr} => ${vTestResult}`);
     return vTestResult;
   } catch (err) {
-    logger.warn(`Error while eval expression: expr=${expr} =>`, { msg: (err && err.message) });
+    const { message } = err as Error;
+    const detail = message || JSON.stringify(err);
+    logger.warn(`Error while eval expression: expr=${expr} =>`, { detail });
     return undefined;
   }
 

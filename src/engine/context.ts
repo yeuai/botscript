@@ -126,7 +126,7 @@ export class Context {
         this.parse(vItem);
       }
     } catch (error) {
-      const { message } = error;
+      const { message } = error as Error;
       this.logger.error(`Cannot download script:
       - Url: ${url}
       - Msg: ${message || error}`);
