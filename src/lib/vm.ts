@@ -6,7 +6,7 @@ export class VmRunner {
     // promisify task runner
     return new Promise((resolve, reject) => {
       try {
-        const script = new Script(code, { filename: path, timeout: 5000 });
+        const script = new Script(code, { filename: path });
         const retValue = script.runInNewContext(sandbox);
 
         // Check if code returned a Promise-like object
@@ -28,7 +28,7 @@ export class VmRunner {
    * @returns
    */
   static run(code: string, sandbox: any): PluginWrapperCallback {
-    const script = new Script(code, { timeout: 5000 });
+    const script = new Script(code, {});
     const retValue = script.runInNewContext(sandbox);
     return retValue;
   }
