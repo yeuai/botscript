@@ -6,6 +6,8 @@ import { Logger } from '../lib/logger';
 import { Trigger } from './trigger';
 import { wrapCode, wrapCodeBrowser } from '../plugins/built-in';
 import * as utils from '../lib/utils';
+import { BehaviorSubject, filter } from 'rxjs';
+import { PluginCallback } from '../interfaces/types';
 
 /**
  * Bot context
@@ -31,6 +33,10 @@ export class Context {
 
   private _sorted_triggers: Trigger[];
   private logger = new Logger('Context');
+  private $action = new BehaviorSubject<{
+    type: string,
+    data?: any,
+  }>({ type: 'init' });
 
   constructor() {
     this.definitions = new Map();
@@ -94,7 +100,20 @@ export class Context {
    */
   add(struct: Struct) {
     this.type(struct.type).set(struct.name, struct);
+    this.$action.next({ type: 'add', data: struct });
     return this;
+  }
+
+  addPlugin(name: string, handler: PluginCallback) {
+    const plugin = new Struct('/plugin:' + name);
+    plugin.name = 'plugin:' + name;
+    plugin.value = handler;
+    return this.add(plugin);
+  }
+
+  addDefinition(name: string, value: string) {
+    const definition = Struct.parse(`!${name}\n-${value}`);
+    return this.add(definition);
   }
 
   /**
@@ -113,6 +132,19 @@ export class Context {
     });
 
     return scripts;
+  }
+
+  emit(type: string, data: any) {
+    this.$action.next({ type, data });
+    return this;
+  }
+
+  asObservable() {
+    return this.$action.asObservable();
+  }
+
+  asTypingObservable() {
+    return this.asObservable().pipe(filter(x => x.type === 'typing'));
   }
 
   /**
@@ -160,6 +192,10 @@ export class Context {
         }
       } else if (/^plugin/.test(item)) {
         const vPlugin = this.directives.get(item) as Struct;
+        if (typeof vPlugin.value === 'function') {
+          // built-in or type-safe code.
+          continue;
+        }
         const vCode = wrapCode(vPlugin.value);
         const vCodeBrowser = wrapCodeBrowser(vPlugin.value);
         const vName = vPlugin.name.replace(/^plugin:/, '');
