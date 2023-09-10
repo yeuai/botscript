@@ -194,6 +194,13 @@ export class Context {
         const vPlugin = this.directives.get(item) as Struct;
         if (typeof vPlugin.value === 'function') {
           // built-in or type-safe code.
+          const original = vPlugin.value as PluginCallback;
+          vPlugin.value = async (req: Request, ctx: Context) => {
+            logger.debug(`Execute [${vPlugin.name}]!`);
+            const vPostProcessingCallback = await original.call(ctx, req, ctx);
+            logger.debug(`Plugin [${vPlugin.name}] has pre-processed!`);
+            return vPostProcessingCallback;
+          }
           continue;
         }
         const vCode = wrapCode(vPlugin.value);

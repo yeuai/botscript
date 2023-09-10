@@ -12,19 +12,17 @@ export async function chatgpt(req: Request, ctx: Context) {
   const apiKey = ctx.definitions.get('api-key')?.value as string;
   const apiModel = ctx.definitions.get('api-model')?.value as string;
   const apiStream = ctx.definitions.get('api-stream')?.value as string === 'true';
-  const messages = req.variables.messages || [
-    {
-      role: 'user',
-      content: req.message,
-    }
-  ]
+  const messages = req.variables.messages as any[] || [];
   const openai = new OpenAI({
     apiKey,
     baseURL: baseURL || 'https://api.openai.vn/v1',
   });
 
   let result = '';
-
+  messages.push({
+    role: 'user',
+    content: req.message,
+  });
   if (apiStream) {
     const stream = await openai.chat.completions.create({
       messages,
@@ -33,8 +31,9 @@ export async function chatgpt(req: Request, ctx: Context) {
     });
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
+      const role = chunk.choices[0]?.delta?.role;
       result += content;
-      ctx.emit('typing', result);
+      ctx.emit('typing', { result, content, role });
     }
   } else {
     const completion = await openai.chat.completions.create({
@@ -46,6 +45,11 @@ export async function chatgpt(req: Request, ctx: Context) {
   }
 
   return () => {
+    messages.push({
+      role: 'assistant',
+      content: result,
+    });
+    Object.assign(req.variables, { messages });
     req.speechResponse = result;
   }
 }
