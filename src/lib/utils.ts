@@ -1,5 +1,5 @@
 import axios, { Method } from 'axios';
-import { evalSync } from 'jexl';
+import jexl from 'jexl';
 import { Struct, Request } from '../common';
 import { TestConditionalCallback, Types } from '../interfaces/types';
 import { Logger } from './logger';
@@ -86,13 +86,15 @@ export function evaluate(expr: string, context: any) {
   })));
 
   try {
-    const vTestResult = evalSync(expr, vars);
-    logger.debug(`Evaluate test: expr=${expr} => ${vTestResult}`);
+    logger.debug(`Evaluate test: expr=${expr}, %s`, vars);
+    // const expression = createExpression(expr);
+    const vTestResult = jexl.evalSync(expr, vars);
+    logger.debug(`Evaluate test: done expr=${expr} => ${vTestResult}`);
     return vTestResult;
   } catch (err) {
     const { message } = err as Error;
     const detail = message || JSON.stringify(err);
-    logger.warn(`Error while eval expression: expr=${expr} =>`, { detail });
+    logger.error(`Error while eval expression: expr=${expr} =>`, { detail });
     return undefined;
   }
 
