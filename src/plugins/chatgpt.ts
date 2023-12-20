@@ -12,9 +12,11 @@ export async function chatgpt(req: Request, ctx: Context) {
   const apiKey = ctx.definitions.get('api-key')?.value as string;
   const apiModel = ctx.definitions.get('api-model')?.value as string;
   const apiStream = ctx.definitions.get('api-stream')?.value as string === 'true';
+  const dangerouslyAllowBrowser = ctx.definitions.get('api-browser')?.value as string !== 'false';
   const messages = req.variables.messages as any[] || [];
   const openai = new OpenAI({
     apiKey,
+    dangerouslyAllowBrowser,
     baseURL: baseURL || 'https://api.openai.vn/v1',
   });
 
