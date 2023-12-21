@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
-import { Request, Context } from '../common';
+import { Request, Context, Logger } from '../common';
 
+const logger = new Logger('ChatGPT');
 /**
 > chatgpt
 
@@ -21,10 +22,13 @@ export async function chatgpt(req: Request, ctx: Context) {
   });
 
   let result = '';
-  messages.push({
-    role: 'user',
-    content: req.message,
-  });
+  if (messages.length === 0) {
+    messages.push({
+      role: 'user',
+      content: req.message,
+    });
+  }
+  logger.info('Feed the message: ', messages);
   if (apiStream) {
     const stream = await openai.chat.completions.create({
       messages,
