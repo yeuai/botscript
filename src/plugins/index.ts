@@ -6,3 +6,4 @@ export * from './noReplyHandle';
 export * from './normalize';
 export * from './nlu';
 export * from '../version';
+export * from './chatgpt';

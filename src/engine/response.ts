@@ -16,6 +16,7 @@ export class Response {
   public speechResponse: string;
   public intent: string;
   public input: string;
+  public time: Date; // response time.
   // bot response histories
   public history: [{
     flows: [{
@@ -27,5 +28,6 @@ export class Response {
 
   constructor() {
     this.contexts = [];
+    this.time = new Date();
   }
 }

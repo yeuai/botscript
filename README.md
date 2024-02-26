@@ -560,7 +560,8 @@ Example:
 
 ### Directive /plugin
 
-A plugin is compiled in the script document and one defined in a directive:
+A plugin uses available context params: `({ req, ctx, utils, logger })`  
+A plugin is compiled in the script document and one defined in a directive: 
 
 Syntax:
 

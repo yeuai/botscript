@@ -5,3 +5,4 @@
 export { Request } from './engine/request';
 export { Context } from './engine/context';
 export { Struct } from './engine/struct';
+export { Logger } from './lib/logger';
